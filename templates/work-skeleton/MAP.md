@@ -9,6 +9,8 @@ Pointers only (`path:function`). Never paste code here; pasted code goes stale.
 ## End-to-end path and time breakdown
 Shares come from the stage timing at baseline; they decide where to look first.
 
+    <ASCII flow: each stage with its device ([CPU] or [GPU]), dtype, and shape, and every copy between them>
+
 | Step | Code | Share of e2e time |
 |---|---|---|
 | Input | <path:function> | |
