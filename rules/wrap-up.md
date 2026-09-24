@@ -1,0 +1,43 @@
+---
+tier: once
+read_when: the user says the project or a milestone is done
+---
+# Wrapping up
+
+Set the phase in STATUS.md to `wrap-up` first, so a later session resumes here.
+Track the steps with this checklist in your reply:
+
+    - [ ] 1 Deliver  - [ ] 2 Close  - [ ] 3 Cards  - [ ] 4 Rules review  - [ ] 5 Sync
+
+## 1. Deliver
+- Run `lx-e2espeed/exp.sh check`: the project tree must equal the baseline plus the kept patches. Then run verify and bench, and record the numbers in STATUS.md.
+- Read the whole diff once more for code that no longer earns its place. A simplification is one more experiment, so the record stays complete.
+- Run the handoff checks of the `gpu-inference-delivery` skill that the Deployment section of PROJECT.md calls for.
+- The kept changes sit uncommitted in the project's working tree. Show the user the diff and the final numbers, and offer a fresh-context review (for example `/code-review`).
+- The user commits and pushes under the company's rules. Each kept patch can become its own commit, with the change and its measured gain in the message, in the project's commit style.
+
+## 2. Close the record
+- List known risks and ideas not tried under "Next" in STATUS.md, so a session that reopens the project starts from them.
+- Tell the user the outcome in your reply, with the facts the `gpu-inference-delivery` skill lists for a delivery, each kept change with its gain and difference level, and the risks. STATUS.md, exp/INDEX.md, and DECISIONS.md are the full record; write no separate report into lx-work.
+- State gains honestly: gains from different rows or dates do not add up, a comparison across dates is descriptive rather than a paired A/B, and a hardware or driver change is not a software gain.
+
+## 3. Distill cards
+First bring the clone up to date with `git -C lx-e2espeed pull --ff-only`, so new cards merge into the newest playbook instead of duplicating it.
+For each kept experiment, and each dropped one that taught something:
+- Search playbook/INDEX.md for the same technique. If a card exists, update its effect range, conditions, and evidence instead of adding a card.
+- Otherwise create a card from `templates/card.md` in the category where the time was spent, and add its line to the index.
+- Scrub everything project-specific: project, company, model, and file names, paths, project code, business details. Describe the model generically, for example "decoder-only transformer, batch 1".
+- A failure only shows the technique did not fit this project. Record it in the card's "Does not apply" as the condition that made it fail (bottleneck, model type, shapes, hardware), and in Evidence as one more data point. Never delete a technique for failing once.
+
+## 4. Review the rules
+Start from lx-work/FEEDBACK.md. Then ask: where did the work drift from these rules, what was missing, which docs were never read?
+Propose changes to the user. Apply the approved ones, log them in CHANGELOG.md, and delete the FEEDBACK.md entries they resolve.
+
+## 5. Sync to the main copy
+The main copy is the clone's `origin` (`git -C lx-e2espeed remote get-url origin`), a directory on this machine. Nothing is uploaded.
+- Show the user the full diff of lx-e2espeed. Commit in the clone only after approval.
+- Bring the change into the main copy by pulling from its side: `git -C <main copy> pull --ff-only <project>/lx-e2espeed main`. Pull, not push: git refuses a push into a repo whose branch is checked out.
+- If the main copy has uncommitted changes, stop and ask the user.
+- If the pull cannot fast-forward, another project synced first. Run `git -C lx-e2espeed pull --rebase`, merge any card both projects touched, run the checker, show the user the result, then pull into the main copy again.
+- Other project clones pick the change up with `git -C lx-e2espeed pull --ff-only`.
+- Set the phase in STATUS.md to `done` and commit lx-work. It stays local unless the user sets up a remote for it.

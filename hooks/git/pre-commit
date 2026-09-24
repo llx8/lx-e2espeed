@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Run the doc checker before each commit in lx-e2espeed and lx-work (wired up through core.hooksPath).
+# It also catches edits made outside Claude Code's Edit and Write tools.
+set -e
+checker="$(cd "$(dirname "$0")/.." && pwd)/check_docs.py"
+exec python3 "$checker" "$(git rev-parse --show-toplevel)"

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Keep a project's private terms out of lx-e2espeed commit messages, which travel to the main copy.
+# lx-work shares this hooks directory; its messages stay local, so it is skipped.
+set -e
+top="$(git rev-parse --show-toplevel)"
+[ -d "$top/rules" ] || exit 0
+exec python3 - "$(cd "$(dirname "$0")/.." && pwd)" "$top" "$1" <<'PY'
+import sys
+from pathlib import Path
+
+sys.path.insert(0, sys.argv[1])
+from check_rules import check_private, private_terms
+
+
+class Report:
+    def __init__(self):
+        self.errors = []
+
+    def error(self, where, msg):
+        self.errors.append(f"{where}: {msg}")
+
+
+rep = Report()
+lines = [l for l in Path(sys.argv[3]).read_text(encoding="utf-8").splitlines() if not l.startswith("#")]
+check_private([("commit message", lines)], private_terms(Path(sys.argv[2])), rep)
+for msg in rep.errors:
+    print(f"error: {msg}", file=sys.stderr)
+sys.exit(1 if rep.errors else 0)
+PY
