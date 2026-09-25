@@ -42,6 +42,7 @@ Wrap callables with timers rather than editing project code. Steps written inlin
 - A "difference" is a difference in the final output of the real end-to-end path, stated with its scenario and input size, as magnitude (maximum error) and extent (share of values or pixels affected). How close one operator is to the exact math is "operator accuracy": a diagnostic, never reported as a difference. Never mix scenarios in one statement.
 - For images, report MAE, RMSE, PSNR, maximum error, the share beyond the agreed threshold, and the share changed, against the pass criterion in PROJECT.md.
 - A check must be able to fail: an exact-equality check can pass because an approximate branch never ran. Prove it once with a deliberately wrong input or setting.
+- When a change adds or alters a branch the scenario inputs never reach, add a targeted test that reaches it, derived from real inputs, and keep it with the experiment. It compares against the previous code, so after landing run it against `exp.sh export` of the previous experiment.
 - Compare at the final service output too: encoding such as JPEG can amplify a 1 to 3 level difference into a much larger one.
 - Rebuilding an engine changes its outputs even from the same ONNX, so agree on a tolerance before any engine change, and compare every mixed-precision engine end to end: they can be silently wrong.
 

@@ -52,7 +52,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - To drop, run `exp.sh drop`: it reverses anything the experiment changed in the project and checks that the tree is back. Never undo by hand.
 - Both warn about files the project ignores (build outputs, caches) that the experiment wrote. No patch holds them: run.sh must rebuild them, and after a drop remove the ones the experiment made, so they cannot change the next bench.
 - A gain inside the noise floor is not a gain. A small gain that adds a lot of complexity may not be worth keeping; deleting code at equal speed is a win.
-- Fill in Result and Conclusion in NOTE.md, and the numbers, difference level, and reason in exp/INDEX.md. A dropped experiment keeps its record and says what was learned; knowing what failed saves time later. If the user rules out a whole direction, record it in DECISIONS.md with the reason, so it is not proposed again in this project.
+- Fill in Result and Conclusion in NOTE.md, and the numbers, difference level, and reason in exp/INDEX.md. Record the A/B medians everywhere; the bench of the landed code only confirms them. A dropped experiment keeps its record and says what was learned; knowing what failed saves time later. If the user rules out a whole direction, record it in DECISIONS.md with the reason, so it is not proposed again in this project.
 - Update STATUS.md and BACKLOG.md, and commit lx-work: one commit per experiment, kept or dropped.
 - If the done-when condition in PROJECT.md is met, tell the user and suggest wrapping up.
 
