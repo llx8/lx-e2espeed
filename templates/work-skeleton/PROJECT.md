@@ -14,6 +14,7 @@ Facts agreed with the user during onboarding. Change them only with the user, an
 
 ## Workload
 <Input shapes, batch sizes, request pattern, warm or cold start, data-dependent cases.>
+- Main scenario: <the scenario headline numbers and exp/INDEX.md use>
 - Maximum input: <largest input the service accepts, or none>
 
 ## Metric

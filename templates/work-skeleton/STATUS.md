@@ -13,10 +13,13 @@ Phases: onboarding, optimizing, wrap-up, done.
 <Metric and target, and the done-when condition, from PROJECT.md.>
 
 ## Numbers
-| | <metric> median | vs baseline | peak memory | from |
+One row per scenario in PROJECT.md, main scenario first.
+
+| Scenario | baseline <metric> median | best | vs baseline | best from |
 |---|---|---|---|---|
-| baseline | | | | onboarding |
-| best | | | | <experiment> |
+| <main scenario> | | | | baseline |
+
+Peak memory: baseline <value>, best <value>
 
 Noise floor: <from PROJECT.md>
 

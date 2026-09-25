@@ -45,7 +45,7 @@ Read `rules/benchmarking.md` first.
 - Check that the profilers run (`nsys --version`, `ncu --version`, then one `ncu --set full` run). Both ship in the CUDA toolkit's bin/, which may not be on PATH, and profiling permissions can change after a container restart; record the working commands in PROJECT.md.
 - If CUDA looks unavailable, check whether the command ran in a sandbox before concluding the GPU or driver is missing, and say which it was.
 - Write `lx-work/tools/check-env/`: one command that lists every gap at once (modules, CUDA in the framework, compiler, TensorRT headers matching the runtime, engines loadable, current GPU). Run it first whenever the environment misbehaves.
-- `lx-work/adapter/`: load the model, build inputs, run once end to end. Bench and verify both use it, so every tool measures the same path. Tools take the project directory as an argument, defaulting to the project root, so they also run on a copy from `exp.sh export`.
+- `lx-work/adapter/`: load the model, build inputs, run once end to end. Bench and verify both use it, so every tool measures the same path. It can load a candidate from `exp/NNN-name/candidate/` in place of the project's class, so baseline and candidates run through the same tools. Tools take the project directory as an argument, defaulting to the project root, so they also run on a copy from `exp.sh export`.
 - `lx-work/tools/`: create only what this project needs, usually bench/ and verify/. List each tool in tools/INDEX.md.
 
 ## 5. Baseline

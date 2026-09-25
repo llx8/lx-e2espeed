@@ -27,6 +27,7 @@ Measure it at baseline and again whenever the machine, driver, or environment ch
 ## Time breakdown
 Give the bench a stage mode that times each step of the MAP.md path, synchronizing at every step boundary.
 Use it only for the breakdown: the extra syncs change the end-to-end number, so headline numbers always come from the normal mode.
+Wrap callables with timers rather than editing project code. Steps written inline cannot be wrapped: split that remainder with a function-level CPU profiler (cProfile, py-spy) and say which numbers came from which.
 
 ## GPU state
 - Record SM clock, temperature, and power during the run: `nvidia-smi --query-gpu=clocks.sm,temperature.gpu,power.draw --format=csv -lms 500`.
@@ -44,6 +45,6 @@ Use it only for the breakdown: the extra syncs change the end-to-end number, so 
 - Rebuilding an engine changes its outputs even from the same ONNX, so agree on a tolerance before any engine change, and compare every mixed-precision engine end to end: they can be silently wrong.
 
 ## Output
-- Print a summary of at most 10 lines: metric, median, P90, P99, spread, peak memory, change against baseline and best, difference level, verify pass or fail. Tool output costs context, so full data goes to files.
+- Print a summary of at most 10 lines, with library logs sent to a file at the file-descriptor level (native libraries such as TensorRT write past `sys.stdout`; flush Python's buffers before switching): metric, median, P90, P99, spread, peak memory, change against baseline and best, difference level, verify pass or fail. Tool output costs context, so full data goes to files.
 - Write full results as JSON, including the environment (GPU, driver, CUDA, framework and TensorRT versions, SM clock) and the project commit.
 - A value that was not measured is "not recorded", never zero or an estimate.
