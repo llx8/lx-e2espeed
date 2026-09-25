@@ -17,6 +17,7 @@ WORK_REQUIRED = ("STATUS.md", "PROJECT.md", "DECISIONS.md", "FEEDBACK.md", "BACK
 IGNORED_DIRS = {"__pycache__"}
 SHAPE = re.compile(r"^(## .+|- [A-Z][A-Za-z ]*:)")  # template lines a doc must keep
 COMMIT = re.compile(r"[0-9a-f]{7,40}")
+PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]*>")  # an unfilled template field such as <metric>
 
 
 def field(text, name):
@@ -89,6 +90,8 @@ def check_experiments(root, rep, status_updated, note_template):
             rep.error(where, f"NOTE.md says {state} but exp/INDEX.md says '{rows[folder.name]}'")
         if state == "running":
             running.append(folder.name)
+        elif state in ENDED_FILES and PLACEHOLDER.search(note):
+            rep.error(where + "NOTE.md", f"{state}, but '{PLACEHOLDER.search(note).group(0)}' is still a template placeholder")
         for name in ENDED_FILES.get(state, ()):
             if not (folder / name).is_file():
                 rep.error(where, f"{state}, so it needs {name}")

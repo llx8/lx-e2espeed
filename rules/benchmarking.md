@@ -13,6 +13,7 @@ Why: most speedups that later vanish were measurement errors, not real changes.
 - Time the end-to-end path within the measurement boundary written in PROJECT.md (for example decoded input to final output, excluding file I/O) with a wall clock. Use CUDA events for GPU regions, and synchronize only at measurement boundaries, never inside production stages.
 - Report median, P90, and P99, and the spread across repeats. Record peak allocated and reserved memory (reset the peak statistics before each run), plus memory outside PyTorch, such as TensorRT, from `nvidia-smi` per process.
 - Give baseline and candidate the same inputs, shapes, and process conditions, and alternate them in one session; `exp.sh export best` or `baseline` gives a runnable copy of the other side. Run them in separate processes when they share library names or global state; never measure one in a process that inherited the other's allocator or cache state.
+- Give the bench an A/B mode that alternates baseline and candidate for at least three rounds, one fresh process per scenario and side, and reports each difference against the noise floor. Scenarios sharing a process shift each other: state left by one (allocator, caches) moved the next by several milliseconds in one project. Confirm any unexpected gain with the scenario order changed.
 - Keep one bench run short enough to repeat often; agree on a time budget at onboarding. A run that takes over twice its usual time is killed and counted as a failure.
 
 ## Inputs
@@ -21,7 +22,7 @@ Why: most speedups that later vanish were measurement errors, not real changes.
 - Record which environment produced each number. Numbers from different environments or hardware are not comparable and must not be subtracted.
 
 ## Noise floor
-Run the bench at least three times, each in a fresh process, on the same unchanged code. The spread of the medians is the noise floor.
+Run the bench at least three times, each in a fresh process, on the same unchanged code, with the same process layout the A/B mode uses. The spread of the medians is the noise floor.
 Measure it at baseline and again whenever the machine, driver, or environment changes. A difference smaller than the noise floor is not a gain.
 
 ## Time breakdown
