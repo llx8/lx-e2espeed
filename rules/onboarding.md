@@ -25,7 +25,8 @@ Copy this checklist into your reply and tick it off as you go:
 - Write code issues and optimization leads you notice into BACKLOG.md, each with its evidence.
 
 ## 3. Discuss with the user
-Explain your understanding first, then settle each item. Record the answers in PROJECT.md and each decision with its reason in DECISIONS.md.
+Explain your understanding first, then settle each item. Ask in plain language, one or two items at a time, each with your proposed answer, so the user can reply with a yes or one correction; never hand over the whole list at once. Items the code already answers need only a confirmation.
+Record the answers in PROJECT.md and each decision with its reason in DECISIONS.md. They belong to this project only; lx-e2espeed never records them.
 - End-to-end scope: where timing starts and stops.
 - Workload: input shapes, batch sizes, request pattern, warm or cold start.
 - Metric: latency by default; throughput or memory only if the user says so.
