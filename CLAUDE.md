@@ -78,7 +78,7 @@ On demand:
 - `rules/writing.md`: writing or editing any doc in either lx repo.
 - `playbook/INDEX.md`: looking for ideas after profiling; open only the matching cards.
 - Skills: ours in `skills/`, NVIDIA's in `vendor/skills/`, installed by `setup.sh global`; `rules/experiment.md` says which to load. These rules win over a skill; skill output goes to `lx-work/local/`.
-- `templates/`: lx-work docs, experiment notes, cards.
+- `templates/`: lx-work docs, experiment notes, cards, and the generic tools with their adapter (`templates/tools/`).
 - lx-work: `PROJECT.md`, `DECISIONS.md`, `FEEDBACK.md`, `BACKLOG.md`, `MAP.md`, `tools/INDEX.md`, `exp/INDEX.md`.
 
 ## Maintaining this repo

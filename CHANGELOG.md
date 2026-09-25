@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-25: pilot, second project
+- Generic bench, verify, and cpu-profile in templates/tools/, with an adapter skeleton that holds everything project-specific. The second project would otherwise rewrite the first project's tools and could repeat its measurement mistakes.
+
 ## 2026-09-24: pilot on a real project
 A pilot re-optimized an image CNN service from its unoptimized commit (6 experiments, 5 kept, -58% at L0) to find what the rules got wrong.
 - Onboarding asks a few plain questions with proposed answers; the MAP.md template has a place for the stage flow; the adapter loads candidates too.
