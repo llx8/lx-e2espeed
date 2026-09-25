@@ -6,6 +6,11 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-25: review after the pilots
+- The bench A/A mode is built in (`--ab baseline`); a pilot had to write its own control candidate. The noise floor is per scenario (`adapter.NOISE_MS` is a dict), as the rules already required; an A/B without one exits. Under three rounds the A/B gives no verdict: an identical-code A/B with one round read as a 38 ms loss. Rounds swap which side runs first.
+- The checker flags template placeholders left in STATUS.md or PROJECT.md after onboarding; a pilot finished with one in STATUS.md. "Rules version" became "Rules version at onboarding": later pulls do not update it.
+- The verify and cpu-profile templates flush stderr before redirecting it, as the bench does.
+
 ## 2026-09-25: pilot, second project
 - Generic bench, verify, and cpu-profile in templates/tools/, with an adapter skeleton that holds everything project-specific. The second project would otherwise rewrite the first project's tools and could repeat its measurement mistakes.
 - Onboarding checks that weights are real files, not Git LFS pointers. The verify template refuses to overwrite frozen references: once optimized code lands, freezing again would hide every change.

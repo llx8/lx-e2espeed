@@ -3,7 +3,7 @@
 Usage: python main.py [--project DIR] [--candidate FILE] [--scenario NAME ...] [--warmup N] [--repeat N]
                       [--stages] [--out FILE]
        python main.py --ab FILE [--rounds N] [--noise MS]   # alternate baseline and candidate processes
-       python main.py --ab SAME_AS_BASELINE --noise 0      # an A/A run measures the noise floor
+       python main.py --ab baseline [--rounds N]           # A/A: the project's code on both sides
 Everything project-specific lives in lx-work/adapter/pipeline.py (see its contract).
 Prints at most 10 summary lines; the full result goes to --out as JSON.
 """
@@ -130,26 +130,41 @@ def run_scenario(pipeline, args, warmup, repeat, totals):
 
 def ab(candidate, rounds, noise, scenarios, passthrough):
     """Alternate fresh baseline and candidate processes, one process per scenario: state a scenario leaves
-    behind (allocator, caches) can shift the next scenario by several milliseconds."""
+    behind (allocator, caches) can shift the next scenario by several milliseconds. With candidate "baseline"
+    both sides run the project's code (A/A), and each scenario's largest difference within a round is its
+    noise floor."""
+    aa = candidate == "baseline"
+    floors = {name: noise if noise is not None else adapter.NOISE_MS.get(name) for name in scenarios}
+    if not aa and None in floors.values():
+        sys.exit(f"error: no noise floor for {[n for n, f in floors.items() if f is None]}; "
+                 "measure it with --ab baseline and set adapter.NOISE_MS")
     medians = {name: {"baseline": [], "candidate": []} for name in scenarios}
     clocks = set()
     for i in range(rounds):
         for name in scenarios:
-            for side in ("baseline", "candidate"):
+            for side in ("baseline", "candidate")[::1 if i % 2 == 0 else -1]:  # ABBA cancels any effect of running second
                 out = LX_WORK / "local" / "logs" / f"ab-{side}-{name}-{i}.json"
                 cmd = [sys.executable, __file__, "--out", str(out), "--scenario", name, *passthrough]
-                if side == "candidate":
+                if side == "candidate" and not aa:
                     cmd += ["--candidate", candidate]
                 subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
                 r = json.loads(out.read_text())
                 medians[name][side].append(r["scenarios"][name]["median"])
                 clocks |= {r["env"]["sm_clock_mhz"], r["env"]["sm_clock_after_mhz"]}
-    print(f"A/B over {rounds} rounds, one fresh process per scenario and side; SM clocks {sorted(clocks)} MHz; "
-          f"noise floor {noise} ms")
+    print(f"{'A/A' if aa else 'A/B'} over {rounds} rounds, one fresh process per scenario and side; "
+          f"SM clocks {sorted(clocks)} MHz")
     for name, m in medians.items():
         b, c = statistics.median(m["baseline"]), statistics.median(m["candidate"])
-        verdict = "gain" if b - c > noise else ("loss" if c - b > noise else "inside noise")
-        print(f"{name:14s} baseline {b:8.2f} candidate {c:8.2f} ms  {c - b:+7.2f} ({100 * (c - b) / b:+.1f}%)  {verdict}")
+        if aa:
+            floor = max(abs(x - y) for x, y in zip(m["baseline"], m["candidate"]))
+            print(f"{name:14s} sides {b:8.2f} {c:8.2f} ms  noise floor {floor:.2f} ms ({100 * floor / b:.1f}%)")
+            continue
+        n = floors[name]
+        verdict = "gain" if b - c > n else ("loss" if c - b > n else "inside noise")
+        if rounds < 3:
+            verdict = "no verdict under 3 rounds"
+        print(f"{name:14s} baseline {b:8.2f} candidate {c:8.2f} ms  {c - b:+7.2f} ({100 * (c - b) / b:+.1f}%)  "
+              f"{verdict} (noise {n:g})")
 
 
 def main():
@@ -161,9 +176,9 @@ def main():
     ap.add_argument("--repeat", type=int, default=adapter.REPEAT)
     ap.add_argument("--stages", action="store_true", help="add a per-stage breakdown (stage mode)")
     ap.add_argument("--out", default=str(LX_WORK / "local" / "logs" / "bench-last.json"))
-    ap.add_argument("--ab", metavar="CANDIDATE")
+    ap.add_argument("--ab", metavar="CANDIDATE", help='a candidate file, or "baseline" for an A/A run')
     ap.add_argument("--rounds", type=int, default=3)
-    ap.add_argument("--noise", type=float, default=adapter.NOISE_MS, help="noise floor in ms, from PROJECT.md")
+    ap.add_argument("--noise", type=float, help="one noise floor in ms for every scenario, instead of adapter.NOISE_MS")
     a = ap.parse_args()
     if a.ab:
         passthrough = ["--warmup", str(a.warmup), "--repeat", str(a.repeat)]

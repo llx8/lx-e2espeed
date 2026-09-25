@@ -59,6 +59,11 @@ def check_work_layout(root, rep, rules_root):
     project = (root / "PROJECT.md").read_text(encoding="utf-8") if (root / "PROJECT.md").is_file() else ""
     if phase in PHASES - {"onboarding"} and not COMMIT.fullmatch(field(project, "Baseline commit") or ""):
         rep.error("PROJECT.md", "'- Baseline commit:' must be a commit hash once onboarding is over")
+    if phase in PHASES - {"onboarding"}:
+        for rel, text in (("STATUS.md", status), ("PROJECT.md", project)):
+            if PLACEHOLDER.search(text):
+                rep.error(rel, f"'{PLACEHOLDER.search(text).group(0)}' is still a template placeholder after onboarding; "
+                               "fill it, or write 'none' or 'not recorded'")
     check_experiments(root, rep, updated if DATE.fullmatch(updated) else None,
                       rules_root / "templates" / "exp-note.md")
     check_tools(root, rep)

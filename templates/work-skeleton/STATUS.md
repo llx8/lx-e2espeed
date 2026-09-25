@@ -21,7 +21,7 @@ One row per scenario in PROJECT.md, main scenario first.
 
 Peak memory: baseline <value>, best <value>
 
-Noise floor: <from PROJECT.md>
+Noise floor: <ms per scenario, from the latest A/A run>
 
 ## In progress
 - <What is under way, with its experiment number.>

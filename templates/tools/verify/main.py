@@ -29,6 +29,7 @@ def quiet():
     log = LX_WORK / "local" / "logs" / "verify.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     sys.stdout.flush()
+    sys.stderr.flush()
     saved = os.dup(1), os.dup(2)
     with open(log, "a") as f:
         os.dup2(f.fileno(), 1)
@@ -37,6 +38,7 @@ def quiet():
             yield
         finally:
             sys.stdout.flush()
+            sys.stderr.flush()
             os.dup2(saved[0], 1)
             os.dup2(saved[1], 2)
             os.close(saved[0])
