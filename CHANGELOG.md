@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-25: no line limit for scripts
+- The user lifted the script limit: some scripts are long by nature, and splitting exp.sh would spread shared functions across files. Docs keep their limits, which keep them maintainable.
+
 ## 2026-09-25: night runs
 - Night run (rules/night.md, lx-work/night/): the user asked for a mode that tries every method with evidence overnight, each in its own directory, reproducible and applicable to the project at any time, for the user to pick from in the morning. It is the one autonomous mode and lands nothing: `exp.sh try` starts a trial on the current tree, `park` saves its verified patch and reverses it, and `adopt` turns a parked trial into an experiment, applying the patch when the base has not moved. `export night/NNN` rebuilds a trial from its own base. The SessionStart hook names any experiment or trial left running.
 - `exp.sh delivered`: after the user committed the kept patches, `exp.sh` refused every command, because HEAD was no longer the baseline. It now checks that HEAD is exactly the baseline plus the kept patches, makes HEAD the new baseline, and marks those experiments delivered. `export NNN` rebuilds from the item's own Base line, so a delivery does not change it.

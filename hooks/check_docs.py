@@ -2,7 +2,7 @@
 """Check an lx-e2espeed or lx-work repo against rules/writing.md and rules/naming.md.
 
 Usage: check_docs.py <repo-root>
-Prints one line per problem. Exits 1 on any error; warnings alone exit 0.
+Prints one line per problem. Exits 1 on any error.
 The repo kind comes from its layout: CLAUDE.md + rules/ (lx-e2espeed) or STATUS.md (lx-work).
 """
 import os
@@ -24,19 +24,16 @@ CJK = re.compile(r"[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uff00-\
 KEBAB = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 SNAKE = re.compile(r"[a-z0-9]+(_[a-z0-9]+)*")
 FIXED = re.compile(r"[A-Z]+")
-DOC_MAX, SCRIPT_MAX = 150, 300
+DOC_MAX = 150
 TOC_OVER = 100  # docs longer than this need a "## Contents" list near the top
 
 
 class Report:
     def __init__(self):
-        self.errors, self.warnings = [], []
+        self.errors = []
 
     def error(self, where, msg):
         self.errors.append(f"{where}: {msg}")
-
-    def warn(self, where, msg):
-        self.warnings.append(f"{where}: {msg}")
 
 
 def walk(root):
@@ -127,8 +124,6 @@ def check_file(path, rel, kind, rep, prose, texts):
     except (UnicodeDecodeError, OSError):
         return  # binary data
     texts.append((rel, lines))
-    if suffix in (".py", ".sh") and len(lines) > SCRIPT_MAX and not rel.startswith("skills/"):
-        rep.warn(rel, f"{len(lines)} lines; scripts should stay under {SCRIPT_MAX}")
     if kind == "work" and is_project_code(rel):
         return  # the project's own code keeps its language: patches and candidate copies
     for n, line in enumerate(lines, 1):
@@ -183,8 +178,6 @@ def main(argv):
         check_private(texts, private_terms(root), rep)
     else:
         check_work_layout(root, rep, Path(__file__).resolve().parent.parent)
-    for msg in rep.warnings:
-        print(f"warning: {msg}")
     for msg in rep.errors:
         print(f"error: {msg}")
     if rep.errors:

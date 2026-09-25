@@ -28,9 +28,9 @@ Every doc starts with frontmatter (checked):
 | playbook card | 40 |
 | any other doc | 150 |
 | exp/ARCHIVE.md | none: grep it, never read it whole |
-| script | 300 (warning only) |
 
 At the limit, split or cut. Raise a limit only with the user, here and in the checker together.
+Scripts have no line limit: a script is split by purpose, never by length.
 
 ## Structure
 - References go one level deep: CLAUDE.md names every rules and hardware doc directly (checked). A doc may point to another, but must not depend on a chain of them.
