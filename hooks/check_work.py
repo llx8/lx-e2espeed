@@ -41,6 +41,10 @@ def check_shape(doc, template, rel, rep):
 
 def check_work_layout(root, rep, rules_root):
     skeleton = rules_root / "templates" / "work-skeleton"
+    ignore = (root / ".gitignore").read_text(encoding="utf-8").split() if (root / ".gitignore").is_file() else []
+    for entry in ("local/", "__pycache__/"):
+        if entry not in ignore:
+            rep.error(".gitignore", f"must ignore {entry}; untrack anything already committed with `git rm -r --cached`")
     for rel in WORK_REQUIRED:
         if not (root / rel).is_file():
             rep.error(rel, "missing; copy it from lx-e2espeed/templates/work-skeleton/")
