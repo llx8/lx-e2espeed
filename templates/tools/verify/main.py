@@ -86,10 +86,14 @@ def main():
     ap.add_argument("--candidate")
     ap.add_argument("--freeze", action="store_true")
     ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--force", action="store_true", help="overwrite frozen references (a user decision)")
     a = ap.parse_args()
     project = adapter.project_root(a.project)
     if a.freeze and a.candidate:
         sys.exit("error: references come from the project's own code; drop --candidate")
+    if a.freeze and any(REF_DIR.glob("*.npz")) and not a.force:
+        # After landing, "the project's own code" may already be optimized; freezing it would hide every change.
+        sys.exit("error: references are frozen at baseline; overwriting them needs the user (--force, recorded in DECISIONS.md)")
     with quiet():
         pipeline = adapter.load_pipeline(project, a.candidate)
     if a.freeze:

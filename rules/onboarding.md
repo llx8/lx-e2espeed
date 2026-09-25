@@ -21,7 +21,7 @@ Copy this checklist into your reply and tick it off as you go:
 - Trace the end-to-end path: input → preprocessing → host-to-device copy → model → device-to-host copy → postprocessing. Follow that path and skip unrelated code; a large repo does not need a full read.
 - Record the path in MAP.md as `path:function` pointers, with an ASCII flow of the stages for a multi-stage pipeline.
 - Note for each stage its device, dtype, layout, and shape, and every device or representation change between stages; note normal and maximum shapes, batch policy, and ROI or tile behavior. Label likely bottlenecks as hypotheses until measured.
-- Find how the project runs: its Python environment (for example a conda env), the entry command, and where the weights live. Call the interpreter by its absolute path; `conda run` and a polluted PATH can pick another Python.
+- Find how the project runs: its Python environment (for example a conda env), the entry command, and where the weights live. A weight file of a few hundred bytes is a Git LFS pointer: fetch the real files (`git lfs pull`) before measuring. Call the interpreter by its absolute path; `conda run` and a polluted PATH can pick another Python.
 - Write code issues and optimization leads you notice into BACKLOG.md, each with its evidence.
 
 ## 3. Discuss with the user

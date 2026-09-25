@@ -8,6 +8,7 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 
 ## 2026-09-25: pilot, second project
 - Generic bench, verify, and cpu-profile in templates/tools/, with an adapter skeleton that holds everything project-specific. The second project would otherwise rewrite the first project's tools and could repeat its measurement mistakes.
+- Onboarding checks that weights are real files, not Git LFS pointers. The verify template refuses to overwrite frozen references: once optimized code lands, freezing again would hide every change.
 
 ## 2026-09-24: pilot on a real project
 A pilot re-optimized an image CNN service from its unoptimized commit (6 experiments, 5 kept, -58% at L0) to find what the rules got wrong.

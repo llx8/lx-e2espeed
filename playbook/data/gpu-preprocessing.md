@@ -25,3 +25,4 @@ Triton kernels need a compiler at first run and a cold cache costs about 90 s. B
 ## Evidence
 - 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, full-resolution 4480x6720 input: one RoI 110.6 -> 19.5 ms end to end, L0 (byte-identical in 9 scenarios).
 - 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: preprocessing 134 -> 19 ms with GPU (Kornia) preprocessing, within the model's accepted difference.
+- 2026-09, pilot rerun of the same model: only the full-resolution normalize and uint8 conversion moved to the GPU, same float32 operations: -24 ms (-2.6%), L0.
