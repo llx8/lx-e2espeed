@@ -2,7 +2,7 @@
 
 Copy from lx-e2espeed/templates/tools/adapter/ at onboarding and fill in every TODO. Bench, verify, and
 cpu-profile import only this module, so they measure the same path and run candidates the same way.
-A candidate is a Python file in lx-work/exp/NNN-name/candidate/ that defines `Pipeline`.
+A candidate is a Python file in the candidate/ directory of an experiment or night trial that defines `Pipeline`.
 """
 import importlib.util
 import sys
