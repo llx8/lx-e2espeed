@@ -6,6 +6,14 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-24: pilot on a real project
+A pilot re-optimized an image CNN service from its unoptimized commit (6 experiments, 5 kept, -58% at L0) to find what the rules got wrong.
+- Onboarding asks a few plain questions with proposed answers; the MAP.md template has a place for the stage flow; the adapter loads candidates too.
+- Benchmarking: inline steps split with a function-level profiler; native logs redirected at the file-descriptor level; an A/B mode with one fresh process per scenario, since scenarios sharing a process shifted each other by several ms and produced a fake gain; noise floor per scenario from A/A runs, re-measured after large gains; targeted tests for branches the scenarios never reach; A/B medians are the recorded numbers.
+- Templates: per-scenario numbers with a main scenario, no `<metric>` placeholders, lx-work ignores Python caches (8 .pyc files had been committed).
+- Checker: project code in change.patch and candidate/ keeps its language (exp.sh keep produced a patch the English check rejected); finished notes cannot keep placeholders; template-shape errors also cover fields added by newer rules.
+- Wrap-up commits kept patches from a temporary index; the rules repo refuses rule changes without a CHANGELOG entry, because the pilot's own rule fixes went unlogged.
+
 ## 2026-09-24: the user's GPU inference skill and two past projects
 - Split the user's GPU inference optimization skill (its commit db32202) into eight skills in skills/: profiling,
   dataflow, memory, CNN TensorRT, torch.compile, diffusion, MPS hang, and delivery. Translated
@@ -71,27 +79,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
   correction would cost a full read and the file would grow for the whole project.
 - One rule in writing.md now bounds every growing file: the experiment index archives,
   FEEDBACK.md clears resolved entries, DECISIONS.md drops superseded entries near its limit.
-
-## 2026-09-24: workflow upgrade
-- Experiments follow find → propose → plan → change: the user reviews the proposal and, for
-  larger changes, a written plan in NOTE.md. Review is worth most before code exists
-  (HumanLayer, research-plan-implement; Claude Code best practices, explore-plan-code).
-- Baseline adds a noise floor (repeated runs on unchanged code) and a time breakdown per
-  end-to-end step. Gains inside the noise do not count; the breakdown bounds what a change can
-  win (Amdahl's law) and points to where to look (Brendan Gregg, anti-methodologies).
-- exp/INDEX.md became a results table; keep decisions weigh complexity against gain
-  (Karpathy, autoresearch). Long command output goes to lx-work/local/logs/.
-- Onboarding also settles done-when, target hardware, the Python environment, and profiler
-  commands. What to do when the company code moves is covered in experiment.md.
-- New lx-work/FEEDBACK.md captures the user's corrections when they happen, so the rules
-  review at wrap-up works from records instead of memory.
-- The SessionStart hook names the rules doc for the current phase and re-injects the
-  handoff after compaction. The checker now requires NOTE.md and INDEX.md to agree, kept
-  experiments to carry change.patch, run.sh, and result.json, and STATUS.md to be no older
-  than the newest experiment. PROJECT.md records the rules version a project started with.
-- CLAUDE.md now holds the full lx-work layout and which step builds each part. It was spread
-  over several rules, so no single place described it.
-- Renamed templates/lx-work to templates/work-skeleton: the old name read like the real lx-work.
-- Sync through a local main copy: every project clones from it, and changes move back by
-  pulling into it (wrap-up step 5). Version control stays on this machine with no hosting;
-  pulling is used because git refuses pushes into a repo with a checked-out branch.

@@ -11,10 +11,10 @@ read_when: profiling shows the symptom below
 Simple statistics on a large mask take milliseconds: `np.sum(mask == 255)` builds a full boolean array, and `mask.astype(np.uint8)` copies an array that is already uint8.
 
 ## Technique
-Use a primitive that does not materialize a temporary (`cv2.countNonZero` when the mask is 0/255), and `astype(..., copy=False)`. Profile per instance: such calls often run once per object.
+Use a primitive that does not materialize a temporary (`cv2.countNonZero` when the mask is 0/255), and `astype(..., copy=False)`. Do not copy full-size masks that are only read, and slice the channel you use before thresholding. Profile per instance: such calls often run once per object.
 
 ## Effect
-One count 12.7 -> 0.94 ms; one avoided copy 7.7 ms. Together about 18% of an end-to-end request in one case.
+One count 12.7 -> 0.94 ms; one avoided copy 7.7 ms; three avoided full-size copies about 50 ms. From 7% to 48% of a request.
 
 ## Side effects
 None when the value domain is confirmed (0/255 masks).
@@ -24,3 +24,4 @@ None when the value domain is confirmed (0/255 masks).
 
 ## Evidence
 - 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 masks, per instance: count 12.7 -> 0.94 ms, uint8 copy of 28.7 MiB 7.7 ms -> 0.
+- 2026-09, pilot rerun of the same project at a 2048 input: counts -1.9 ms (-7.4%); a fallback path's three copies of a 4480x6720x3 mask removed, -49 ms (-48%); L0.

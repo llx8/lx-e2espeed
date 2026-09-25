@@ -15,6 +15,7 @@ Track the steps with this checklist in your reply:
 - Run the handoff checks of the `gpu-inference-delivery` skill that the Deployment section of PROJECT.md calls for.
 - The kept changes sit uncommitted in the project's working tree. Show the user the diff and the final numbers, and offer a fresh-context review (for example `/code-review`).
 - The user commits and pushes under the company's rules. Each kept patch can become its own commit, with the change and its measured gain in the message, in the project's commit style.
+- When the user asks you to make those commits, apply each change.patch in number order to a temporary index (`GIT_INDEX_FILE=<tmp> git apply --cached`) and commit from it, so the working tree is never touched; afterwards `git status` is clean.
 
 ## 2. Close the record
 - List known risks and ideas not tried under "Next" in STATUS.md, so a session that reopens the project starts from them.

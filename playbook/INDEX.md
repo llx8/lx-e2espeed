@@ -13,7 +13,9 @@ Loading, decoding, tokenization, CPU-side preprocessing.
 - [gpu-preprocessing](data/gpu-preprocessing.md): CPU preprocessing dominates → 5-7x, L0 | ✓2 ✗0
 - [exact-resize-on-gpu](data/exact-resize-on-gpu.md): CPU mask resize → 5x, L0 | ✓1 ✗0
 - [gpu-jpeg-decode](data/gpu-jpeg-decode.md): JPEG decode dominates → -8 to -16 ms | ✓1 ✗0
-- [numpy-temporaries](data/numpy-temporaries.md): full-array temporaries → up to -12 ms | ✓1 ✗0
+- [numpy-temporaries](data/numpy-temporaries.md): full-array temporaries, copies → up to -50 ms | ✓1 ✗0
+- [mask-cleanup-integer](data/mask-cleanup-integer.md): float thresholds, per-label loops → cleanup 3x, L0 | ✓1 ✗0
+- [pack-model-input](data/pack-model-input.md): input built by cvtColor/transpose/concat → -35%, L0 | ✓1 ✗0
 
 ## host
 Python overhead, kernel launch overhead, unnecessary synchronization, CUDA Graphs.
@@ -23,12 +25,12 @@ Python overhead, kernel launch overhead, unnecessary synchronization, CUDA Graph
 ## transfer
 Host-device copies, pinned memory, asynchronous copies, overlap.
 - [roi-only-upload](transfer/roi-only-upload.md): whole image uploaded → -4 ms, L0 | ✓1 ✗0
-- [pinned-staging](transfer/pinned-staging.md): pageable uploads → 2.8x copy; ask first | ✓1 ✗1
+- [pinned-staging](transfer/pinned-staging.md): pageable uploads → 2.8x copy; ask first | ✓1 ✗2
 - [batched-copy-back](transfer/batched-copy-back.md): per-RoI sync → -0.5 ms, L0 | ✓1 ✗0
 
 ## compute
 Operator fusion, torch.compile, kernel selection, custom kernels.
-- [fp16-trt-engine](compute/fp16-trt-engine.md): FP32 engine dominates → 2.2x, L2 | ✓1 ✗0
+- [fp16-trt-engine](compute/fp16-trt-engine.md): FP32 engine dominates → 2.2x, L2; FP32 edges eat it | ✓1 ✗1
 - [tensorrt-groupnorm-plugin](compute/tensorrt-groupnorm-plugin.md): Myelin norm kernels, MPS hang → fixed, up to 1.8x | ✓1 ✗0
 - [quantized-attention-plugin](compute/quantized-attention-plugin.md): long D=16 attention on sm_120 → 2.9x, max 5 levels | ✓1 ✗0
 - [torch-compile](compute/torch-compile.md): eager stages, no mature backend → ~1% | ✓0 ✗1

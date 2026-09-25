@@ -3,4 +3,13 @@
 # It also catches edits made outside Claude Code's Edit and Write tools.
 set -e
 checker="$(cd "$(dirname "$0")/.." && pwd)/check_docs.py"
+top="$(git rev-parse --show-toplevel)"
+if [ -d "$top/rules" ]; then  # the rules repo: every change to how the work is done gets a reason
+  staged="$(git diff --cached --name-only)"
+  if printf '%s\n' "$staged" | grep -qE '^(rules|templates|hooks|skills|vendor)/|^(CLAUDE\.md|exp\.sh|setup\.sh)$' \
+     && ! printf '%s\n' "$staged" | grep -qx 'CHANGELOG.md'; then
+    echo "error: rules, templates, hooks, skills, or scripts changed without an entry in CHANGELOG.md" >&2
+    exit 1
+  fi
+fi
 exec python3 "$checker" "$(git rev-parse --show-toplevel)"
