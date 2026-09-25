@@ -113,6 +113,11 @@ def check_name(path, rel, kind, rep):
         rep.error(rel, "file name breaks rules/naming.md")
 
 
+def is_project_code(rel):
+    parts = rel.split("/")
+    return parts[0] == "exp" and len(parts) > 2 and parts[2] in ("change.patch", "candidate")
+
+
 def check_file(path, rel, kind, rep, prose, texts):
     suffix = path.suffix
     try:
@@ -124,6 +129,8 @@ def check_file(path, rel, kind, rep, prose, texts):
     texts.append((rel, lines))
     if suffix in (".py", ".sh") and len(lines) > SCRIPT_MAX and not rel.startswith("skills/"):
         rep.warn(rel, f"{len(lines)} lines; scripts should stay under {SCRIPT_MAX}")
+    if kind == "work" and is_project_code(rel):
+        return  # the project's own code keeps its language: patches and candidate copies
     for n, line in enumerate(lines, 1):
         if CJK.search(line):
             rep.error(f"{rel}:{n}", "non-English text; the lx repos are English only, and non-English model data goes to lx-work/local/")

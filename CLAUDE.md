@@ -52,7 +52,7 @@ Each one guards against a mistake that is costly or hard to undo.
 
 ## Defaults
 - Metric: latency, unless PROJECT.md says otherwise. Accuracy tolerance, dependencies, and done-when are agreed per project.
-- Readers: every file in both lx repos is written for an AI, in English, scripts and comments included. Text the model needs in another language (inputs, reference outputs) stays in `lx-work/local/` or in the project's own files. Anything for people goes in your reply.
+- Readers: every file in both lx repos is written for an AI, in English, scripts and comments included. Text the model needs in another language (inputs, reference outputs) stays in `lx-work/local/` or in the project's own files; project code in `change.patch` and candidate copies keeps its language. Anything for people goes in your reply.
 - Send long command output (profiling, builds, long runs) to `lx-work/local/logs/` and read only the summary; raw output floods the context.
 - When the user corrects how you work, record it in `lx-work/FEEDBACK.md` right away: grep for a similar line and raise its count, otherwise append one line.
 - Change lx files with Edit or Write, or with shell commands that name the lx directory, so the checker hook runs.

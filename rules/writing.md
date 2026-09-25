@@ -43,7 +43,7 @@ At the limit, split or cut. Raise a limit only with the user, here and in the ch
 
 ## Style
 - Write for an AI reader: no person reads these files. Skip introductions, walkthroughs, and anything that does not change what the reader does.
-- English only, scripts and comments included (checked).
+- English only, scripts and comments included (checked). The project's own code in an experiment's change.patch and candidate/ keeps its language.
 - Give the reason next to any rule whose reason is not obvious. A reader that knows why applies it with better judgment.
 - Hard rules only where a mistake is costly or hard to undo; everything else is guidance.
 - Keep version-dependent facts out of rules, or mark them with the date they were checked.
