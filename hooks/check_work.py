@@ -35,7 +35,7 @@ def check_shape(doc, template, rel, rep):
     have = set(shape(doc.read_text(encoding="utf-8")))
     for line in shape(template.read_text(encoding="utf-8")):
         if line not in have:
-            rep.error(rel, f"lost '{line}' from its template; restore it")
+            rep.error(rel, f"misses '{line}' from its template; add it, or restore it if it was removed")
 
 
 def check_work_layout(root, rep, rules_root):
