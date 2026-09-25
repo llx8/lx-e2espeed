@@ -5,7 +5,7 @@ read_when: every session in a project that has lx-e2espeed/ (the SessionStart ho
 # lx-e2espeed
 
 Rules for making a trained model faster end to end, together with the user.
-This is a collaboration, not an autonomous loop: discuss before acting and let the user decide.
+This is a collaboration, not an autonomous loop: discuss before acting and let the user decide. The one exception is a night run the user starts (`rules/night.md`), where nothing lands.
 With this repo itself as the working directory, you are maintaining these rules: see "Maintaining this repo".
 
 ## Layout
@@ -29,6 +29,7 @@ Both lx directories are listed in the project's `.git/info/exclude`.
     ├── baseline/      onboarding: numbers, frozen reference outputs, environment snapshot
     ├── exp/           INDEX.md results table, plus NNN-name/ per experiment from exp.sh:
     │                  NOTE.md, candidate/, change.patch, run.sh, result.json
+    ├── night/         INDEX.md with the queue, plus NNN-name/ per night trial, laid out as in exp/
     └── local/         not in git: logs/, profiles/, output/, replay/, scratch/, large files
 
 ## Session start
@@ -48,7 +49,7 @@ Each one guards against a mistake that is costly or hard to undo.
 - Production code fails fast: never add a silent fallback to a slower path. Keep the reference path as an explicit offline configuration.
 - Nothing about the project leaves lx-work. Cards and rule changes are abstract and reviewed by the user before they reach the main copy.
 - Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repositories; do not modify a sibling repository unless the user says so.
-- In the project repo, do not commit, stash, reset, clean, or switch branches unless the user asks; commits use the user's own git identity with no co-author lines. Change its code only inside an experiment, and end each one with `exp.sh keep` or `exp.sh drop`, never by hand, so the tree always equals the baseline plus the kept patches.
+- In the project repo, do not commit, stash, reset, clean, or switch branches unless the user asks; commits use the user's own git identity with no co-author lines. Change its code only inside an experiment or night trial, and end each with `exp.sh keep`, `park` (night trials), or `drop`, never by hand, so between them the tree always equals the baseline plus the kept patches.
 
 ## Defaults
 - Metric: latency, unless PROJECT.md says otherwise. Accuracy tolerance, dependencies, and done-when are agreed per project.
@@ -60,6 +61,7 @@ Each one guards against a mistake that is costly or hard to undo.
 
 ## Working loop
 onboarding → baseline → repeat (profile → propose → user picks → plan → candidates → verify → bench → land or drop → one lx-work commit) → wrap-up.
+Night run: queue → repeat (try → candidates → verify → A/B → land and park, or drop → one lx-work commit) → morning report → user picks → `exp.sh adopt`.
 
 ## Doc map
 Read only what the current step needs. Each doc states its tier in its frontmatter.
@@ -71,6 +73,7 @@ Once, when entering the named phase:
 - `hardware/rtx-5090.md`: during onboarding; copy the facts that matter into PROJECT.md.
 - `rules/benchmarking.md`: before writing a bench or verify tool.
 - `rules/wrap-up.md`: when the user says the project or a milestone is done.
+- `rules/night.md`: when the user starts a night run, and the first session after one.
 
 On demand:
 - `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
@@ -79,7 +82,7 @@ On demand:
 - `playbook/INDEX.md`: looking for ideas after profiling; open only the matching cards.
 - Skills: ours in `skills/`, NVIDIA's in `vendor/skills/`, installed by `setup.sh global`; `rules/experiment.md` says which to load. These rules win over a skill; skill output goes to `lx-work/local/`.
 - `templates/`: lx-work docs, experiment notes, cards, and the generic tools with their adapter (`templates/tools/`).
-- lx-work: `PROJECT.md`, `DECISIONS.md`, `FEEDBACK.md`, `BACKLOG.md`, `MAP.md`, `tools/INDEX.md`, `exp/INDEX.md`.
+- lx-work: `PROJECT.md`, `DECISIONS.md`, `FEEDBACK.md`, `BACKLOG.md`, `MAP.md`, `tools/INDEX.md`, `exp/INDEX.md`, `night/INDEX.md`.
 
 ## Maintaining this repo
 - Follow `rules/writing.md`; `hooks/check_docs.py` enforces its checked items.

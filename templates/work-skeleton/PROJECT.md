@@ -50,7 +50,7 @@ Noise floor: <run-to-run spread measured at baseline>
 - Python environment: <name and absolute interpreter path>
 - Versions: <driver, CUDA, framework, TensorRT>
 - Profilers: <working nsys and ncu commands>
-- Rules version at onboarding: lx-e2espeed <commit>
+- Rules version at onboarding: lx-e2espeed <rules-version>
 - Baseline commit: <project commit measured at baseline; exp.sh replays every experiment from it>
 
 ## Commands

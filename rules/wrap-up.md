@@ -16,9 +16,10 @@ Track the steps with this checklist in your reply:
 - The kept changes sit uncommitted in the project's working tree. Show the user the diff and the final numbers, and offer a fresh-context review (for example `/code-review`).
 - The user commits and pushes under the company's rules. Each kept patch can become its own commit, with the change and its measured gain in the message, in the project's commit style.
 - When the user asks you to make those commits, apply each change.patch in number order to a temporary index (`GIT_INDEX_FILE=<tmp> git apply --cached`) and commit from it, so the working tree is never touched; afterwards `git status` is clean.
+- Once the kept patches are committed, run `exp.sh delivered`: it checks that HEAD is exactly the baseline plus the kept patches, makes HEAD the new baseline, and marks those experiments delivered, so work can go on after a milestone.
 
 ## 2. Close the record
-- List known risks and ideas not tried under "Next" in STATUS.md, so a session that reopens the project starts from them.
+- List known risks, ideas not tried, and parked night trials the user did not adopt under "Next" in STATUS.md, so a session that reopens the project starts from them.
 - Tell the user the outcome in your reply, with the facts the `gpu-inference-delivery` skill lists for a delivery, each kept change with its gain and difference level, and the risks. STATUS.md, exp/INDEX.md, and DECISIONS.md are the full record; write no separate report into lx-work.
 - State gains honestly: gains from different rows or dates do not add up, a comparison across dates is descriptive rather than a paired A/B, and a hardware or driver change is not a software gain.
 

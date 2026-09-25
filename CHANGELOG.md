@@ -6,6 +6,11 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-25: night runs
+- Night run (rules/night.md, lx-work/night/): the user asked for a mode that tries every method with evidence overnight, each in its own directory, reproducible and applicable to the project at any time, for the user to pick from in the morning. It is the one autonomous mode and lands nothing: `exp.sh try` starts a trial on the current tree, `park` saves its verified patch and reverses it, and `adopt` turns a parked trial into an experiment, applying the patch when the base has not moved. `export night/NNN` rebuilds a trial from its own base. The SessionStart hook names any experiment or trial left running.
+- `exp.sh delivered`: after the user committed the kept patches, `exp.sh` refused every command, because HEAD was no longer the baseline. It now checks that HEAD is exactly the baseline plus the kept patches, makes HEAD the new baseline, and marks those experiments delivered. `export NNN` rebuilds from the item's own Base line, so a delivery does not change it.
+- The skeleton PROJECT.md kept the `<rules-version>` token that setup.sh fills; the previous rename had broken it.
+
 ## 2026-09-25: review after the pilots
 - The bench A/A mode is built in (`--ab baseline`); a pilot had to write its own control candidate. The noise floor is per scenario (`adapter.NOISE_MS` is a dict), as the rules already required; an A/B without one exits. Under three rounds the A/B gives no verdict: an identical-code A/B with one round read as a 38 ms loss. Rounds swap which side runs first.
 - The checker flags template placeholders left in STATUS.md or PROJECT.md after onboarding; a pilot finished with one in STATUS.md. "Rules version" became "Rules version at onboarding": later pulls do not update it.
@@ -81,10 +86,3 @@ A pilot re-optimized an image CNN service from its unoptimized commit (6 experim
   wrap-up tells the user the outcome in the reply.
 - Every doc needs frontmatter, CHANGELOG.md included, and CHANGELOG.md is bounded like the rest.
   lx-work scripts are checked for English too.
-
-## 2026-09-24: bounded growth
-- FEEDBACK.md is written without reading it (grep, then raise a count or append), capped at
-  60 lines, and cleared of entries once they become rule changes. Without this, every
-  correction would cost a full read and the file would grow for the whole project.
-- One rule in writing.md now bounds every growing file: the experiment index archives,
-  FEEDBACK.md clears resolved entries, DECISIONS.md drops superseded entries near its limit.

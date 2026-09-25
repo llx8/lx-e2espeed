@@ -76,6 +76,10 @@ def session_start(data):
         match = PHASE.search(text)
         phase = match.group(1) if match else "unknown"
         print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
+        for note in sorted(work.glob("*/[0-9][0-9][0-9]-*/NOTE.md")):
+            if re.search(r"^- Status: running$", note.read_text(encoding="utf-8"), re.M):
+                print(f"{note.parent.relative_to(work)} is still running and its change is in the project tree: "
+                      "finish it (see its NOTE.md, and rules/night.md for a night trial) before anything else.")
     installed = STAMP.read_text(encoding="utf-8").strip() if STAMP.is_file() else ""
     if installed != install_stamp(root / RULES):
         print("The hooks and skills installed on this machine differ from this clone's. Update the clone "

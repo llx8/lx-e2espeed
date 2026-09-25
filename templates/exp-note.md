@@ -6,7 +6,7 @@ read_when: reproducing, reverting, or building on this experiment
 
 - Date: <YYYY-MM-DD>
 - Base: <baseline commit and the kept experiments this one builds on; filled by exp.sh>
-- Status: running | kept | dropped
+- Status: running | kept | delivered | dropped | parked | adopted
 
 ## Evidence
 <The profile result that points here, and this step's share of end-to-end time from MAP.md.>

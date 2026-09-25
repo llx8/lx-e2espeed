@@ -28,6 +28,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - Avoid the classic anti-methods: changing things at random, looking only where the tools make it easy, and benchmarking without a question to answer.
 
 ## 2. Propose
+- Parked night trials in `lx-work/night/INDEX.md` are proposals already measured; `rules/night.md` says how to adopt one.
 - Read the matching category in `playbook/INDEX.md`, then only the matching cards, and `lx-work/BACKLOG.md`. A card's "Does not apply" lists conditions from past projects: check whether they hold here, and do not skip a technique only because it failed elsewhere.
 - Give the user one to three options as a short table: change, evidence, expected gain (bounded by the step's share), expected difference level, risk, effort.
 - Default order, which evidence may change: measurement correctness; redundant work, CPU/GPU round trips, syncs, and repeated initialization; peak memory and large-input routing; mature backends such as TensorRT or an established diffusion backend; `torch.compile`, only after explicit approval; custom kernels, only for a measured hotspot with no adequate mature implementation.
@@ -58,6 +59,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 
 ## When the project changes underneath
 `exp.sh new` refuses when the project HEAD is not the baseline commit or the tree differs from the baseline plus the kept patches. Tell the user; do not repair it yourself.
+When the user committed exactly the kept patches, `exp.sh delivered` makes that commit the new baseline.
 Moving to newer company code is a re-baseline, only with the user's approval, recorded in DECISIONS.md: set the new Baseline commit in PROJECT.md, bring each kept patch forward until `exp.sh check` passes, then verify and bench again.
 
 ## Reproducing or reverting

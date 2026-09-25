@@ -61,7 +61,7 @@ def line_limit(rel, kind):
         return 40 if rel.startswith("playbook/") and rel != "playbook/INDEX.md" else DOC_MAX
     if rel in ("STATUS.md", "FEEDBACK.md"):
         return 60
-    return 50 if rel.startswith("exp/") and name == "NOTE.md" else DOC_MAX
+    return 50 if rel.split("/")[0] in ("exp", "night") and name == "NOTE.md" else DOC_MAX
 
 
 def split_frontmatter(lines):
@@ -92,8 +92,8 @@ def check_name(path, rel, kind, rep):
     if name.startswith("."):
         return
     if path.is_dir():
-        if kind == "work" and rel.startswith("exp/") and rel.count("/") == 1:
-            return  # experiment directories are checked in check_work_layout
+        if kind == "work" and rel.split("/")[0] in ("exp", "night") and rel.count("/") == 1:
+            return  # experiment and night trial directories are checked in check_work_layout
         if not (KEBAB.fullmatch(name) or SNAKE.fullmatch(name)):
             rep.error(rel + "/", "directory names are lowercase kebab-case (snake_case for Python packages)")
         return
@@ -115,7 +115,7 @@ def check_name(path, rel, kind, rep):
 
 def is_project_code(rel):
     parts = rel.split("/")
-    return parts[0] == "exp" and len(parts) > 2 and parts[2] in ("change.patch", "candidate")
+    return parts[0] in ("exp", "night") and len(parts) > 2 and parts[2] in ("change.patch", "candidate")
 
 
 def check_file(path, rel, kind, rep, prose, texts):

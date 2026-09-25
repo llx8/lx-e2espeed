@@ -24,7 +24,7 @@ Every doc starts with frontmatter (checked):
 | lx-e2espeed/CLAUDE.md and CHANGELOG.md | 100 |
 | lx-work/STATUS.md | 60 |
 | lx-work/FEEDBACK.md | 60 |
-| experiment NOTE.md | 50 |
+| experiment or night trial NOTE.md | 50 |
 | playbook card | 40 |
 | any other doc | 150 |
 | exp/ARCHIVE.md | none: grep it, never read it whole |
@@ -56,6 +56,8 @@ At the limit, split or cut. Raise a limit only with the user, here and in the ch
 - candidate: code in an experiment's candidate/ directory that runs beside the project code; landing applies the chosen variant to the project code.
 - difference, difference level (L0 to L3), operator accuracy, cold start: defined in `rules/benchmarking.md`.
 - experiment: one change with one hypothesis, recorded in exp/ with its change.patch.
+- night trial: an experiment of a night run, in night/. It never stays in the tree: it is parked (patch saved and reversed) or dropped, and the user may adopt a parked one into an experiment.
+- delivered: a kept experiment whose patch the user committed to the project; the baseline commit includes it.
 - kept patches: the change.patch files of kept experiments. Applied to the baseline commit in number order, they rebuild the project tree.
 - verify: compare outputs with the baseline reference outputs.
 - bench: measure the metric.
