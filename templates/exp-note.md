@@ -18,7 +18,7 @@ read_when: reproducing, reverting, or building on this experiment
 <Files and functions to change as path:function, contracts touched and their downstream impact, how verify covers the change, expected gain.>
 
 ## Result
-| | <metric> median | P90 | P99 | peak memory | vs baseline | vs best |
+| | median | P90 | P99 | peak memory | vs baseline | vs best |
 |---|---|---|---|---|---|---|
 | before | | | | | | |
 | <variant> | | | | | | |

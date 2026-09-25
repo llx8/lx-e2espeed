@@ -15,7 +15,7 @@ Phases: onboarding, optimizing, wrap-up, done.
 ## Numbers
 One row per scenario in PROJECT.md, main scenario first.
 
-| Scenario | baseline <metric> median | best | vs baseline | best from |
+| Scenario | baseline median | best | vs baseline | best from |
 |---|---|---|---|---|
 | <main scenario> | | | | baseline |
 
