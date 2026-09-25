@@ -22,8 +22,8 @@ Why: most speedups that later vanish were measurement errors, not real changes.
 - Record which environment produced each number. Numbers from different environments or hardware are not comparable and must not be subtracted.
 
 ## Noise floor
-Run the bench at least three times, each in a fresh process, on the same unchanged code, with the same process layout the A/B mode uses. The spread of the medians is the noise floor.
-Measure it at baseline and again whenever the machine, driver, or environment changes. A difference smaller than the noise floor is not a gain.
+Measure it as an A/A run of the A/B mode: the same code on both sides, the same process layout, at least three rounds. The largest difference per scenario is that scenario's noise floor.
+Measure it at baseline, again after gains that change latency by a large factor (noise shrinks with it), and whenever the machine, driver, or environment changes. A difference smaller than the noise floor is not a gain.
 
 ## Time breakdown
 Give the bench a stage mode that times each step of the MAP.md path, synchronizing at every step boundary.
