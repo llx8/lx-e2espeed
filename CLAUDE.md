@@ -87,4 +87,4 @@ On demand:
 ## Maintaining this repo
 - Follow `rules/writing.md`; `hooks/check_docs.py` enforces its checked items.
 - Log every change to rules, templates, or hooks in `CHANGELOG.md` with its reason.
-- During project work, change rules or cards only at wrap-up, after the user's review.
+- During project work, change rules or cards only at wrap-up, after the user's review. Push the main copy to its cloud `origin` only at the end of a project (wrap-up step 5) or when the user asks.

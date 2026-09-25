@@ -65,4 +65,4 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - time breakdown: each end-to-end step's share of the total time, recorded in MAP.md.
 - plan: the written change, verification, and expected gain in an experiment's NOTE.md, before any code changes.
 - card: one playbook entry describing one technique.
-- main copy: the lx-e2espeed repo on this machine that every project clone comes from; each clone's `origin`.
+- main copy: the lx-e2espeed repo on this machine that every project clone comes from; each clone's `origin`. Its own `origin` is the cloud repo, pushed only at the end of a project or when the user asks.

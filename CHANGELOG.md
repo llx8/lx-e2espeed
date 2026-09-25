@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-25: cloud repo
+- The main copy has a cloud `origin`. The user decided: during a project, updates sync only locally (clone and main copy); the main copy is pushed at the end of the project, in wrap-up step 5, or when the user asks. lx-work never goes there.
+
 ## 2026-09-25: no line limit for scripts
 - The user lifted the script limit: some scripts are long by nature, and splitting exp.sh would spread shared functions across files. Docs keep their limits, which keep them maintainable.
 
@@ -79,14 +82,3 @@ A pilot re-optimized an image CNN service from its unoptimized commit (6 experim
   delivered without git, and submodules. setup.sh also excludes Python caches.
 - A failed technique is recorded as the condition it failed under, not as a verdict: it did not
   fit one project, and the next may differ. Cards count successes and failures.
-
-## 2026-09-24: files for AI only
-- Every file in both lx repos is written for an AI; no person reads them. The user hears
-  results in the chat, so a human guide or report in the repos only costs upkeep.
-- README.md is gone. Machine setup moved into CLAUDE.md, project setup into onboarding step 1.
-  The SessionStart hook now also fires in a project that has lx-e2espeed/ but no lx-work/ yet,
-  so onboarding starts without a person following a guide.
-- No report file: STATUS.md, exp/INDEX.md, and DECISIONS.md already hold the record, and
-  wrap-up tells the user the outcome in the reply.
-- Every doc needs frontmatter, CHANGELOG.md included, and CHANGELOG.md is bounded like the rest.
-  lx-work scripts are checked for English too.
