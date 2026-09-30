@@ -24,4 +24,4 @@ A plugin library ships with the service and must match the TensorRT ABI.
 - Native GroupNorm variants with FP32 reductions, or a naive single-block fused kernel: slower or failed quality in one project.
 
 ## Evidence
-- 2026-09: several production engines had 4 to 14 barrier kernels each; after the plugin, 6 workers with MPS at concurrency 12 ran 8 stress rounds without a hang, latency unchanged, worst 0.055% of pixels off by more than one level.
+- ✓ 2026-09: several production engines had 4 to 14 barrier kernels each; after the plugin, 6 workers with MPS at concurrency 12 ran 8 stress rounds without a hang, latency unchanged, worst 0.055% of pixels off by more than one level.

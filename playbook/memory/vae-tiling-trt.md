@@ -24,4 +24,4 @@ Dynamic profiles raise the context memory (3.55 GiB for one decoder); share one 
 - Blaming an OOM on the new engine before checking other GPU processes: one OOM came from an unrelated 16.56 GiB process.
 
 ## Evidence
-- 2026-09: production diffusion pipeline, RTX 5090: corrected decoder on the same latent mean 0.078/255, max 3/255.
+- ✓ 2026-09: production diffusion pipeline, RTX 5090: corrected decoder on the same latent mean 0.078/255, max 3/255.

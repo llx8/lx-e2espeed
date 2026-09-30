@@ -24,4 +24,4 @@ None beyond the plugin.
 - MPS thread-percentage partitioning: makes it worse unless engines are built under the same partition.
 
 ## Evidence
-- 2026-09: 6 workers with MPS: hang reproduced, root cause found in GPU coredumps, fixed with a GroupNorm plugin, 8 stress rounds clean.
+- ✓ 2026-09: 6 workers with MPS: hang reproduced, root cause found in GPU coredumps, fixed with a GroupNorm plugin, 8 stress rounds clean.

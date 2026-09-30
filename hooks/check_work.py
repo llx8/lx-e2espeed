@@ -1,7 +1,8 @@
 """Layout checks for an lx-work repo, called by check_docs.py.
 
 Keeps the handoff honest: STATUS.md, NOTE.md, and the indexes must agree with the directories,
-and docs made from templates must keep the template's headings and fields.
+docs made from templates must keep the template's headings and fields, and MAP.md must still
+describe the project code it points to.
 """
 import re
 
@@ -21,6 +22,11 @@ IGNORED_DIRS = {"__pycache__"}
 SHAPE = re.compile(r"^(## .+|- [A-Z][A-Za-z ]*:)")  # template lines a doc must keep
 COMMIT = re.compile(r"[0-9a-f]{7,40}")
 PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]*>")  # an unfilled template field such as <metric>
+LANDED = {"kept", "delivered"}  # statuses whose patch is in the project tree
+POINTER = re.compile(r"`([\w./-]+\.[A-Za-z]\w*):([A-Za-z_][\w.]*)(?:\(\))?`")  # `path:function`
+PATH_TOKEN = re.compile(r"`([\w./-]+\.[A-Za-z]\w*)")  # a backticked file path, with or without :function
+MEASURED_ON = re.compile(r"baseline ([0-9a-f]{7,40})(?: \+ exp up to (\d{3}))?")
+PATCH_FILE = re.compile(r"^diff --git a/(\S+) b/(\S+)$", re.M)
 
 
 def field(text, name):
@@ -69,9 +75,10 @@ def check_work_layout(root, rep, rules_root):
                                "fill it, or write 'none' or 'not recorded'")
     if (root / "night").is_dir():
         check_shape(root / "night" / "INDEX.md", skeleton / "night" / "INDEX.md", "night/INDEX.md", rep)
-    check_experiments(root, rep, updated if DATE.fullmatch(updated) else None,
-                      rules_root / "templates" / "exp-note.md")
+    running = check_experiments(root, rep, updated if DATE.fullmatch(updated) else None,
+                                rules_root / "templates" / "exp-note.md")
     check_tools(root, rep)
+    check_map(root, rep, phase, field(project, "Baseline commit") or "", running)
 
 
 def check_experiments(root, rep, status_updated, note_template):
@@ -81,6 +88,7 @@ def check_experiments(root, rep, status_updated, note_template):
             running += check_items(root, kind, rep, status_updated, note_template)
     if len(running) > 1:
         rep.error("exp/", f"only one experiment or night trial runs at a time: {', '.join(running)}")
+    return running
 
 
 def check_items(root, kind, rep, status_updated, note_template):
@@ -134,3 +142,59 @@ def check_tools(root, rep):
             rep.error(f"tools/{folder.name}/", "missing entry file main.*")
         if f"{folder.name}/" not in listed:
             rep.error(f"tools/{folder.name}/", "not listed in tools/INDEX.md")
+
+
+def defines(code, name, python):
+    """Whether the source defines name; outside Python, whether it mentions it at all."""
+    if name == "__main__":
+        return "__main__" in code
+    word = re.escape(name)
+    if python:
+        return re.search(rf"^\s*(?:async\s+def|def|class)\s+{word}\b|^\s*{word}\s*(?::|=(?!=))", code, re.M)
+    return re.search(rf"\b{word}\b", code)
+
+
+def check_map(root, rep, phase, baseline, running):
+    """MAP.md describes best. Its pointers must resolve, and its time breakdown must be measured after
+    every kept change to a file it points to: shares are relative, so a stale breakdown sends the next
+    experiment to a step already solved. The project tree changes only through exp.sh, so the kept
+    patches say exactly which files changed since the '- Measured on:' line."""
+    path = root / "MAP.md"
+    if not path.is_file():
+        return
+    text, project = path.read_text(encoding="utf-8"), root.parent
+    if not running:  # a running item's half-done change may move code the map points to
+        for rel, name in sorted(set(POINTER.findall(text))):
+            source = project / rel
+            if not source.is_file():
+                rep.error("MAP.md", f"`{rel}:{name}` does not resolve: {rel} is not in the project")
+                continue
+            code = source.read_text(encoding="utf-8", errors="replace")
+            missing = [part for part in name.split(".") if not defines(code, part, source.suffix == ".py")]
+            if missing:
+                rep.error("MAP.md", f"`{rel}:{name}` does not resolve: {rel} does not define {missing[0]}")
+    if phase == "onboarding":
+        return
+    stamp = MEASURED_ON.fullmatch(field(text, "Measured on") or "")
+    if not stamp:
+        rep.error("MAP.md", "'- Measured on:' must read 'baseline <commit>' or 'baseline <commit> + exp up to <NNN>' "
+                            "once onboarding is over")
+        return
+    commit, up_to = stamp.group(1), int(stamp.group(2) or 0)
+    if baseline and not (commit.startswith(baseline) or baseline.startswith(commit)):
+        rep.error("MAP.md", f"time breakdown measured on baseline {commit}, but PROJECT.md's baseline is {baseline}; "
+                            "re-run the stage timing on best and update MAP.md")
+    mapped = {rel for rel in PATH_TOKEN.findall(text) if (project / rel).is_file()}
+    for note in sorted((root / "exp").glob("[0-9][0-9][0-9]-*/NOTE.md")):
+        folder = note.parent
+        state = field(note.read_text(encoding="utf-8"), "Status")
+        patch = folder / "change.patch"
+        if state not in LANDED or int(folder.name[:3]) <= up_to or not patch.is_file():
+            continue
+        changed = {p for pair in PATCH_FILE.findall(patch.read_text(encoding="utf-8", errors="replace"))
+                   for p in pair} & mapped
+        if changed:
+            rep.error("MAP.md", f"time breakdown predates exp/{folder.name} ({state}), which changed "
+                                f"{', '.join(sorted(changed))}; re-run the stage timing on best, then update the "
+                                "breakdown, the hot spots, and '- Measured on:', whose 'exp up to' is the highest "
+                                "kept or delivered experiment in the timed tree")

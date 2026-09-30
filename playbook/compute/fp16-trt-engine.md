@@ -25,5 +25,5 @@ Differences grow after JPEG encoding (up to 10 to 15 levels in the response). Ke
 - FP16 inside with FP32 input and output kept by casts at the graph edges: no gain on the main scenario (-2%, inside noise), still L2. The gain needs FP16 input and output through the pipeline.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3: 2k one RoI 5.86 -> 3.45 ms, service request 29.12 -> 26.74 ms, peak memory -136 MiB, L2.
-- 2026-09, pilot rerun of the same project with FP32 edges: -0.5 ms main scenario, -1.6 to -3.4 ms elsewhere, L2 (sobel max 3 levels on 6.3% of pixels); dropped.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3: 2k one RoI 5.86 -> 3.45 ms, service request 29.12 -> 26.74 ms, peak memory -136 MiB, L2.
+- ✗ 2026-09, pilot rerun of the same project with FP32 edges: -0.5 ms main scenario, -1.6 to -3.4 ms elsewhere, L2 (sobel max 3 levels on 6.3% of pixels); dropped.

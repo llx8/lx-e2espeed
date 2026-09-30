@@ -54,13 +54,14 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - Both warn about files the project ignores (build outputs, caches) that the experiment wrote. No patch holds them: run.sh must rebuild them, and after a drop remove the ones the experiment made, so they cannot change the next bench.
 - A gain inside the noise floor is not a gain. A small gain that adds a lot of complexity may not be worth keeping; deleting code at equal speed is a win.
 - Fill in Result and Conclusion in NOTE.md, and the numbers, difference level, and reason in exp/INDEX.md. Record the A/B medians everywhere; the bench of the landed code only confirms them. A dropped experiment keeps its record and says what was learned; knowing what failed saves time later. If the user rules out a whole direction, record it in DECISIONS.md with the reason, so it is not proposed again in this project.
+- If the kept patch changed a file MAP.md points to, re-run the stage timing on best and update the breakdown, the hot spots, and `- Measured on:` in MAP.md. The checker holds the lx-work commit until then: shares are relative, so every landed gain moves all of them.
 - Update STATUS.md and BACKLOG.md, and commit lx-work: one commit per experiment, kept or dropped.
 - If the done-when condition in PROJECT.md is met, tell the user and suggest wrapping up.
 
 ## When the project changes underneath
 `exp.sh new` refuses when the project HEAD is not the baseline commit or the tree differs from the baseline plus the kept patches. Tell the user; do not repair it yourself.
 When the user committed exactly the kept patches, `exp.sh delivered` makes that commit the new baseline.
-Moving to newer company code is a re-baseline, only with the user's approval, recorded in DECISIONS.md: set the new Baseline commit in PROJECT.md, bring each kept patch forward until `exp.sh check` passes, then verify and bench again.
+Moving to newer company code is a re-baseline, only with the user's approval, recorded in DECISIONS.md: set the new Baseline commit in PROJECT.md, bring each kept patch forward until `exp.sh check` passes, then verify, bench, and re-run the stage timing for MAP.md again.
 
 ## Reproducing or reverting
 - `exp.sh export NNN` writes the code of any experiment (baseline, the kept patches before it, and its own patch) to lx-work/local/replay/; run its run.sh against that copy. `exp.sh export best` and `baseline` do the same for A/B benches.

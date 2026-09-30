@@ -23,4 +23,4 @@ None; the engine input stays FP32.
 - Writing into the runner's existing pinned host buffer instead of a fresh pageable array: slower in one project (see `transfer/pinned-staging.md`).
 
 ## Evidence
-- 2026-09, pilot rerun on image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2048 input: two_instances 50.4 -> 32.7 ms (-35.2%), one_instance -40.8%, L0.
+- ✓ 2026-09, pilot rerun on image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2048 input: two_instances 50.4 -> 32.7 ms (-35.2%), one_instance -40.8%, L0.

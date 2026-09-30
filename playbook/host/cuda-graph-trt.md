@@ -23,4 +23,4 @@ Static buffers and shapes; one graph per shape. The outputs live in the graph's 
 - Engines with dynamic shapes per call.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3: FP32 engine one RoI -0.15 ms (2k) to -0.42 ms (two RoIs), L0; with an FP16 engine -0.13 to -0.31 ms.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3: FP32 engine one RoI -0.15 ms (2k) to -0.42 ms (two RoIs), L0; with an FP16 engine -0.13 to -0.31 ms.

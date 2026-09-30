@@ -23,4 +23,4 @@ None.
 - Projects without custom native code.
 
 ## Evidence
-- 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: an experiment build overwrote two production plugin binaries once; headers from a newer TensorRT built cleanly with zero warnings but the plugin was not found at engine load.
+- ✓ 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: an experiment build overwrote two production plugin binaries once; headers from a newer TensorRT built cleanly with zero warnings but the plugin was not found at engine load.

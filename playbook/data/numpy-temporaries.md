@@ -23,5 +23,5 @@ None when the value domain is confirmed (0/255 masks).
 - Paths already moved to the GPU.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 masks, per instance: count 12.7 -> 0.94 ms, uint8 copy of 28.7 MiB 7.7 ms -> 0.
-- 2026-09, pilot rerun of the same project at a 2048 input: counts -1.9 ms (-7.4%); a fallback path's three copies of a 4480x6720x3 mask removed, -49 ms (-48%); L0.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 masks, per instance: count 12.7 -> 0.94 ms, uint8 copy of 28.7 MiB 7.7 ms -> 0.
+- ✓ 2026-09, pilot rerun of the same project at a 2048 input: counts -1.9 ms (-7.4%); a fallback path's three copies of a 4480x6720x3 mask removed, -49 ms (-48%); L0.

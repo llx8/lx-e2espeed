@@ -52,7 +52,7 @@ Read `rules/benchmarking.md` first.
 - The project tree must be clean: `git status --porcelain` prints nothing. Ask the user to commit or stash their own changes; untracked environment files such as weights go into `.git/info/exclude` with their okay. `exp.sh` sees only this repo's own files: if a change must touch a git submodule, ask the user first.
 - Record `git rev-parse --short HEAD` as Baseline commit in PROJECT.md. `exp.sh` builds every experiment on it.
 - Run verify and bench on the unmodified project code.
-- Measure the noise floor and the time breakdown as `rules/benchmarking.md` describes. Record the noise floor in PROJECT.md and the breakdown in MAP.md.
+- Measure the noise floor and the time breakdown as `rules/benchmarking.md` describes. Record the noise floor in PROJECT.md and the breakdown in MAP.md, with its `- Measured on:` line.
 - Save numbers, reference outputs, and an environment snapshot (`pip freeze` or `conda list --export`) in lx-work/baseline/. Reference outputs over 50 MB go to lx-work/local/; commit their checksum and the command that regenerates them.
 - Fill the baseline row in STATUS.md, set the phase to `optimizing`, and commit lx-work.
 - From here on the reference outputs are frozen.

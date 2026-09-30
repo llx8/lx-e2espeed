@@ -24,4 +24,4 @@ First compilation took about 100 s; cold start, cache identity, and maintenance.
 - When cold start matters or shapes vary per request.
 
 ## Evidence
-- 2026-08: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: 2316 -> 2285 ms, gain swallowed by variance in another stage; not adopted.
+- ✗ 2026-08: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: 2316 -> 2285 ms, gain swallowed by variance in another stage; not adopted.

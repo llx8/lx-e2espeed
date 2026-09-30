@@ -26,4 +26,4 @@ Output differs: max 4 to 5 levels, PSNR 47 to 57 dB; the user must accept it. La
 - Switching the PyTorch SDPA backend instead: at D=16 on sm_120, efficient attention was 2.9x and cuDNN 1.9x slower than flash at every shape (pilot rerun). Measure this cheap option first; it settled quickly.
 
 ## Evidence
-- 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: warm 1.006 -> 0.278 s, cold start 1.364 -> 0.653 s, peak memory 1199 -> 773 MiB.
+- ✓ 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: warm 1.006 -> 0.278 s, cold start 1.364 -> 0.653 s, peak memory 1199 -> 773 MiB.

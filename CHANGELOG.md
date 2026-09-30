@@ -6,6 +6,11 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-09-30: drift checks from a docs review
+- MAP.md drift: a pilot's time breakdown still showed the shares from before five delivered experiments, so it pointed at steps already solved. MAP.md now carries `- Measured on: baseline <commit> + exp up to NNN`; the checker holds the lx-work commit once a kept or delivered experiment past NNN changed a file MAP.md names, and checks that every `path:function` pointer still resolves. `exp.sh delivered` renames the stamp's commit, since the tree does not change.
+- `hooks/test_checks.py` breaks one thing per check in clean fixtures and expects the checker to fail; a check that never fires looks like one that passes. The pre-commit hook runs it.
+- Playbook counts: `✓N ✗M` in playbook/INDEX.md was maintained by hand and counted inconsistently (some cards counted pilot reruns, some did not). Evidence lines now start with ✓ or ✗ and the checker recounts them; gpu-preprocessing became ✓3 and numpy-temporaries ✓2.
+
 ## 2026-09-25: cloud repo
 - The main copy has a cloud `origin`. The user decided: during a project, updates sync only locally (clone and main copy); the main copy is pushed at the end of the project, in wrap-up step 5, or when the user asks. lx-work never goes there.
 

@@ -9,6 +9,9 @@ MAP_REF = re.compile(r"`((?:rules|hardware|playbook|templates|hooks|vendor|skill
 SKILL_NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 ROUTED_DOC = re.compile(r"lx-e2espeed/(rules/[a-z0-9-]+\.md)")
 CARD_LINK = re.compile(r"\]\(([a-z0-9-]+/[a-z0-9-]+\.md)\)")
+# An index line's counts restate the card's Evidence, so they are recomputed from it on every check.
+CARD_COUNTS = re.compile(r"\]\(([a-z0-9-]+/[a-z0-9-]+\.md)\).*\| ✓(\d+) ✗(\d+)\s*$", re.M)
+VERDICT = re.compile(r"- ([✓✗]) ")  # an Evidence line: worked or failed
 CATEGORY = re.compile(r"^## ([a-z0-9-]+)\s*$", re.M)
 LIST_MARKER = re.compile(r"^\s*(?:[-*>]|\d+\.)\s+")
 CARD_SECTIONS = ("## Symptom", "## Technique", "## Effect", "## Side effects",
@@ -80,6 +83,7 @@ def check_playbook(root, rep):
         return
     index = index_path.read_text(encoding="utf-8")
     categories, links = set(CATEGORY.findall(index)), set(CARD_LINK.findall(index))
+    counts = {link: (int(ok), int(bad)) for link, ok, bad in CARD_COUNTS.findall(index)}
     first_seen = {}
     for folder in sorted(p for p in (root / "playbook").iterdir() if p.is_dir()):
         if folder.name not in categories:
@@ -94,9 +98,28 @@ def check_playbook(root, rep):
             for section in CARD_SECTIONS:
                 if section not in text:
                     rep.error(f"playbook/{rel}", f"missing section '{section}'")
+            check_evidence(rel, text, counts, rep)
     for link in sorted(links):
         if not (root / "playbook" / link).is_file():
             rep.error("playbook/INDEX.md", f"{link} does not exist")
+
+
+def check_evidence(rel, text, counts, rep):
+    """Each Evidence line starts with ✓ or ✗, and the card's index line counts exactly those."""
+    lines = text.split("\n## Evidence\n", 1)[-1].split("\n## ", 1)[0].splitlines() if "\n## Evidence\n" in text else []
+    verdicts = []
+    for line in (l for l in lines if l.startswith("- ")):
+        match = VERDICT.match(line)
+        if not match:
+            rep.error(f"playbook/{rel}", f"Evidence line must start with '- ✓ ' (worked) or '- ✗ ' (failed): \"{line[:50]}\"")
+        else:
+            verdicts.append(match.group(1))
+    have = (verdicts.count("✓"), verdicts.count("✗"))
+    if rel not in counts:
+        rep.error("playbook/INDEX.md", f"the line for {rel} must end with '| ✓{have[0]} ✗{have[1]}'")
+    elif counts[rel] != have:
+        rep.error("playbook/INDEX.md", f"{rel} says ✓{counts[rel][0]} ✗{counts[rel][1]}, "
+                                       f"but its Evidence has ✓{have[0]} ✗{have[1]}")
 
 
 def check_duplicates(prose, rep):

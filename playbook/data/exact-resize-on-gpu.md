@@ -24,4 +24,4 @@ A replica is maintenance: it must be re-verified when the CPU library version ch
 - Test inputs whose mask already has the image size: the CPU resize returns early there, so they never exercise the path production uses.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, mask at half the image size: resize stage 11.6 -> 2.3 ms; stage with upload 28.8 -> 15.4 ms; L0 across 19 scenarios and a real request.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, mask at half the image size: resize stage 11.6 -> 2.3 ms; stage with upload 28.8 -> 15.4 ms; L0 across 19 scenarios and a real request.

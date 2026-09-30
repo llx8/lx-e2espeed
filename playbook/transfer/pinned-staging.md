@@ -25,6 +25,6 @@ Pinned host memory per worker; some teams rule it out for production stability.
 - Building the input directly in a runner's existing pinned buffer: slower than a fresh pageable array in one project; the NumPy writes into pinned pages cost more than the faster copy saved.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 masks: stage 1 8.86 -> 1.89 ms, L0; not delivered because the project ruled out pinned memory.
-- 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: output buffer reuse, pinned memory, and a separate H2D stream gave no stable gain.
-- 2026-09, pilot rerun of the first project: packing a 20 MiB input into the existing pinned buffer, -32.7%, against -35.2% for a pageable array (A/B, L0).
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 masks: stage 1 8.86 -> 1.89 ms, L0; not delivered because the project ruled out pinned memory.
+- ✗ 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: output buffer reuse, pinned memory, and a separate H2D stream gave no stable gain.
+- ✗ 2026-09, pilot rerun of the first project: packing a 20 MiB input into the existing pinned buffer, -32.7%, against -35.2% for a pageable array (A/B, L0).

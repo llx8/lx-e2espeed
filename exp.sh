@@ -199,7 +199,7 @@ cmd_keep() {
   must_match "$want" "$now" "the saved patch does not reproduce the tree; nothing was changed"
   set_status "$dir" kept
   warn_ignored
-  echo "Kept $(basename "$dir"). Replay check passed. Fill in the results, then commit lx-work."
+  echo "Kept $(basename "$dir"). Replay check passed. Fill in the results, re-run the stage timing for MAP.md if the patch changed a file it points to, then commit lx-work."
 }
 
 cmd_drop() {
@@ -331,6 +331,8 @@ cmd_delivered() {
   must_match "$want" "$(snapshot)" "the working tree differs from HEAD $head"
   for d in "${kept[@]}"; do set_status "$d" delivered; done
   sed -i "s/^- Baseline commit: .*\$/- Baseline commit: $head/" "$work/PROJECT.md"
+  # The tree did not change, so the time breakdown stays as current as it was; only its baseline is renamed.
+  sed -i "s/^- Measured on: baseline [0-9a-f]*/- Measured on: baseline $head/" "$work/MAP.md"
   echo "Marked ${#kept[@]} kept experiment(s) delivered; HEAD $head is the new baseline. Record it in DECISIONS.md, then commit lx-work."
 }
 

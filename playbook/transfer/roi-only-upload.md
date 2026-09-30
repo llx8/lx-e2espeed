@@ -23,4 +23,4 @@ Coordinates must be offset consistently; test regions at the image border.
 - Regions covering most of the image.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 input, one RoI: about 4.2 ms saved per new image, L0.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 4480x6720 input, one RoI: about 4.2 ms saved per new image, L0.

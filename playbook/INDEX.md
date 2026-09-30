@@ -6,14 +6,14 @@ read_when: looking for optimization ideas after profiling
 
 Find the category where profiling shows the time goes, then open only the matching cards.
 Each `## name` heading below is a category and the name of its directory.
-Entry format, a few words each: `- [<technique>](<category>/<technique>.md): <symptom> → <effect> | ✓N ✗M` (projects where it worked / failed)
+Entry format, a few words each: `- [<technique>](<category>/<technique>.md): <symptom> → <effect> | ✓N ✗M`, where N and M count the card's Evidence lines marked ✓ (worked) and ✗ (failed); the checker recounts them.
 
 ## data
 Loading, decoding, tokenization, CPU-side preprocessing.
-- [gpu-preprocessing](data/gpu-preprocessing.md): CPU preprocessing dominates → 5-7x, L0 | ✓2 ✗0
+- [gpu-preprocessing](data/gpu-preprocessing.md): CPU preprocessing dominates → 5-7x, L0 | ✓3 ✗0
 - [exact-resize-on-gpu](data/exact-resize-on-gpu.md): CPU mask resize → 5x, L0 | ✓1 ✗0
 - [gpu-jpeg-decode](data/gpu-jpeg-decode.md): JPEG decode dominates → -8 to -16 ms | ✓1 ✗0
-- [numpy-temporaries](data/numpy-temporaries.md): full-array temporaries, copies → up to -50 ms | ✓1 ✗0
+- [numpy-temporaries](data/numpy-temporaries.md): full-array temporaries, copies → up to -50 ms | ✓2 ✗0
 - [mask-cleanup-integer](data/mask-cleanup-integer.md): float thresholds, per-label loops → cleanup 3x, L0 | ✓1 ✗0
 - [pack-model-input](data/pack-model-input.md): input built by cvtColor/transpose/concat → -35%, L0 | ✓1 ✗0
 

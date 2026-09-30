@@ -23,4 +23,4 @@ None; output identical.
 - A lookup table over the label image (`keep[labels]`): a full int32 gather that cost about 7 ms, more than zeroing a few boxes.
 
 ## Evidence
-- 2026-09, pilot rerun on image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2048 input: integer thresholds -5.5 ms (-9.7%), then box-local zeroing -6.7 ms (-20.6%), L0 in all scenarios and in a branch test with small components.
+- ✓ 2026-09, pilot rerun on image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2048 input: integer thresholds -5.5 ms (-9.7%), then box-local zeroing -6.7 ms (-20.6%), L0 in all scenarios and in a branch test with small components.

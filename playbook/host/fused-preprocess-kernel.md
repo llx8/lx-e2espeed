@@ -23,4 +23,4 @@ One more custom kernel to maintain.
 - Chains that are not launch-bound.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2k input, one RoI: 6.11 -> 5.84 ms, service request 29.23 -> 28.98 ms, L0, lower peak memory.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2k input, one RoI: 6.11 -> 5.84 ms, service request 29.23 -> 28.98 ms, L0, lower peak memory.

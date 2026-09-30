@@ -23,4 +23,4 @@ The algorithm's input type widens (a CUDA tensor besides a NumPy array); the ser
 - Paths that need the decoded image on the CPU anyway.
 
 ## Evidence
-- 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2k service requests: end to end 8.3 to 16.0 ms faster, responses byte-identical.
+- ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, 2k service requests: end to end 8.3 to 16.0 ms faster, responses byte-identical.
