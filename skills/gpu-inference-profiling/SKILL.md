@@ -20,8 +20,7 @@ Establish evidence before proposing an optimization.
 
 ## Tools
 
-- Run `scripts/benchmark.py` as a reusable benchmark scaffold.
-- Run `scripts/e2e_profiler.py` for multi-stage pipelines.
+- Take every number from the project's bench in `lx-work/tools/bench/` (A/B mode, `--stages` for the time breakdown), which follows the lx rules.
 - Adapt `scripts/gpu_profiler.py` for PyTorch profiler traces.
 - Route OOM and allocation-lifetime analysis to `gpu-inference-memory`, which owns `scripts/cuda_memory_snapshot.py` and the maximum-image E2E protocol.
 

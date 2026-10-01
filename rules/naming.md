@@ -1,6 +1,6 @@
 ---
 tier: on-demand
-read_when: creating files, directories, branches, or commit messages
+read_when: creating files, directories, branches, or commit messages, or deciding where something goes in lx-work
 ---
 # Naming
 
@@ -17,6 +17,25 @@ Names are ASCII only. `hooks/check_docs.py` enforces the file and directory rule
 | Dates | ISO 8601 | `2026-09-23` |
 
 Never use `new`, `final`, `old`, `v2`, `tmp2`, `test1`, or similar. Git keeps versions; names describe content.
+
+## lx-work layout
+`setup.sh project` creates the docs, the indexes, knowledge/, and local/ from `templates/work-skeleton/`; an lx-work made before a skeleton change copies the parts it lacks from there. The rest is built where noted.
+
+    lx-work/
+    ├── STATUS.md      handoff: phase, numbers, in progress, next, waiting for the user
+    ├── PROJECT.md     agreed facts: scope, workload, metric, accuracy, done-when, environment
+    ├── DECISIONS.md   every decision with its date and reason
+    ├── FEEDBACK.md    each correction the user made to how the work is done
+    ├── BACKLOG.md     leads and known issues, each with evidence and where it went
+    ├── MAP.md         end-to-end path as path:function pointers, with each step's share of time
+    ├── knowledge/     what reading and the user taught: callers, contract, deployment; INDEX.md lists the files
+    ├── adapter/       onboarding: load the model, build inputs, run once end to end
+    ├── tools/         one directory per tool with entry file main.*; tools/INDEX.md lists them
+    ├── baseline/      onboarding: numbers, frozen reference outputs, environment snapshot
+    ├── exp/           INDEX.md results table, plus NNN-name/ per experiment from exp.sh:
+    │                  NOTE.md, candidate/, change.patch, run.sh, result.json
+    ├── night/         INDEX.md with the queue, plus NNN-name/ per night trial, laid out as in exp/
+    └── local/         not in git: logs/, profiles/, output/, replay/, scratch/, large files
 
 ## Commit messages
 - lx-work, one commit per experiment, kept or dropped: `exp-003: cuda graph for decode (kept, latency -18%)`, `exp-004: pinned host memory (dropped, inside noise)`. Night trials: `night-004: cuda graph for decode (parked, -18%)`. Other commits: `baseline: ...`, `tools: ...`, `docs: ...`.

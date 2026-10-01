@@ -11,10 +11,9 @@ Why: most speedups that later vanish were measurement errors, not real changes.
 - Report separately: process start and model loading, engine build or compilation, the first call, warmup, and the steady state. Cold start is its own number, never mixed into latency.
 - Warm up until timings stabilize. Early iterations include compilation, autotuning, allocation, and clock ramp-up.
 - Time the end-to-end path within the measurement boundary written in PROJECT.md (for example decoded input to final output, excluding file I/O) with a wall clock. Use CUDA events for GPU regions, and synchronize only at measurement boundaries, never inside production stages.
-- Report median, P90, and P99, and the spread across repeats. Record peak allocated and reserved memory (reset the peak statistics before each run), plus memory outside PyTorch, such as TensorRT, from `nvidia-smi` per process.
-- Give baseline and candidate the same inputs, shapes, and process conditions, and alternate them in one session; `exp.sh export best` or `baseline` gives a runnable copy of the other side. Run them in separate processes when they share library names or global state; never measure one in a process that inherited the other's allocator or cache state.
-- Give the bench an A/B mode that alternates baseline and candidate for at least three rounds, swapping which runs first each round, one fresh process per scenario and side, and reports each difference against the noise floor. Scenarios sharing a process shift each other: state left by one (allocator, caches) moved the next by several milliseconds in one project. Confirm any unexpected gain with the scenario order changed.
-- Keep one bench run short enough to repeat often; agree on a time budget at onboarding. A run that takes over twice its usual time is killed and counted as a failure.
+- Report median, P90, and P99, and the spread across repeats. P99 needs at least 100 samples; with fewer, report the maximum instead. Record peak allocated and reserved memory (reset the peak statistics before each run), plus memory outside PyTorch, such as TensorRT, from `nvidia-smi` per process.
+- Give the bench an A/B mode that alternates the project tree (best) and the candidate in one session, with the same inputs, shapes, and process conditions: at least three rounds, swapping which side runs first each round, one fresh process per scenario and side, each difference reported against the noise floor. Separate processes, because code sharing library names or global state cannot share one, and scenarios sharing a process shift each other: allocator and cache state left by one moved the next by several milliseconds in one project. To compare against another tree, pass `--project` with a copy from `exp.sh export baseline` or `NNN`. Confirm any unexpected gain with the scenario order changed.
+- Keep one bench run short enough to repeat often; agree on a time budget at onboarding (PROJECT.md, Metric), which WARMUP and REPEAT in the adapter fit. A run that takes over twice its usual time is killed and counted as a failure.
 
 ## Inputs
 - Use real inputs at production resolution. Never downsample to save time, and never fabricate cases that production does not produce, such as a single image cut into artificial regions.
@@ -22,7 +21,7 @@ Why: most speedups that later vanish were measurement errors, not real changes.
 - Record which environment produced each number. Numbers from different environments or hardware are not comparable and must not be subtracted.
 
 ## Noise floor
-Measure it as an A/A run of the A/B mode: the same code on both sides, the same process layout, at least three rounds. The largest difference per scenario is that scenario's noise floor.
+Measure it as an A/A run of the A/B mode (`bench --ab best`): the same code on both sides, the same process layout, at least three rounds. The largest difference per scenario is that scenario's noise floor; it goes to `NOISE_MS` in the adapter, which the A/B reads, and to STATUS.md.
 Measure it at baseline, again after gains that change latency by a large factor (noise shrinks with it), and whenever the machine, driver, or environment changes. A difference smaller than the noise floor is not a gain.
 
 ## Time breakdown
@@ -32,7 +31,7 @@ Wrap callables with timers rather than editing project code. Steps written inlin
 
 ## GPU state
 - Record SM clock, temperature, and power during the run: `nvidia-smi --query-gpu=clocks.sm,temperature.gpu,power.draw --format=csv -lms 500`.
-- Lock the SM clock (`nvidia-smi -lgc <MHz>`) and leave it locked: the user has the GPU to themselves, so never reset it (`nvidia-smi -rgc`), and every session measures at the same clock. A reboot or driver reload drops the lock, so read `clocks.sm` before an A/B and lock again if it moved. If it cannot be locked, record `clocks.sm` for both sides and report the drift. A round without a clock reading does not count, and must never be reported as "no drift". Unlocked, the drift favors the faster candidate, which leaves more thermal and power headroom. On an RTX 5090 a lock binds only approximately (7.5 MHz steps, software power cap), so report the residual.
+- Keep the SM clock locked (`nvidia-smi -lgc <MHz>`) at all times, so every session measures at the same clock. Reset it (`nvidia-smi -rgc`) only in a special case and with the user's okay, for example when others need the GPU. A reboot or driver reload drops the lock, so read `clocks.sm` before an A/B and lock again if it moved. If it cannot be locked, record `clocks.sm` for both sides and report the drift. A round without a clock reading does not count, and must never be reported as "no drift". Unlocked, the drift favors the faster candidate, which leaves more thermal and power headroom. On an RTX 5090 a lock binds only approximately (7.5 MHz steps, software power cap), so report the residual.
 - After a GPU, driver, or environment change, re-measure the baseline in the same session; older absolute numbers are no longer comparable. On the same card, absolute milliseconds across rounds are comparable, and comparing them is often how drift gets caught.
 - Nothing else runs on the GPU while measuring. Before blaming an OOM on a change, check `nvidia-smi` for other processes.
 

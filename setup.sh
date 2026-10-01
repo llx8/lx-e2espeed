@@ -96,7 +96,7 @@ setup_project() {
     git -C lx-work config core.hooksPath ../lx-e2espeed/hooks/git
     echo "Created lx-work."
   fi
-  echo "Done: $root is set up. Continue with onboarding step 2."
+  echo "Done: $root is set up (onboarding step 1). Step 2 starts once the user says so."
 }
 
 case "${1:-}" in

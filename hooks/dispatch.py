@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Global Claude Code hook for lx-e2espeed, installed as ~/.claude/hooks/lx_dispatch.py.
 
-  session-start  In a project that has lx-e2espeed/, print the entry rules, the project status,
-                 and the rules doc for the current phase; without lx-work/ yet, route to onboarding.
-                 Elsewhere, print nothing. It also runs after compaction, so the handoff survives it.
+  session-start  In a project that has lx-e2espeed/, print the phase and its rules doc, warnings,
+                 the project status, and the entry rules, shortest first: Claude Code cuts long hook
+                 output to a short preview. Without lx-work/ yet, route to onboarding. Elsewhere,
+                 print nothing. It also runs after compaction, so the handoff survives it.
   post-edit      After an edit inside lx-e2espeed/ or lx-work/, or a shell command in or naming
                  one of them, run that clone's checker.
                  Problems go to stderr with exit code 2, which Claude Code shows to Claude.
@@ -65,26 +66,30 @@ def session_start(data):
         return 0
     if not (work.is_dir() or (root / ".git").exists()):
         return 0  # the rules repo opened on its own loads its CLAUDE.md without this hook
-    print(f"This project uses {RULES}. Paths below are relative to {root}.\n")
-    print(entry.read_text(encoding="utf-8"))
+    # Shortest and most urgent first: past about 10 KB, Claude Code shows only the first 2 KB.
+    print(f"This project uses {RULES}. Paths below are relative to {root}. If this output was cut short, "
+          f"read {RULES}/CLAUDE.md and {WORK}/STATUS.md in full before anything else.\n")
     status = work / "STATUS.md"
+    text = status.read_text(encoding="utf-8") if work.is_dir() and status.is_file() else None
     if not work.is_dir():
-        print(f"{WORK}/ does not exist yet. " + PHASE_DOCS["onboarding"] + " Start at step 1.")
-    elif status.is_file():
-        text = status.read_text(encoding="utf-8")
-        print(text)
+        print(f"{WORK}/ does not exist yet: onboarding starts at step 1 once the user says so. "
+              + PHASE_DOCS["onboarding"])
+    elif text is not None:
         match = PHASE.search(text)
         phase = match.group(1) if match else "unknown"
         print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
         for note in sorted(work.glob("*/[0-9][0-9][0-9]-*/NOTE.md")):
             if re.search(r"^- Status: running$", note.read_text(encoding="utf-8"), re.M):
-                print(f"{note.parent.relative_to(work)} is still running and its change is in the project tree: "
-                      "finish it (see its NOTE.md, and rules/night.md for a night trial) before anything else.")
+                print(f"{note.parent.relative_to(work)} is still running, and its change is in the project tree, "
+                      "so nothing else can start until it ends. During a night run, go on with it (rules/night.md); "
+                      "otherwise tell the user and propose how to end it (its NOTE.md has the plan).")
     installed = STAMP.read_text(encoding="utf-8").strip() if STAMP.is_file() else ""
     if installed != install_stamp(root / RULES):
-        print("The hooks and skills installed on this machine differ from this clone's. Update the clone "
-              "with `git -C lx-e2espeed pull --ff-only`; if they still differ, ask the user, then run "
-              "`lx-e2espeed/setup.sh global`.")
+        print("The hooks and skills installed on this machine differ from this clone's. Tell the user and "
+              "propose `git -C lx-e2espeed pull --ff-only`, then `lx-e2espeed/setup.sh global` if they still differ.")
+    if text is not None:
+        print("\n" + text)
+    print(entry.read_text(encoding="utf-8"))
     return 0
 
 

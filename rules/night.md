@@ -21,7 +21,7 @@ It is the one autonomous mode, and it is safe because nothing lands: every trial
 5. A difference level beyond the accepted one in PROJECT.md is not a failure: the user may accept it. Land and park it, and say so under "Needs the user". Where the method forks on a user judgment, give each side its own trial.
 6. Fill in NOTE.md and the row, update the queue, and commit lx-work: `night-004: cuda graph for decode (parked, -18%)`.
 
-Timebox each trial (default 90 minutes). Past it, drop the trial with what was learned, and queue the rest as a day task. Kill any run that takes twice its usual time.
+Timebox each trial (default 90 minutes). Past it, drop the trial with what was learned, and queue the rest as a day task.
 
 ## All night
 - Never end your turn to ask: write the question in the trial's "Needs the user" column, or under "Waiting for the user" in STATUS.md when it concerns no single trial, and go on with the next method. Stop only when the queue is empty and a fresh look (profile, playbook, skills) adds nothing, at the end time, or when the environment breaks (the same infrastructure error twice).

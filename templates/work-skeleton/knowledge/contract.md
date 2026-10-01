@@ -4,8 +4,6 @@ read_when: changing anything between the decoded input and the returned output, 
 ---
 # Contract
 
-- Read at: <project commit, plus the name and commit of each sibling repo read> (<YYYY-MM-DD>)
-
 ## Entry points
 <Each function production calls, with its arguments and defaults, and the values production passes.>
 

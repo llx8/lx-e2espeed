@@ -17,8 +17,7 @@ LIST_MARKER = re.compile(r"^\s*(?:[-*>]|\d+\.)\s+")
 CARD_SECTIONS = ("## Symptom", "## Technique", "## Effect", "## Side effects",
                  "## Does not apply", "## Evidence")
 # CLAUDE.md is injected every session; losing one of these sections silently changes every session.
-ENTRY_SECTIONS = ("## Layout", "## lx-work layout", "## Session start", "## Hard rules",
-                  "## Defaults", "## Working loop", "## Doc map", "## Maintaining this repo")
+ENTRY_SECTIONS = ("## Layout", "## Session start", "## Hard rules", "## Defaults", "## Working loop", "## Doc map")
 DUP_MIN = 60    # repeated lines at least this long count as duplication
 # Agent Skills limits: the description is what every session loads, SKILL.md what each use loads.
 SKILL_DESC_MAX, SKILL_MD_MAX, SKILL_REF_MAX = 1024, 500, 300

@@ -51,7 +51,7 @@ Read [references/dependencies.md](references/dependencies.md) before building or
 
 ## Deformable convolution and tiled VAE notes
 
-- For a segmentation network such as BiRefNet that uses `torchvision.ops.deform_conv2d`, install and register `deform_conv2d_onnx_exporter==1.2.0` before legacy ONNX export. With PyTorch 2.9, add `JitScalarType.HALF -> ONNX FLOAT16` to `torch.onnx.symbolic_helper.cast_pytorch_to_onnx`; version 1.2.0 otherwise raises a HALF dtype `KeyError`.
+- For a segmentation network such as BiRefNet that uses `torchvision.ops.deform_conv2d`, install and register `deform_conv2d_onnx_exporter==1.2.0` before legacy ONNX export. With PyTorch 2.9 (versions as of 2026-09-24), add `JitScalarType.HALF -> ONNX FLOAT16` to `torch.onnx.symbolic_helper.cast_pytorch_to_onnx`; version 1.2.0 otherwise raises a HALF dtype `KeyError`.
 - Use a static B1 `1x3x1024x1024` engine when preprocessing always resizes to 1024 square. Validate sigmoid outputs, binary-mask disagreement, and the complete downstream mask logic rather than raw logits alone.
 - For diffusion VAEs, keep batch static at B1 but preserve the reference tile geometry and exact short-edge execution. Use bounded dynamic H/W when a static engine would require padding a short tile through a non-local VAE. Never reduce the reference tile size merely to reduce workspace without final-output validation. Keep encoder and decoder identities architecture-specific because latent channels differ across Flux generations.
 - Run a finite-output self-check on both VAE engines. If the FP16 decoder overflows, upcast only its mid-block attention to FP32 during export and retain FP16 for the convolutional body; do not silently accept non-finite output or promote the whole decoder without measurement.

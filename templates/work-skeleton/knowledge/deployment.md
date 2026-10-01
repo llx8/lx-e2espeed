@@ -4,8 +4,6 @@ read_when: deciding the target hardware or build settings, planning how a change
 ---
 # Deployment
 
-- Read at: <project commit, plus the name and commit of each sibling repo read> (<YYYY-MM-DD>)
-
 ## Code and weights
 <How production gets the code and weights: pinned commits, submodules, Git LFS, downloads.>
 

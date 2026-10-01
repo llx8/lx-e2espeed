@@ -26,6 +26,8 @@ SNAKE = re.compile(r"[a-z0-9]+(_[a-z0-9]+)*")
 FIXED = re.compile(r"[A-Z]+")
 DOC_MAX = 150
 TOC_OVER = 100  # docs longer than this need a "## Contents" list near the top
+# The SessionStart hook injects both into every session; Claude Code cuts hook output above about 10 KB.
+BYTE_LIMITS = {("rules", "CLAUDE.md"): 6000, ("work", "STATUS.md"): 3000}
 
 
 class Report:
@@ -59,6 +61,12 @@ def line_limit(rel, kind):
     if rel in ("STATUS.md", "FEEDBACK.md"):
         return 60
     return 50 if rel.split("/")[0] in ("exp", "night") and name == "NOTE.md" else DOC_MAX
+
+
+def byte_limit(rel, kind):
+    if kind == "rules" and rel.startswith("templates/work-skeleton/"):
+        return byte_limit(rel[len("templates/work-skeleton/"):], "work")
+    return BYTE_LIMITS.get((kind, rel))
 
 
 def split_frontmatter(lines):
@@ -143,6 +151,9 @@ def check_file(path, rel, kind, rep, prose, texts):
             rep.error(rel, f"tier must be one of {sorted(TIERS)}")
         if not fields.get("read_when"):
             rep.error(rel, "read_when is empty")
+    size, size_limit = path.stat().st_size, byte_limit(rel, kind)
+    if size_limit and size > size_limit:
+        rep.error(rel, f"{size} bytes, limit {size_limit}; the SessionStart hook injects it, and longer hook output is cut")
     limit = line_limit(rel, kind)
     if limit is None:
         return

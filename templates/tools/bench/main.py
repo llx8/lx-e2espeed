@@ -2,8 +2,9 @@
 
 Usage: python main.py [--project DIR] [--candidate FILE] [--scenario NAME ...] [--warmup N] [--repeat N]
                       [--stages] [--out FILE]
-       python main.py --ab FILE [--rounds N] [--noise MS]   # alternate baseline and candidate processes
-       python main.py --ab baseline [--rounds N]           # A/A: the project's code on both sides
+       python main.py --ab FILE [--rounds N] [--noise MS]   # alternate the project tree (best) and a candidate
+       python main.py --ab best [--rounds N]               # A/A: the project tree on both sides
+With --project, the side other than the candidate is that tree, for example a copy from exp.sh export.
 Everything project-specific lives in lx-work/adapter/pipeline.py (see its contract).
 Prints at most 10 summary lines; the full result goes to --out as JSON.
 """
@@ -15,6 +16,7 @@ import platform
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -89,6 +91,36 @@ def gpu_state():
     return {"gpu": name, "driver": driver, "sm_clock_mhz": int(clock), "temp_c": int(temp), "power_w": float(power)}
 
 
+@contextlib.contextmanager
+def gpu_sampler(period_ms=500):
+    """Sample SM clock, temperature, and power while the block runs; the yielded dict is filled on exit.
+    Readings before and after alone miss throttling in between."""
+    summary = {}
+    with tempfile.TemporaryFile("w+") as log:
+        proc = subprocess.Popen(["nvidia-smi", "-i", "0", "--query-gpu=clocks.sm,temperature.gpu,power.draw",
+                                 "--format=csv,noheader,nounits", "-lms", str(period_ms)],
+                                stdout=log, stderr=subprocess.DEVNULL)
+        try:
+            yield summary
+        finally:
+            proc.terminate()
+            proc.wait()
+            log.seek(0)
+            rows = []
+            for line in log:
+                parts = line.strip().split(", ")
+                try:
+                    if len(parts) == 3:
+                        rows.append((int(parts[0]), int(parts[1]), float(parts[2])))
+                except ValueError:
+                    pass  # "[N/A]", or a line cut off by terminate
+            summary["samples"] = len(rows)
+            if rows:
+                clocks, temps, powers = zip(*rows)
+                summary.update(sm_clock_min_mhz=min(clocks), sm_clock_max_mhz=max(clocks), temp_max_c=max(temps),
+                               power_mean_w=round(statistics.mean(powers), 1), rows=rows)
+
+
 def process_gpu_mib():
     for pid, used in smi("compute-apps=pid,used_memory"):
         if int(pid) == os.getpid():
@@ -120,7 +152,8 @@ def run_scenario(pipeline, args, warmup, repeat, totals):
             row = {k: v * 1000 for k, v in totals.items()}
             row["other"] = total - sum(row.values())
             stages.append(row)
-    result = {"median": statistics.median(samples), "p90": percentile(samples, 90), "p99": percentile(samples, 99),
+    p99 = percentile(samples, 99) if len(samples) >= 100 else None  # fewer samples cannot resolve a 1% tail
+    result = {"median": statistics.median(samples), "p90": percentile(samples, 90), "p99": p99, "max": max(samples),
               "spread_p10_p90": percentile(samples, 90) - percentile(samples, 10), "samples": samples,
               "memory": adapter.peak_memory(), "summary": adapter.describe(out)}
     if stages:
@@ -128,21 +161,22 @@ def run_scenario(pipeline, args, warmup, repeat, totals):
     return result
 
 
-def ab(candidate, rounds, noise, scenarios, passthrough):
-    """Alternate fresh baseline and candidate processes, one process per scenario: state a scenario leaves
-    behind (allocator, caches) can shift the next scenario by several milliseconds. With candidate "baseline"
-    both sides run the project's code (A/A), and each scenario's largest difference within a round is its
-    noise floor."""
-    aa = candidate == "baseline"
+def ab(candidate, rounds, noise, scenarios, passthrough, project):
+    """Alternate fresh processes of the project tree (best, or the --project tree) and the candidate, one process
+    per scenario: state a scenario leaves behind (allocator, caches) can shift the next scenario by several
+    milliseconds. With candidate "best" both sides run the project tree (A/A), and each scenario's largest
+    difference within a round is its noise floor."""
+    aa = candidate == "best"
+    label = Path(project).name if project else "best"
     floors = {name: noise if noise is not None else adapter.NOISE_MS.get(name) for name in scenarios}
     if not aa and None in floors.values():
         sys.exit(f"error: no noise floor for {[n for n, f in floors.items() if f is None]}; "
-                 "measure it with --ab baseline and set adapter.NOISE_MS")
-    medians = {name: {"baseline": [], "candidate": []} for name in scenarios}
+                 "measure it with --ab best and set adapter.NOISE_MS")
+    medians = {name: {"base": [], "candidate": []} for name in scenarios}
     clocks = set()
     for i in range(rounds):
         for name in scenarios:
-            for side in ("baseline", "candidate")[::1 if i % 2 == 0 else -1]:  # ABBA cancels any effect of running second
+            for side in ("base", "candidate")[::1 if i % 2 == 0 else -1]:  # ABBA cancels any effect of running second
                 out = LX_WORK / "local" / "logs" / f"ab-{side}-{name}-{i}.json"
                 cmd = [sys.executable, __file__, "--out", str(out), "--scenario", name, *passthrough]
                 if side == "candidate" and not aa:
@@ -150,20 +184,23 @@ def ab(candidate, rounds, noise, scenarios, passthrough):
                 subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
                 r = json.loads(out.read_text())
                 medians[name][side].append(r["scenarios"][name]["median"])
-                clocks |= {r["env"]["sm_clock_mhz"], r["env"]["sm_clock_after_mhz"]}
-    print(f"{'A/A' if aa else 'A/B'} over {rounds} rounds, one fresh process per scenario and side; "
-          f"SM clocks {sorted(clocks)} MHz")
+                env, gpu = r["env"], r["env"]["gpu_during_run"]
+                clocks |= {env["sm_clock_mhz"], env["sm_clock_after_mhz"]}
+                if gpu["samples"]:
+                    clocks |= {gpu["sm_clock_min_mhz"], gpu["sm_clock_max_mhz"]}
+    print(f"{'A/A' if aa else 'A/B'} of {label} over {rounds} rounds, one fresh process per scenario and side; "
+          f"SM clock {min(clocks)}-{max(clocks)} MHz across all of them")
     for name, m in medians.items():
-        b, c = statistics.median(m["baseline"]), statistics.median(m["candidate"])
+        b, c = statistics.median(m["base"]), statistics.median(m["candidate"])
         if aa:
-            floor = max(abs(x - y) for x, y in zip(m["baseline"], m["candidate"]))
+            floor = max(abs(x - y) for x, y in zip(m["base"], m["candidate"]))
             print(f"{name:14s} sides {b:8.2f} {c:8.2f} ms  noise floor {floor:.2f} ms ({100 * floor / b:.1f}%)")
             continue
         n = floors[name]
         verdict = "gain" if b - c > n else ("loss" if c - b > n else "inside noise")
         if rounds < 3:
             verdict = "no verdict under 3 rounds"
-        print(f"{name:14s} baseline {b:8.2f} candidate {c:8.2f} ms  {c - b:+7.2f} ({100 * (c - b) / b:+.1f}%)  "
+        print(f"{name:14s} {label} {b:8.2f} candidate {c:8.2f} ms  {c - b:+7.2f} ({100 * (c - b) / b:+.1f}%)  "
               f"{verdict} (noise {n:g})")
 
 
@@ -176,13 +213,14 @@ def main():
     ap.add_argument("--repeat", type=int, default=adapter.REPEAT)
     ap.add_argument("--stages", action="store_true", help="add a per-stage breakdown (stage mode)")
     ap.add_argument("--out", default=str(LX_WORK / "local" / "logs" / "bench-last.json"))
-    ap.add_argument("--ab", metavar="CANDIDATE", help='a candidate file, or "baseline" for an A/A run')
+    ap.add_argument("--ab", metavar="CANDIDATE", help='a candidate file, or "best" for an A/A run')
     ap.add_argument("--rounds", type=int, default=3)
     ap.add_argument("--noise", type=float, help="one noise floor in ms for every scenario, instead of adapter.NOISE_MS")
     a = ap.parse_args()
     if a.ab:
         passthrough = ["--warmup", str(a.warmup), "--repeat", str(a.repeat)]
-        return ab(a.ab, a.rounds, a.noise, a.scenario, passthrough + (["--project", a.project] if a.project else []))
+        return ab(a.ab, a.rounds, a.noise, a.scenario, passthrough + (["--project", a.project] if a.project else []),
+                  a.project)
     project = adapter.project_root(a.project)
     before = gpu_state()
     t_init = time.perf_counter()
@@ -205,17 +243,25 @@ def main():
                       "candidate": a.candidate, **adapter.versions()},
               "cold": {"total_ms": cold_ms, "import_ms": import_ms, "init_ms": init_ms, "first_call_ms": first_ms},
               "scenarios": {}}
-    with quiet(LX_WORK / "local" / "logs" / "bench-run.log"):
+    with gpu_sampler() as gpu, quiet(LX_WORK / "local" / "logs" / "bench-run.log"):
         for name, args in inputs.items():
             result["scenarios"][name] = run_scenario(pipeline, args, a.warmup, a.repeat, totals)
     result["gpu_mib_process"] = process_gpu_mib()
-    result["env"]["sm_clock_after_mhz"] = gpu_state()["sm_clock_mhz"]
+    result["env"]["sm_clock_after_mhz"] = after = gpu_state()["sm_clock_mhz"]
+    result["env"]["gpu_during_run"] = gpu
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(result, indent=1))
     print(f"cold start {cold_ms:.0f} ms (init {init_ms:.0f}, first call {first_ms:.0f}); process GPU memory "
-          f"{result['gpu_mib_process']} MiB; SM clock {before['sm_clock_mhz']} -> {result['env']['sm_clock_after_mhz']} MHz")
+          f"{result['gpu_mib_process']} MiB")
+    if gpu["samples"]:
+        print(f"GPU during the run: SM clock {gpu['sm_clock_min_mhz']}-{gpu['sm_clock_max_mhz']} MHz (before "
+              f"{before['sm_clock_mhz']}, after {after}), max {gpu['temp_max_c']} C, mean {gpu['power_mean_w']} W, "
+              f"{gpu['samples']} samples")
+    else:
+        print(f"no GPU samples during the run; SM clock before {before['sm_clock_mhz']}, after {after} MHz")
     for name, r in result["scenarios"].items():
-        line = (f"{name:14s} {r['summary']} median {r['median']:.2f} ms p90 {r['p90']:.2f} p99 {r['p99']:.2f} "
+        tail = f"p99 {r['p99']:.2f}" if r["p99"] is not None else f"max {r['max']:.2f}"
+        line = (f"{name:14s} {r['summary']} median {r['median']:.2f} ms p90 {r['p90']:.2f} {tail} "
                 f"spread {r['spread_p10_p90']:.2f} {r['memory']}")
         if "stages_median_ms" in r:
             line += " | " + " ".join(f"{k} {v:.1f}" for k, v in r["stages_median_ms"].items())

@@ -42,8 +42,8 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - Show the plan to the user and build nothing until they approve it. For a change that fits in one sentence and touches no contract, that sentence is the plan.
 
 ## 4. Build and compare candidates
-- Write each candidate in `lx-work/exp/NNN-name/candidate/`, as a copy, subclass, or hook around the project code; use one subdirectory per variant when comparing several. The project code stays untouched while exploring, so baseline and candidates run side by side.
-- Bench and verify each variant against the baseline as `rules/benchmarking.md` describes, and show the user the tools' summary lines with the difference level.
+- Write each candidate in `lx-work/exp/NNN-name/candidate/`, as a copy, subclass, or hook around the project code; use one subdirectory per variant when comparing several. The project code stays untouched while exploring, so best and the candidates run side by side.
+- Bench each variant against best (the A/B) and verify it against the frozen references, as `rules/benchmarking.md` describes, and show the user the tools' summary lines with the difference level.
 - Build experimental binaries into their own build directory, never over production ones. Compiled libraries are not bit-reproducible, so compare builds by behavior, never by hash.
 - A deviation from the plan goes back to the user first. If verify fails, fix the candidate or drop it; never loosen the check.
 

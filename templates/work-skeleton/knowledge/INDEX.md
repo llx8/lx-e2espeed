@@ -19,5 +19,5 @@ Other facts have their own home: the timed path, its shapes and time shares in M
 - Tags: [code] read in a repo file (code, config, or the authors' docs, named by the source); [run] seen in command output; [guess] inferred, not confirmed; [user YYYY-MM-DD] stated by the user.
 - Write while reading. When a fact changes, edit its line instead of adding a second one.
 - Open questions stay under "Open questions" in their topic file; STATUS.md only points to them. An answer replaces its question as a [user] line.
-- After the project or a sibling repo moves to another commit, re-read what the diff touches, then update the Read at column and each file's Read at line.
+- After the project or a sibling repo moves to another commit, re-read what the diff touches, then update the Read at column.
 - A new topic gets its own kebab-case file and a row in the table.

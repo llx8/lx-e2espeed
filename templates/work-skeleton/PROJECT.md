@@ -19,7 +19,7 @@ Facts agreed with the user during onboarding; what the code and the user showed 
 
 ## Metric
 <Latency by default. The exact measurement and the target.>
-Noise floor: <run-to-run spread measured at baseline>
+- Bench time budget: <how long one bench run may take; WARMUP and REPEAT in adapter/pipeline.py fit it>
 
 ## Accuracy standard
 <Comparison method and inputs covered.>
@@ -50,7 +50,7 @@ Noise floor: <run-to-run spread measured at baseline>
 - Python environment: <name and absolute interpreter path>
 - Versions: <driver, CUDA, framework, TensorRT>
 - Profilers: <working nsys and ncu commands>
-- Rules version at onboarding: lx-e2espeed <rules-version>
+- Rules version at onboarding: lx-e2espeed <rules-version> (written by setup.sh; later pulls leave it as is, git log of lx-e2espeed has the rest)
 - Baseline commit: <project commit measured at baseline; exp.sh replays every experiment from it>
 
 ## Commands

@@ -2,7 +2,7 @@
 
 Usage: python main.py [--project DIR] [--candidate FILE] [--freeze] [--self-test]
   --freeze     run the project's own code and write lx-work/baseline/reference/<scenario>.npz
-  --self-test  corrupt the output in memory and confirm verify reports it
+  --self-test  change one EXACT and one GRADED value in memory and confirm verify reports each
 Arrays named in adapter.EXACT must be equal; arrays in adapter.GRADED get a level from their largest
 absolute difference (adapter.LEVELS) and must stay within adapter.ACCEPTED and adapter.criterion().
 Exit 1 on any failure.
@@ -75,6 +75,25 @@ def grade(ref, got):
     return ok, f"{level} " + ("; ".join(parts) if parts else "(nothing graded)")
 
 
+def self_test(ref, got):
+    """Change one value of the first non-empty EXACT array and of the first non-empty GRADED array, in memory,
+    and check that grade() fails each. Returns (arrays tried, misses, text)."""
+    results = []
+    for names in (adapter.EXACT, adapter.GRADED):
+        key = next((k for k in names if got[k].size), None)
+        if key is None:
+            continue
+        bad = {**got, key: got[key].copy()}
+        flat = bad[key].reshape(-1)
+        if flat.dtype == bool:
+            flat[0] = not flat[0]
+        else:
+            flat[0] = flat[0] + 100 if flat[0] < adapter.PEAK - 100 else flat[0] - 100
+        results.append((key, not grade(ref, bad)[0]))
+    text = ", ".join(f"{key} {'caught' if caught else 'MISSED'}" for key, caught in results)
+    return len(results), sum(not caught for _, caught in results), text or "nothing to change, every array is empty"
+
+
 def run(pipeline, project, scenario):
     with quiet():
         out = adapter.call(pipeline, adapter.prepare(adapter.load_scenario(project, scenario)))
@@ -105,22 +124,23 @@ def main():
             np.savez_compressed(REF_DIR / f"{scenario}.npz", **out)
             print(f"froze {scenario}: " + ", ".join(f"{k} {v.shape}" for k, v in out.items()))
         return
-    failures = 0
+    failures = tried = 0
     for scenario in adapter.SCENARIOS:
         ref = dict(np.load(REF_DIR / f"{scenario}.npz"))
         got = run(pipeline, project, scenario)
         ok, text = grade(ref, got)
         failures += not ok
         print(f"{scenario:14s} {'pass' if ok else 'FAIL'} {text}")
-        if a.self_test:
-            graded = next((k for k in adapter.GRADED if got[k].size), None)
-            if graded:
-                bad = {k: v.copy() for k, v in got.items()}
-                flat = bad[graded].reshape(-1)
-                flat[0] = flat[0] + 100 if flat[0] < adapter.PEAK - 100 else flat[0] - 100
-                caught = not grade(ref, bad)[0]
-                print(f"  self-test: a 100-level change in {graded} {'caught' if caught else 'MISSED'}")
-                failures += not caught
+        if a.self_test and not ok:
+            print("  self-test: skipped; it proves nothing on a scenario that already fails")
+        elif a.self_test:
+            n, misses, text = self_test(ref, got)
+            tried, failures = tried + n, failures + misses
+            print(f"  self-test: {text}")
+    if a.self_test and not tried and not failures:
+        # Scenarios with empty outputs are expected, but in a passing run one array somewhere must prove the check.
+        print("self-test: no value was changed in any scenario, so nothing shows that verify can fail")
+        failures += 1
     print("verify: " + ("pass" if not failures else f"{failures} failure(s)"))
     sys.exit(1 if failures else 0)
 

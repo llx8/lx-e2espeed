@@ -4,8 +4,6 @@ read_when: discussing purpose, traffic, or accuracy with the user; judging a cha
 ---
 # Business
 
-- Read at: <project commit, plus the name and commit of each sibling repo read> (<YYYY-MM-DD>)
-
 ## Callers and flow
 <Who calls the code, through which service or framework, and what happens around the call: decoding, workers, timeouts, errors, the response.>
 

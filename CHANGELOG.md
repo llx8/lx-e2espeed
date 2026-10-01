@@ -6,6 +6,15 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-01: hook output size, bench and verify fixes, one home per fact
+- Claude Code cut the SessionStart output (10.8 KB) to a 2 KB preview, so the entry rules never reached the session. The hook now prints the short, urgent lines first (paths, what to read if cut, phase and its rules doc, warnings), then STATUS.md, then CLAUDE.md; the checker caps CLAUDE.md at 6,000 bytes and STATUS.md at 3,000. The lx-work layout moved to `rules/naming.md`, the maintaining rules to `rules/writing.md`.
+- Bench: samples SM clock, temperature, and power during the run, since readings before and after miss throttling in between. The A/B sides are best (or the `--project` tree) and the candidate, and the A/A is `--ab best`: between experiments the project tree is best, not baseline. P99 needs 100 samples; below that the bench reports the maximum.
+- Verify: the self-test also changes an EXACT array, skips scenarios that already fail, and fails when no scenario had a value to change; a project with only EXACT outputs proved nothing before.
+- The profiling skill's benchmark and e2e scripts are gone: they duplicated the project bench without its rules (A/B, fresh processes, noise floor).
+- Clock: locked at all times; the user allows a reset in a special case, with their okay, instead of never.
+- One home per fact: the noise floor in `adapter.NOISE_MS` and STATUS.md (PROJECT.md dropped its line); the bench time budget is a step 3 item and a PROJECT.md field; knowledge files dropped their Read at lines, which the INDEX.md column holds; night/INDEX.md archives like exp/INDEX.md; night.md no longer repeats the kill rule from benchmarking.md; the cloud push rule lives only in wrap-up step 5.
+- Onboarding step 2 fills the private terms provisionally as names come up, so the checker protects the rules repo before step 3 confirms them.
+
 ## 2026-10-01: work on the user's go-ahead, memory cap, locked clock, consistency review
 - The user works with the AI as two people discussing: a question gets an answer in words, and nothing changes (files, runs beyond reading, installs) until the user says to. CLAUDE.md now says so first. Rules that acted on their own changed: session start no longer runs verify and bench (each experiment's verify and A/B already run the baseline beside the change, and check-env exists for a misbehaving environment); every plan waits for approval, even a one-sentence one; onboarding steps start on the user's word, and step 3 explains each item's options and the AI's pick instead of asking for a quick yes.
 - lx-work records (docs, indexes, notes, knowledge/) and their commits are the exception: the user does not want to be asked about them, only told, so the AI writes them as things happen, FEEDBACK.md included, and lists them at the end of its reply.

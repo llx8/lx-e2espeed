@@ -12,8 +12,8 @@ import numpy as np
 
 # Scenarios from PROJECT.md, main scenario first.
 SCENARIOS = ("main",)  # TODO
-WARMUP, REPEAT = 5, 30  # TODO: fit the time budget agreed at onboarding
-NOISE_MS = {}  # TODO: noise floor in ms per scenario, from `bench --ab baseline`, as in PROJECT.md
+WARMUP, REPEAT = 5, 30  # TODO: fit the bench time budget in PROJECT.md (Metric)
+NOISE_MS = {}  # TODO: noise floor in ms per scenario, from the latest `bench --ab best`; STATUS.md shows it
 
 # Stage mode wraps these attributes of the pipeline object (dotted paths); the rest is "other".
 STAGES = {}  # TODO, for example {"preprocess": ("prepare_inputs",), "model": ("model",)}

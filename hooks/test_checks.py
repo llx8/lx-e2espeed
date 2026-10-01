@@ -140,6 +140,7 @@ PROBES = [
     ("empty read_when", "work", lambda w: edit(w / "BACKLOG.md", re.search(r"read_when: .*", read(w / "BACKLOG.md")).group(0),
                                                "read_when:"), "read_when is empty"),
     ("STATUS.md over its limit", "work", lambda w: append(w / "STATUS.md", lines(60)), "limit 60"),
+    ("STATUS.md over its byte budget", "work", lambda w: append(w / "STATUS.md", "- " + "padding " * 400 + "\n"), "bytes, limit 3000"),
     ("long doc without contents", "work", lambda w: append(w / "BACKLOG.md", lines(100)), "without a '## Contents' list"),
     # check_work.py: layout, handoff, experiments, tools
     ("gitignore misses local/", "work", lambda w: write(w / ".gitignore", "__pycache__/\n"), "must ignore local/"),
@@ -187,7 +188,8 @@ PROBES = [
      "time breakdown predates exp/001-fast-path (delivered)"),
     # check_rules.py: entry doc and doc map
     ("CLAUDE.md lost a section", "rules", lambda r: edit(r / "CLAUDE.md", "## Hard rules\n", "## Rules\n"), "lost its '## Hard rules' section"),
-    ("CLAUDE.md over its limit", "rules", lambda r: append(r / "CLAUDE.md", lines(20)), "limit 100"),
+    ("CLAUDE.md over its limit", "rules", lambda r: append(r / "CLAUDE.md", lines(100)), "limit 100"),
+    ("CLAUDE.md over its byte budget", "rules", lambda r: append(r / "CLAUDE.md", "padding " * 400 + "\n"), "bytes, limit 6000"),
     ("rules doc not in the doc map", "rules", lambda r: write(r / "rules" / "extra.md", read(r / "rules" / "naming.md")),
      "not listed in the CLAUDE.md doc map"),
     ("doc map names a missing doc", "rules", lambda r: append(r / "CLAUDE.md", "- `rules/missing.md`: never.\n"), "`rules/missing.md` does not exist"),
