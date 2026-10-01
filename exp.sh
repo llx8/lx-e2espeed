@@ -11,7 +11,7 @@
 #   exp.sh drop                        end either, reverse the change, and confirm the tree is back
 #   exp.sh adopt <NNN>                 turn parked night trial NNN into the next experiment
 #   exp.sh delivered                   the user committed the kept patches: HEAD becomes the baseline
-#   exp.sh check                       confirm the tree equals the baseline plus the kept patches
+#   exp.sh check                       confirm the tree equals the baseline plus the kept patches; fails while an item runs
 #   exp.sh export <NNN|night/NNN|best|baseline>  write that code to lx-work/local/replay/<name>/
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -285,9 +285,9 @@ cmd_check() {
   want="$(replay ${kept[@]+"${kept[@]}"})"
   now="$(snapshot)"
   if [ -n "$dir" ]; then
-    echo "$(basename "$dir") is running; its unsaved change against the start:"
-    diff_ --stat "$want" "$now"
-    return
+    echo "$(basename "$dir") is running; its unsaved change against the start:" >&2
+    diff_ --stat "$want" "$now" >&2
+    die "the tree is not at the base until $(basename "$dir") ends with keep, park, or drop"
   fi
   must_match "$want" "$now" "the project tree differs from the baseline plus the kept patches (files above)"
   echo "OK: the project tree equals baseline $(git rev-parse --short "$(baseline)") plus ${#kept[@]} kept patch(es)."

@@ -24,16 +24,17 @@ It is the one autonomous mode, and it is safe because nothing lands: every trial
 Timebox each trial (default 90 minutes). Past it, drop the trial with what was learned, and queue the rest as a day task. Kill any run that takes twice its usual time.
 
 ## All night
-- Never end your turn to ask: write the question under "Needs the user" and go on with the next method. Stop only when the queue is empty and a fresh look (profile, playbook, skills) adds nothing, at the end time, or when the environment breaks (the same infrastructure error twice).
+- Never end your turn to ask: write the question in the trial's "Needs the user" column, or under "Waiting for the user" in STATUS.md when it concerns no single trial, and go on with the next method. Stop only when the queue is empty and a fresh look (profile, playbook, skills) adds nothing, at the end time, or when the environment breaks (the same infrastructure error twice).
 - Trials do not build on each other: each starts from the base, so each patch applies alone. A method that only makes sense on top of another is queued as a day task.
 - The GPU runs nothing else, and clocks are locked as in rules/benchmarking.md.
+- Nobody can reboot a frozen machine at night: every run stays under the memory cap in CLAUDE.md and is killed when MemAvailable in /proc/meminfo falls below 20% of RAM. Rerun a crashed run only once the crash is understood.
 - Rules, cards, references, and tolerances stay untouched. A problem with the rules goes to FEEDBACK.md for the next rules review.
 
 ## Ending the night
 `exp.sh check` passes: the tree is at the base. In STATUS.md, "In progress" is none, and "Waiting for the user" says `night run <date>: N parked, M dropped, K queued; report them (rules/night.md)`. Commit lx-work.
 
 ## The morning report
-- In your reply, not in a file. One table of parked trials, best first: the method, the A/B per scenario against the base, the difference level, verify, what it touches and its risk, and what the user must decide. Then one line each for dropped trials and for methods still queued, with the reason.
+- In your reply, not in a file. One table of parked trials, best first: the method, the A/B per scenario against the base, the difference level, verify, what it touches and its risk, and what the user must decide. Then one line each for dropped trials and for methods still queued, with the reason, the night's entries under "Waiting for the user", and the FEEDBACK.md lines the night added.
 - Say whether the base moved since the night; if it did, the numbers are against an older tree. Trials do not add up: the user picks one at a time, and each later pick is measured on top of the earlier ones.
 - `exp.sh adopt NNN` turns a parked trial into the next experiment, carrying NOTE.md and candidate/. On an unchanged base it applies the patch and copies run.sh and result.json: run verify once, then `exp.sh keep`. On a moved base it applies nothing: A/B the candidate against the current tree first (rebuild a candidate that copies code a kept experiment changed since), then land as in rules/experiment.md step 5.
 - Trials the user passes on stay parked; they are still under "Next" at wrap-up. `exp.sh export night/NNN` rebuilds any trial's code from its own base.

@@ -17,7 +17,8 @@ EXP_DIR = re.compile(r"(\d{3})(-[a-z0-9]+){1,4}")
 INDEX_ROW = re.compile(r"^\|\s*(\d{3}(?:-[a-z0-9]+)+)\s*\|\s*([a-z]*)\s*\|", re.M)
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 WORK_REQUIRED = ("STATUS.md", "PROJECT.md", "DECISIONS.md", "FEEDBACK.md", "BACKLOG.md", "MAP.md",
-                 "tools/INDEX.md", "exp/INDEX.md")
+                 "tools/INDEX.md", "exp/INDEX.md", "knowledge/INDEX.md")
+KNOWLEDGE_TOPICS = ("knowledge/business.md", "knowledge/contract.md", "knowledge/deployment.md")  # shape-checked when present
 IGNORED_DIRS = {"__pycache__"}
 SHAPE = re.compile(r"^(## .+|- [A-Z][A-Za-z ]*:)")  # template lines a doc must keep
 COMMIT = re.compile(r"[0-9a-f]{7,40}")
@@ -57,6 +58,8 @@ def check_work_layout(root, rep, rules_root):
     for rel in WORK_REQUIRED:
         if not (root / rel).is_file():
             rep.error(rel, "missing; copy it from lx-e2espeed/templates/work-skeleton/")
+        check_shape(root / rel, skeleton / rel, rel, rep)
+    for rel in KNOWLEDGE_TOPICS:
         check_shape(root / rel, skeleton / rel, rel, rep)
     status_path = root / "STATUS.md"
     status = status_path.read_text(encoding="utf-8") if status_path.is_file() else ""

@@ -30,4 +30,4 @@ Noise floor: <ms per scenario, from the latest A/A run>
 - <The next step or proposal.>
 
 ## Waiting for the user
-- <Open questions and pending decisions.>
+- <Pending decisions, and pointers to the open questions in knowledge/; the questions themselves stay there.>

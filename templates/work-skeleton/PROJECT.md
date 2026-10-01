@@ -4,7 +4,7 @@ read_when: deciding scope, metric, accuracy, contracts, deployment, or how to ru
 ---
 # Project
 
-Facts agreed with the user during onboarding. Change them only with the user, and record why in DECISIONS.md.
+Facts agreed with the user during onboarding; what the code and the user showed behind them is in knowledge/. Change them only with the user, and record why in DECISIONS.md.
 
 ## Purpose
 <One or two lines: what the model does in this project.>

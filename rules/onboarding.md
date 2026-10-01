@@ -7,7 +7,7 @@ read_when: first sessions in a new project (STATUS.md phase is onboarding)
 Goal: agree with the user on what "faster" means here, then measure the unmodified project precisely.
 The user's review matters most in this phase: a misunderstanding here misdirects every later experiment.
 
-Copy this checklist into your reply and tick it off as you go:
+Copy this checklist into your reply and tick it off as you go. Start each step only once the user says so:
 
     - [ ] 1 Setup  - [ ] 2 Read  - [ ] 3 Discuss  - [ ] 4 Harness  - [ ] 5 Baseline
 
@@ -23,10 +23,11 @@ Copy this checklist into your reply and tick it off as you go:
 - Note for each stage its device, dtype, layout, and shape, and every device or representation change between stages; note normal and maximum shapes, batch policy, and ROI or tile behavior. Label likely bottlenecks as hypotheses until measured.
 - Find how the project runs: its Python environment (for example a conda env), the entry command, and where the weights live. A weight file of a few hundred bytes is a Git LFS pointer: fetch the real files (`git lfs pull`) before measuring. Call the interpreter by its absolute path; `conda run` and a polluted PATH can pick another Python.
 - Write code issues and optimization leads you notice into BACKLOG.md, each with its evidence.
+- Write the rest of what the reading teaches into `lx-work/knowledge/` as you read, in the format its INDEX.md gives: who calls the code and what the outputs mean (business.md), the exact input and output formats (contract.md), and how production builds and runs it (deployment.md). After a compaction or in a new session, read these files instead of the code again.
 
 ## 3. Discuss with the user
-Explain your understanding first, then settle each item. Ask in plain language, one or two items at a time, each with your proposed answer, so the user can reply with a yes or one correction; never hand over the whole list at once. Items the code already answers need only a confirmation.
-Record the answers in PROJECT.md and each decision with its reason in DECISIONS.md. They belong to this project only; lx-e2espeed never records them.
+Explain your understanding first, keeping the issues found in step 2 apart from the items to decide, and say that nothing changes until the user agrees after a discussion. Then take one or two items at a time in plain language: what the item means, its options, and which you would pick and why; the user decides. Never hand over the whole list at once, and never ask for a quick yes. Items the code already answers need only a confirmation.
+Record the agreed parameters in PROJECT.md, each decision with its reason in DECISIONS.md, and what the user explains about callers, contract, or deployment in the knowledge files, where an answer replaces its open question. They belong to this project only; lx-e2espeed never records them.
 - End-to-end scope: where timing starts and stops.
 - Workload: input shapes, batch sizes, request pattern, warm or cold start.
 - Metric: latency by default; throughput or memory only if the user says so.

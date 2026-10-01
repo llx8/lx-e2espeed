@@ -1,6 +1,6 @@
 ---
-tier: once
-read_when: before writing or changing a bench or verify tool
+tier: on-demand
+read_when: before an A/B or noise-floor run, judging a difference level, or writing or changing a bench or verify tool
 ---
 # Bench and verify tools
 
@@ -32,7 +32,7 @@ Wrap callables with timers rather than editing project code. Steps written inlin
 
 ## GPU state
 - Record SM clock, temperature, and power during the run: `nvidia-smi --query-gpu=clocks.sm,temperature.gpu,power.draw --format=csv -lms 500`.
-- Lock the SM clock for any A/B (`nvidia-smi -lgc <MHz>`, reset with `nvidia-smi -rgc`). If it cannot be locked, record `clocks.sm` for both sides and report the drift. A round without a clock reading does not count, and must never be reported as "no drift". Unlocked, the drift favors the faster candidate, which leaves more thermal and power headroom. On an RTX 5090 a lock binds only approximately (7.5 MHz steps, software power cap), so report the residual.
+- Lock the SM clock (`nvidia-smi -lgc <MHz>`) and leave it locked: the user has the GPU to themselves, so never reset it (`nvidia-smi -rgc`), and every session measures at the same clock. A reboot or driver reload drops the lock, so read `clocks.sm` before an A/B and lock again if it moved. If it cannot be locked, record `clocks.sm` for both sides and report the drift. A round without a clock reading does not count, and must never be reported as "no drift". Unlocked, the drift favors the faster candidate, which leaves more thermal and power headroom. On an RTX 5090 a lock binds only approximately (7.5 MHz steps, software power cap), so report the residual.
 - After a GPU, driver, or environment change, re-measure the baseline in the same session; older absolute numbers are no longer comparable. On the same card, absolute milliseconds across rounds are comparable, and comparing them is often how drift gets caught.
 - Nothing else runs on the GPU while measuring. Before blaming an OOM on a change, check `nvidia-smi` for other processes.
 

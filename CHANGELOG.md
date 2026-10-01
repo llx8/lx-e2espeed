@@ -6,6 +6,18 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-01: work on the user's go-ahead, memory cap, locked clock, consistency review
+- The user works with the AI as two people discussing: a question gets an answer in words, and nothing changes (files, runs beyond reading, installs) until the user says to. CLAUDE.md now says so first. Rules that acted on their own changed: session start no longer runs verify and bench (each experiment's verify and A/B already run the baseline beside the change, and check-env exists for a misbehaving environment); every plan waits for approval, even a one-sentence one; onboarding steps start on the user's word, and step 3 explains each item's options and the AI's pick instead of asking for a quick yes.
+- lx-work records (docs, indexes, notes, knowledge/) and their commits are the exception: the user does not want to be asked about them, only told, so the AI writes them as things happen, FEEDBACK.md included, and lists them at the end of its reply.
+- The SM clock stays locked and is never reset: the user has the GPU to themselves, and a lock that stays keeps every session at the same clock. A reboot drops it, so an A/B reads the clock first.
+- Memory cap: an uncapped job filled a no-swap server's RAM and froze it for two days. Every job that loads a model or data runs under a systemd-run memory cap of at most half the RAM; a night run also kills a run when free RAM falls below 20%, and reruns a crash only once it is understood.
+- Consistency fixes from the first project on the maintained rules: rules may change mid-project when the user asks, as knowledge/ did; benchmarking.md is on demand, since every A/B and difference level needs it after onboarding; a milestone wrap-up skips the cloud push and sets the phase back to optimizing; `exp.sh check` fails while an item runs, because the tree is not at the base; a night question that concerns no single trial goes under "Waiting for the user" in STATUS.md, and the morning report lists it with the night's FEEDBACK.md lines; exp/INDEX.md archives before 100 lines, where a Contents list would become due, instead of past the 150-line limit.
+
+## 2026-10-01: knowledge/ in lx-work
+- What onboarding step 2 learned beyond the timed path (who calls the model, what the outputs mean, the exact contract, how production builds and runs it) lived only in the chat, so each compaction or new session read the code again. The skeleton now has knowledge/: INDEX.md with the writing rules (one tagged, sourced conclusion per line; open questions per topic; the commits it was read at), and business.md, contract.md, and deployment.md. Step 2 writes there while reading, step 3 records the user's answers there, and PROJECT.md and STATUS.md point there. An lx-work made earlier copies it from the skeleton.
+- The checker requires knowledge/INDEX.md and keeps the topic files' headings, like the other skeleton docs.
+- Changed during a project instead of at wrap-up, at the user's request, so the next project starts with it.
+
 ## 2026-09-30: drift checks from a docs review
 - MAP.md drift: a pilot's time breakdown still showed the shares from before five delivered experiments, so it pointed at steps already solved. MAP.md now carries `- Measured on: baseline <commit> + exp up to NNN`; the checker holds the lx-work commit once a kept or delivered experiment past NNN changed a file MAP.md names, and checks that every `path:function` pointer still resolves. `exp.sh delivered` renames the stamp's commit, since the tree does not change.
 - `hooks/test_checks.py` breaks one thing per check in clean fixtures and expects the checker to fail; a check that never fires looks like one that passes. The pre-commit hook runs it.
@@ -68,22 +80,3 @@ A pilot re-optimized an image CNN service from its unoptimized commit (6 experim
   when the installed hooks or skills differ from the clone.
 - Left out their autopilot and TensorRT-LLM-specific skills; UPSTREAM.md says why and how to update.
 - The checker skips vendor/; these rules win where a skill differs.
-
-## 2026-09-24: experiments without a branch
-- The project repo gets no branch and no commit. Each experiment's change is saved as a patch in
-  lx-work, and exp.sh keeps the tree equal to the baseline commit plus the kept patches: keep
-  checks the patches rebuild the tree, drop reverses the change and checks the tree is back.
-  Undoing by hand could wipe the user's own changes, and git diff missed new files.
-- exp.sh also does the bookkeeping (number, NOTE.md, index row), and refuses to start when
-  HEAD moved or the tree drifted. Every experiment ends in one lx-work commit, kept or
-  dropped; lx-work uses one branch, main.
-- The checker now requires docs made from templates to keep their headings and fields,
-  CLAUDE.md to keep its sections, and the hook's phase docs to exist. It checks every text
-  file for English, and keeps the private terms in PROJECT.md out of lx-e2espeed.
-- The edit hook also checks the lx repo the shell is in, not only ones a command names.
-- Wrap-up says how to sync when another project reached the main copy first.
-- exp.sh warns about ignored files an experiment wrote, since no patch holds them. A commit-msg
-  hook keeps private terms out of lx-e2espeed commit messages. Onboarding covers a project
-  delivered without git, and submodules. setup.sh also excludes Python caches.
-- A failed technique is recorded as the condition it failed under, not as a verdict: it did not
-  fit one project, and the next may differ. Cards count successes and failures.

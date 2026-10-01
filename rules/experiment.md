@@ -39,7 +39,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 ## 3. Plan
 - Run `lx-e2espeed/exp.sh new <1 to 4 words>`. It checks that the project tree equals the baseline plus the kept patches, takes the next number, creates the directory with NOTE.md, and adds a running row to exp/INDEX.md.
 - Write Evidence, Hypothesis, and Plan in NOTE.md: the functions to change, the contracts in PROJECT.md it touches and their downstream impact, how verify covers it, and the expected gain.
-- If the change fits in one sentence and touches no contract, go ahead. Otherwise show the plan to the user and wait for approval.
+- Show the plan to the user and build nothing until they approve it. For a change that fits in one sentence and touches no contract, that sentence is the plan.
 
 ## 4. Build and compare candidates
 - Write each candidate in `lx-work/exp/NNN-name/candidate/`, as a copy, subclass, or hook around the project code; use one subdirectory per variant when comparing several. The project code stays untouched while exploring, so baseline and candidates run side by side.
