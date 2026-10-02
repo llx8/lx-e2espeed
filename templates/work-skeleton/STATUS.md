@@ -6,6 +6,7 @@ read_when: every session (the SessionStart hook injects it)
 
 - Phase: onboarding
 - Updated: <YYYY-MM-DD>
+- Rules synced: <rules-version>
 
 Phases: onboarding, optimizing, wrap-up, done.
 

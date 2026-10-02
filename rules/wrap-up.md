@@ -42,6 +42,6 @@ The main copy is the clone's `origin` (`git -C lx-e2espeed remote get-url origin
 - Bring the change into the main copy by pulling from its side: `git -C <main copy> pull --ff-only <project>/lx-e2espeed main`. Pull, not push: git refuses a push into a repo whose branch is checked out.
 - If the main copy has uncommitted changes, stop and ask the user.
 - If the pull cannot fast-forward, another project synced first. Run `git -C lx-e2espeed pull --rebase`, merge any card both projects touched, run the checker, show the user the result, then pull into the main copy again.
-- Other project clones pick the change up with `git -C lx-e2espeed pull --ff-only`.
+- Other project clones pick the change up with `git -C lx-e2espeed pull --ff-only`, then sync their lx-work (`rules/naming.md`).
 - At the end of the project, run the checker in the main copy, then push it: `git -C <main copy> push origin main`. If the cloud has commits the main copy lacks, pull them into the main copy first (`git -C <main copy> pull --ff-only origin main`), run the checker again, and ask the user if it cannot fast-forward.
 - Set the phase in STATUS.md to `done` at the end of the project, or back to `optimizing` after a milestone, and commit lx-work. It never goes to the lx-e2espeed cloud repo, and stays local unless the user sets up a remote of its own.

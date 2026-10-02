@@ -31,7 +31,7 @@ If this file reached you without the hook's phase and status lines, the hooks ar
 - Nothing about the project leaves lx-work. Cards and rule changes are abstract and reviewed by the user before they reach the main copy.
 - Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repositories; do not modify a sibling repository unless the user says so.
 - In the project repo, do not commit, stash, reset, clean, or switch branches unless the user asks; commits use the user's own git identity with no co-author lines. Change its code only inside an experiment or night trial, ended by `exp.sh keep`, `park`, or `drop`, never by hand, so between them the tree equals the baseline plus the kept patches.
-- Run every job that loads a model or data under a hard memory cap, at most half the RAM and sized from its estimated or slice-measured peak: `systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap> <command>` (commands in these rules omit it). An uncapped job once froze a no-swap server for two days.
+- Run every job that loads a model or data under a hard memory cap, at most half the RAM and sized from its estimated or slice-measured peak: `systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap> <command>` (commands in these rules omit it). An uncapped job once froze a no-swap server for two days. Light commands such as setup.sh and the checkers take a small cap, for example 2G: a memory guard may block any uncapped Python or script.
 
 ## Defaults
 - Every file in both lx repos is in English and written for an AI (`rules/writing.md`); anything for people goes in your reply.
@@ -57,7 +57,7 @@ Once, when entering the named phase:
 On demand:
 - `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
 - `rules/benchmarking.md`: before an A/B, judging a difference level, or changing a bench or verify tool.
-- `rules/naming.md`: the lx-work layout; naming files, directories, branches, and commits.
+- `rules/naming.md`: the lx-work layout and its sync after a pull; naming files, directories, branches, and commits.
 - `rules/writing.md`: writing or editing any doc in either lx repo, or changing anything in lx-e2espeed.
 - `playbook/INDEX.md`: looking for ideas after profiling; open only the matching cards.
 - Skills: ours in `skills/`, NVIDIA's in `vendor/skills/`; `rules/experiment.md` says which to load. These rules win over a skill; skill output goes to `lx-work/local/`.

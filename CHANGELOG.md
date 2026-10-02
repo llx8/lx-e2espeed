@@ -6,6 +6,10 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-01: Rules synced field, small caps for light commands
+- Bringing an existing lx-work up to a changed skeleton had no recorded procedure, and which rules commit lx-work matched lived in free text in STATUS.md; the first two projects each did it twice by hand. STATUS.md now has `- Rules synced:`, which `setup.sh project` fills, and `rules/naming.md` gives the sync after a pull: apply the skeleton diff since that commit, merge rejected hunks by hand, update the field.
+- A memory guard blocked `setup.sh global` and the checker for running without a cap. The cap rule now says light commands take a small one.
+
 ## 2026-10-01: hook output size, bench and verify fixes, one home per fact
 - Claude Code cut the SessionStart output (10.8 KB) to a 2 KB preview, so the entry rules never reached the session. The hook now prints the short, urgent lines first (paths, what to read if cut, phase and its rules doc, warnings), then STATUS.md, then CLAUDE.md; the checker caps CLAUDE.md at 6,000 bytes and STATUS.md at 3,000. The lx-work layout moved to `rules/naming.md`, the maintaining rules to `rules/writing.md`.
 - Bench: samples SM clock, temperature, and power during the run, since readings before and after miss throttling in between. The A/B sides are best (or the `--project` tree) and the candidate, and the A/A is `--ab best`: between experiments the project tree is best, not baseline. P99 needs 100 samples; below that the bench reports the maximum.

@@ -89,9 +89,10 @@ setup_project() {
   else
     cp -R "$here/templates/work-skeleton" lx-work
     mkdir -p lx-work/local/logs lx-work/local/profiles lx-work/local/scratch
-    # Record which rules this project started with, so its results can be traced to them.
+    # Record which rules this project started with, so its results can be traced to them, and which
+    # skeleton lx-work matches, so the sync after a pull knows where to diff from (rules/naming.md).
     version="$(git -C "$here" rev-parse --short HEAD 2>/dev/null || echo uncommitted)"
-    sed -i "s/<rules-version>/$version/" lx-work/PROJECT.md
+    sed -i "s/<rules-version>/$version/" lx-work/PROJECT.md lx-work/STATUS.md
     git -C lx-work init -q -b main
     git -C lx-work config core.hooksPath ../lx-e2espeed/hooks/git
     echo "Created lx-work."
