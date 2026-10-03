@@ -12,7 +12,7 @@ Copy this checklist into your reply and tick it off as you go. Start each step o
     - [ ] 1 Setup  - [ ] 2 Read  - [ ] 3 Discuss  - [ ] 4 Harness  - [ ] 5 Baseline
 
 ## 1. Setup
-- If the project is not a git repo, ask the user. With their okay, run `git init` and commit the code as delivered; the baseline needs a commit, and nothing is pushed.
+- If the project is not a git repo, ask the user. With their okay, run `git init` and commit the code as delivered; exp.sh needs a baseline commit, and nothing is pushed.
 - If lx-work/ is missing, run `lx-e2espeed/setup.sh project` from the project root once the user agrees. It adds both lx directories to `.git/info/exclude`, creates lx-work from `templates/work-skeleton/`, and makes lx-work a git repo.
 - Check that `git -C lx-e2espeed remote get-url origin` is the main copy on this machine; wrap-up syncs rule changes through it.
 - The rest of lx-work is built in steps 2 to 5, following the lx-work layout in `rules/naming.md`.
@@ -31,9 +31,9 @@ Explain your understanding first, keeping the issues found in step 2 apart from 
 Record the agreed parameters in PROJECT.md, each decision with its reason in DECISIONS.md, and what the user explains about callers, contract, or deployment in the knowledge files, where an answer replaces its open question. They belong to this project only; lx-e2espeed never records them.
 - End-to-end scope: where timing starts and stops.
 - Workload: input shapes, batch sizes, request pattern, warm or cold start.
-- Metric: latency by default; throughput or memory only if the user says so. Results compare with the baseline's own bench unless the user names another speed reference (see the glossary in `rules/writing.md`).
+- Metric: latency by default; throughput or memory only if the user says so. Every result is compared with the baseline (glossary in `rules/writing.md`): its speed is the baseline commit's own bench unless the user names another source, such as production's speed in its previous environment.
 - Bench time budget: how long one bench run may take. It sets WARMUP and REPEAT in the adapter and goes under Metric in PROJECT.md.
-- Accuracy standard: where the reference outputs come from (the baseline's own by default), how outputs are compared, the metrics and pass criterion, the thresholds of difference levels L0 to L3 (see `rules/benchmarking.md`) or none, and which level is acceptable.
+- Accuracy standard: where the reference outputs, the baseline's outputs, come from (the baseline commit's own by default), how outputs are compared, the metrics and pass criterion, the thresholds of difference levels L0 to L3 (see `rules/benchmarking.md`) or none, and which level is acceptable.
 - Contracts: the public interface downstream code relies on (argument order, return structure, channel order, sizes), the pre/post tensor contract (dtype, range, layout, color order, interpolation, rounding), and who consumes the output. Changing any of them needs the downstream impact stated first.
 - Deployment: how production runs the code (image or environment and versions, how it loads the repo and resolves weights, workers per GPU, MPS), the maximum input it accepts, and what a delivery must include (CI steps that rebuild engines, dependency locks, runtime libraries). Align the local environment with the production versions where possible.
 - Done when: the target, a point of diminishing returns (for example three experiments in a row inside the noise floor), or a deadline.
@@ -53,10 +53,11 @@ Read `rules/benchmarking.md` first.
 
 ## 5. Baseline
 - The project tree must be clean: `git status --porcelain` prints nothing. Ask the user to commit or stash their own changes; untracked environment files such as weights go into `.git/info/exclude` with their okay. `exp.sh` sees only this repo's own files: if a change must touch a git submodule, ask the user first.
-- Record `git rev-parse --short HEAD` as Baseline commit in PROJECT.md. `exp.sh` builds every experiment on it.
+- Record `git rev-parse --short HEAD` as Baseline commit in PROJECT.md. `exp.sh` builds every experiment on it; it is where experiments start, and the baseline only if the user chose no other source.
 - Freeze the reference outputs first: `verify --freeze` writes them to lx-work/baseline/reference/ from the project's own code; if the user chose another source in step 3, adapt the tool to freeze from it. Over 50 MB they go to lx-work/local/; commit their checksum and the command that regenerates them.
-- Then run `verify --self-test` on the unmodified code. Against its own reference it shows that the outputs repeat in a fresh process and that verify can fail; against another source it gives the baseline's own difference, which the user sees.
-- Bench the unmodified code, then measure the noise floor and the time breakdown as `rules/benchmarking.md` describes. In MAP.md, `- Measured on:` reads exactly `baseline <commit>`; the measurement conditions go in the paragraph below it.
-- Save the numbers and an environment snapshot (`pip freeze` or `conda list --export`) in lx-work/baseline/.
-- Fill the baseline row in STATUS.md (a speed reference from another environment names it), set the phase to `optimizing`, and commit lx-work.
+- Then run `verify --self-test` on the unmodified code. Against its own reference it shows that the outputs repeat in a fresh process and that verify can fail; against another source it gives the baseline commit's own difference, which the user sees.
+- Bench the unmodified code: its numbers are the first best, and the baseline speed unless the user chose another source. Then measure the noise floor and the time breakdown as `rules/benchmarking.md` describes. In MAP.md, `- Measured on:` reads exactly `baseline commit <hash>`; the measurement conditions go in the paragraph below it.
+- When the baseline speed comes from another environment, bench the same commit there, three runs, the way best is benched.
+- Save the numbers in lx-work/baseline/numbers/, one directory per source: `<baseline commit hash>/` for the unmodified code (bench, A/A, time breakdown, verify), and the other environment's name for its bench JSON files. Save an environment snapshot (`pip freeze` or `conda list --export`) of each in lx-work/baseline/. Set `BASELINE` in the adapter to the baseline's bench JSON files, so every bench prints the baseline beside its own numbers.
+- Fill STATUS.md: the baseline column from the baseline's files (name the environment when it is not this one) and best from the baseline commit's bench. Set the phase to `optimizing`, and commit lx-work.
 - From here on the reference outputs are frozen.

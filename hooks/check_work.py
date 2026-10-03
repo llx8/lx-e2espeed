@@ -27,7 +27,7 @@ CODE = re.compile(r"^```[\s\S]*?^```|`[^`\n]*`|^(?: {4}|\t)[^\n]*", re.M)  # fen
 LANDED = {"kept", "delivered"}  # statuses whose patch is in the project tree
 POINTER = re.compile(r"`([\w./-]+\.[A-Za-z]\w*):([A-Za-z_][\w.]*)(?:\(\))?`")  # `path:function`
 PATH_TOKEN = re.compile(r"`([\w./-]+\.[A-Za-z]\w*)")  # a backticked file path, with or without :function
-MEASURED_ON = re.compile(r"baseline ([0-9a-f]{7,40})(?: \+ exp up to (\d{3}))?")
+MEASURED_ON = re.compile(r"baseline commit ([0-9a-f]{7,40})(?: \+ exp up to (\d{3}))?")
 PATCH_FILE = re.compile(r"^diff --git a/(\S+) b/(\S+)$", re.M)
 
 
@@ -164,7 +164,7 @@ def defines(code, name, python):
     return re.search(rf"\b{word}\b", code)
 
 
-def check_map(root, rep, phase, baseline, running):
+def check_map(root, rep, phase, baseline_commit, running):
     """MAP.md describes best. Its pointers must resolve, and its time breakdown must be measured after
     every kept change to a file it points to: shares are relative, so a stale breakdown sends the next
     experiment to a step already solved. The project tree changes only through exp.sh, so the kept
@@ -187,13 +187,13 @@ def check_map(root, rep, phase, baseline, running):
         return
     stamp = MEASURED_ON.fullmatch(field(text, "Measured on") or "")
     if not stamp:
-        rep.error("MAP.md", "'- Measured on:' must read 'baseline <commit>' or 'baseline <commit> + exp up to <NNN>' "
+        rep.error("MAP.md", "'- Measured on:' must read 'baseline commit <hash>' or 'baseline commit <hash> + exp up to <NNN>' "
                             "once onboarding is over; the measurement conditions go in the paragraph below it")
         return
     commit, up_to = stamp.group(1), int(stamp.group(2) or 0)
-    if baseline and not (commit.startswith(baseline) or baseline.startswith(commit)):
-        rep.error("MAP.md", f"time breakdown measured on baseline {commit}, but PROJECT.md's baseline is {baseline}; "
-                            "re-run the stage timing on best and update MAP.md")
+    if baseline_commit and not (commit.startswith(baseline_commit) or baseline_commit.startswith(commit)):
+        rep.error("MAP.md", f"time breakdown measured on baseline commit {commit}, but PROJECT.md's Baseline commit is "
+                            f"{baseline_commit}; re-run the stage timing on best and update MAP.md")
     mapped = {rel for rel in PATH_TOKEN.findall(text) if (project / rel).is_file()}
     for note in sorted((root / "exp").glob("[0-9][0-9][0-9]-*/NOTE.md")):
         folder = note.parent

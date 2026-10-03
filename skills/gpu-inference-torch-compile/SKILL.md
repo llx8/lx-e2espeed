@@ -34,7 +34,7 @@ Proposed experiment boundary:
 
 ## After approval
 
-1. Freeze the eager production baseline, environment identity, input matrix, and complete accuracy command.
+1. Record the eager production path's numbers, environment identity, input matrix, and complete accuracy command.
 2. Compile the smallest repeated hotspot that covers the main cost. Prefer a module or a pure tensor function; keep request parsing, JPEG, Python I/O, logging, and mutable service state outside the boundary.
 3. Start with `backend="inductor"`, `mode="default"`, and an explicit shape policy. Do not tune private Inductor settings first.
 4. Run each candidate in its own fresh process. Measure compile time, first call, warmup convergence, warm distribution, peak allocated and reserved memory, graph count, graph breaks, recompiles, cache hits, and full end-to-end latency.

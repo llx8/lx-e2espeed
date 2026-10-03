@@ -1,6 +1,6 @@
 ---
 name: gpu-inference-profiling
-description: "Baseline and profile batch-1 PyTorch GPU inference: cold start vs warm, stage timing, CUDA events, torch.profiler, memory snapshots."
+description: "Measure and profile batch-1 PyTorch GPU inference: cold start vs warm, stage timing, CUDA events, torch.profiler, memory snapshots."
 ---
 
 # Profile GPU Inference

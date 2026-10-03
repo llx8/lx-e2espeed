@@ -6,6 +6,14 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-03: baseline versus baseline commit, three sets per result
+- "Baseline" named two things: the glossary's unmodified code at the baseline commit, and what results are compared with. A user chose production's previous environment as the speed to compare with, and the AI then reported the baseline commit's bench in this environment as the baseline. The glossary now separates the baseline (speed and reference outputs that every result compares with, the baseline commit's own unless the user chose another source) from the baseline commit (where experiments start); best is "before" in a report and the candidate "after". Rules, templates, skills, exp.sh, and the checker use the two names; "speed reference" is gone.
+- Formats: MAP.md reads `- Measured on: baseline commit <hash>`, NOTE.md `- Base: baseline commit <hash> + kept ...`. exp.sh still parses old Base lines; the checker requires the new MAP.md line, and a probe covers the old one. `exp.sh export baseline` became `export baseline-commit`.
+- The user wants three sets for every optimization result, baseline, before, and after, each with median, P90, P99, and memory. The bench reads the baseline's own bench files from the new `adapter.BASELINE` and prints them beside every run; an A/B prints the three sets per scenario and writes every round of both sides to `--out`, where before they lived only in scratch files the next A/B overwrote. The exp-note and STATUS.md templates have the rows.
+- Numbers from another session or environment are not a paired A/B: a change against the baseline is labeled descriptive, and a milestone or wrap-up benches both sides in one session, alternating three runs each.
+- Onboarding step 5 keeps the baseline's numbers in baseline/numbers/<source>/ and sets `BASELINE`; when its speed comes from another environment, it benches the same commit there three times. `exp.sh delivered` moves the baseline commit; the baseline stays, and only the user changes it.
+- Skills no longer say "baseline" for the eager path, an accuracy check, a warm memory level, or a reference kernel family.
+
 ## 2026-10-03: conflicts found at a project's baseline step
 - Onboarding step 5 ran verify before saving the reference that verify reads, and never named `verify --freeze`. It now freezes first, then runs `verify --self-test` on the unmodified code and says what that run shows.
 - The rules assumed the unmodified code supplies both the reference outputs and the speed reference, never subtracted numbers across environments, and required difference-level thresholds. A user chose otherwise: outputs from the framework model at full precision, speed from production's previous environment, no thresholds. The glossary, benchmarking.md, step 3, the PROJECT.md template, and the hard rule on outputs now allow each, as a user decision in DECISIONS.md.
@@ -72,22 +80,3 @@ A pilot re-optimized an image CNN service from its unoptimized commit (6 experim
 - Templates: per-scenario numbers with a main scenario, no `<metric>` placeholders, lx-work ignores Python caches (8 .pyc files had been committed).
 - Checker: project code in change.patch and candidate/ keeps its language (exp.sh keep produced a patch the English check rejected); finished notes cannot keep placeholders; template-shape errors also cover fields added by newer rules.
 - Wrap-up commits kept patches from a temporary index; the rules repo refuses rule changes without a CHANGELOG entry, because the pilot's own rule fixes went unlogged.
-
-## 2026-09-24: the user's GPU inference skill and two past projects
-- Split the user's GPU inference optimization skill (its commit db32202) into eight skills in skills/: profiling,
-  dataflow, memory, CNN TensorRT, torch.compile, diffusion, MPS hang, and delivery. Translated
-  to English, project and company names removed. Its fixed defaults (FP16 tensor contract,
-  weight store, Nunchaku, no pinned memory) became onboarding questions: the user said every
-  project needs its own analysis. setup.sh global installs them with NVIDIA's.
-- Experiments explore with candidates in exp/NNN/candidate/ beside untouched project code, as
-  the user worked before, then land the chosen variant through exp.sh keep.
-- Benchmarking follows the user's measurement habits: cold start apart, P99 and peak memory,
-  locked clocks for A/B, re-baseline after hardware changes, real inputs only, difference
-  levels L0 to L3, "difference" kept apart from "operator accuracy", checks that can fail.
-- Onboarding settles contracts, deployment, maximum input, and difference levels; PROJECT.md
-  has sections for them, and BACKLOG.md holds leads. New hard rules: fail fast without silent
-  fallbacks, no imports from lx or sibling repos, torch.compile only with approval.
-- Sixteen playbook cards with measured evidence from the two projects.
-- The edit hook shows at most 15 errors and no warnings, to save context.
-- Always-loaded text kept short: one-line skill descriptions (quoted, checked), a few words per
-  playbook entry, a shorter CLAUDE.md; wrap-up points to the delivery skill instead of copying it.

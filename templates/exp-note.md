@@ -18,9 +18,12 @@ read_when: reproducing, reverting, or building on this experiment
 <Files and functions to change as path:function, contracts touched and their downstream impact, how verify covers the change, expected gain.>
 
 ## Result
+<Three sets per scenario from the A/B's summary lines, with every round in this folder's ab-*.json: baseline (PROJECT.md, Metric), before (best, the A/B's best side; one row per A/B if they differ), and after (each variant). The change against the baseline is descriptive.>
+
 | | median | P90 | P99 | peak memory | vs baseline | vs best |
 |---|---|---|---|---|---|---|
-| before | | | | | | |
+| baseline | | | | | | |
+| before (best) | | | | | | |
 | <variant> | | | | | | |
 
 Difference: <level L0 to L3, magnitude and extent, scenario and input size>

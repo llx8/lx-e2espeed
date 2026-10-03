@@ -114,7 +114,7 @@ def main():
         sys.exit("error: references come from the project's own code; drop --candidate")
     if a.freeze and any(REF_DIR.glob("*.npz")) and not a.force:
         # After landing, "the project's own code" may already be optimized; freezing it would hide every change.
-        sys.exit("error: references are frozen at baseline; overwriting them needs the user (--force, recorded in DECISIONS.md)")
+        sys.exit("error: references were frozen in onboarding step 5; overwriting them needs the user (--force, recorded in DECISIONS.md)")
     with quiet():
         pipeline = adapter.load_pipeline(project, a.candidate)
     if a.freeze:

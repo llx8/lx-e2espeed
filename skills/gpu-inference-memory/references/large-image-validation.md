@@ -31,6 +31,6 @@ For every generated shape:
 
 ## Snapshot condition
 
-Capture a snapshot when an OOM occurs, peak memory leaves insufficient safety margin, reserved memory grows unexpectedly, or final allocated memory does not return near the established warm baseline. Tell the user the snapshot path, image dimensions, aspect ratio, repetition index, and failing stage if known.
+Capture a snapshot when an OOM occurs, peak memory leaves insufficient safety margin, reserved memory grows unexpectedly, or final allocated memory does not return near the established warm level. Tell the user the snapshot path, image dimensions, aspect ratio, repetition index, and failing stage if known.
 
 After a fix, rerun the entire matrix rather than only the previously failing image.

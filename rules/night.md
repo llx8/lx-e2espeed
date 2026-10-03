@@ -8,7 +8,7 @@ The user starts a night run before leaving. You try methods alone, one night tri
 It is the one autonomous mode, and it is safe because nothing lands: every trial ends with its change saved as a patch and reversed.
 
 ## Before the user leaves
-- Phase optimizing, no running experiment, `exp.sh check` passes, verify and bench pass, and the noise floor is current. This tree, the baseline plus the kept patches, is the base of every trial tonight.
+- Phase optimizing, no running experiment, `exp.sh check` passes, verify and bench pass, and the noise floor is current. This tree, best (the baseline commit plus the kept patches), is the base of every trial tonight.
 - Agree on the end time (default: when the user is back) and the scope. Default scope: any method inside the hard rules in CLAUDE.md. Numeric precision and `torch.compile`, which need approval by day, may be tried because nothing lands; flag them for the user. Nothing is installed or downloaded, and nothing outside the project tree and lx-work changes: a method that needs a dependency is queued as blocked.
 - A permission prompt stops the night: confirm with the user that the session runs without them.
 - Write the queue in night/INDEX.md: every method with evidence that it applies here, from a fresh profile, MAP.md, BACKLOG.md, the playbook, and the skill routing table in rules/experiment.md, ordered by expected gain (bounded by its step's share). Leave out directions DECISIONS.md rules out for this project. Put the night run under "In progress" in STATUS.md, and commit lx-work.

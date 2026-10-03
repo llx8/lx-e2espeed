@@ -3,7 +3,7 @@
 ## Locate by layer
 
 1. Reproduce with the smallest in-project callable and real tensor metadata.
-2. Confirm eager completes and passes the full accuracy baseline.
+2. Confirm eager completes and passes the full accuracy check.
 3. Use `backend="eager"` offline only, to diagnose Dynamo capture; it is neither a performance backend nor a production fallback.
 4. Use `backend="aot_eager"` to separate Dynamo capture from Inductor lowering.
 5. Use Inductor with `fullgraph=True` to find unsupported boundaries.

@@ -59,9 +59,10 @@ Scripts have no line limit: a script is split by purpose, never by length.
 
 ## Glossary
 - end to end: the timed path agreed in PROJECT.md.
-- baseline: the unmodified project code at the baseline commit, measured during onboarding. Its outputs become the reference outputs and its bench the speed reference, unless the user chose another source for either, recorded in DECISIONS.md: for example the framework model at full precision when the project's own outputs are known to be wrong, or production's speed in its previous environment.
-- best: the baseline plus all kept patches, which is the project tree between experiments.
-- candidate: code in an experiment's candidate/ directory that runs beside the project code; landing applies the chosen variant to the project code.
+- baseline: what every result is compared with, a speed and outputs (the reference outputs), set during onboarding. By default both come from the unmodified code at the baseline commit; the user may choose another source for either, recorded in DECISIONS.md: for example the framework model at full precision when the project's own outputs are known to be wrong, or production's speed in its previous environment. "Baseline" in reports, STATUS.md, and every "vs baseline" column means this; `BASELINE` in the adapter names its bench files.
+- baseline commit: the project commit every experiment starts from (PROJECT.md, `- Baseline commit:`); exp.sh rebuilds the project tree from it. Its own bench is the first best, and the baseline speed only when the user chose no other source. Delivering kept patches or moving to newer company code changes the baseline commit, never the baseline.
+- best: the baseline commit plus all kept patches, which is the project tree between experiments. In a report it is "before", the A/B's best side.
+- candidate: code in an experiment's candidate/ directory that runs beside the project code; landing applies the chosen variant to the project code. In a report it is "after".
 - difference, difference level (L0 to L3), operator accuracy, cold start: defined in `rules/benchmarking.md`.
 - experiment: one change with one hypothesis, recorded in exp/ with its change.patch.
 - night trial: an experiment of a night run, in night/. It never stays in the tree: it is parked (patch saved and reversed) or dropped, and the user may adopt a parked one into an experiment.

@@ -4,15 +4,16 @@
 # commit plus the kept patches, applied in number order.
 # Night trials (rules/night.md) live in lx-work/night/ and never stay in the tree: each is parked.
 #   exp.sh new <1 to 4 words>          start the next experiment; checks the tree first
-#   exp.sh try <1 to 4 words>          start the next night trial, on the baseline plus all kept patches
+#   exp.sh try <1 to 4 words>          start the next night trial, on best (the baseline commit plus all kept patches)
 #   exp.sh save                        write the running item's change.patch, new files included
 #   exp.sh keep                        end the experiment and keep the change (needs run.sh and result.json)
 #   exp.sh park                        end the night trial: save its patch, reverse it, confirm the tree is back
 #   exp.sh drop                        end either, reverse the change, and confirm the tree is back
 #   exp.sh adopt <NNN>                 turn parked night trial NNN into the next experiment
-#   exp.sh delivered                   the user committed the kept patches: HEAD becomes the baseline
-#   exp.sh check                       confirm the tree equals the baseline plus the kept patches; fails while an item runs
-#   exp.sh export <NNN|night/NNN|best|baseline>  write that code to lx-work/local/replay/<name>/
+#   exp.sh delivered                   the user committed the kept patches: HEAD becomes the baseline commit
+#   exp.sh check                       confirm the tree equals the baseline commit plus the kept patches; fails while an item runs
+#   exp.sh export <NNN|night/NNN|best|baseline-commit>  write that code to lx-work/local/replay/<name>/
+# The baseline commit is only where experiments start; the baseline that results compare with is in PROJECT.md (Metric).
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 project="$(dirname "$here")"
@@ -47,7 +48,7 @@ snapshot() {  # tree id of the working tree; the project's own index is never to
   GIT_INDEX_FILE="$tmp/snap" git write-tree
 }
 
-replay_base=""  # set by export: rebuild an item from the baseline in its own Base line
+replay_base=""  # set by export: rebuild an item from the baseline commit in its own Base line
 
 replay() {  # tree id of the baseline commit plus the patches of the given experiment dirs
   local base d
@@ -91,7 +92,8 @@ kept_for() {  # kept experiments the item $1 builds on: all of them for a night 
 
 kept_of() {  # experiment dirs named in the Base line of NOTE.md $1; a missing one prints its pattern
   local n m
-  for n in $(sed -n 's/^- Base: baseline [0-9a-f]* + kept \([0-9 ]*[0-9]\).*$/\1/p' "$1"); do
+  # Notes written before 2026-10-03 say "baseline <hash>" without "commit".
+  for n in $(sed -n 's/^- Base: baseline \(commit \)\{0,1\}[0-9a-f]* + kept \([0-9 ]*[0-9]\).*$/\2/p' "$1"); do
     m=("$exp/$n"-*/)
     echo "${m[0]%/}"
   done
@@ -136,7 +138,7 @@ start() {  # $1 exp or night, then 1 to 4 words: check the tree and create the n
   mapfile -t kept < <(exp_dirs kept)
   now="$(snapshot)"
   want="$(replay ${kept[@]+"${kept[@]}"})"
-  must_match "$want" "$now" "the project tree differs from the baseline plus the kept patches (files above); ask the user before going on"
+  must_match "$want" "$now" "the project tree differs from the baseline commit plus the kept patches (files above); ask the user before going on"
   for d in ${kept[@]+"${kept[@]}"}; do list+="$(basename "$d" | cut -d- -f1) "; done
   list="${list% }"
   # Numbers are never reused, so take the highest one seen in directories or indexes.
@@ -154,7 +156,7 @@ start() {  # $1 exp or night, then 1 to 4 words: check the tree and create the n
   mkdir "$dir"
   sed -e "s/^# NNN-name\$/# $num-$name/" \
       -e "s/^- Date: <YYYY-MM-DD>\$/- Date: $(date +%F)/" \
-      -e "s/^- Base: .*\$/- Base: baseline ${base:0:7} + kept ${list:-none}/" \
+      -e "s/^- Base: .*\$/- Base: baseline commit ${base:0:7} + kept ${list:-none}/" \
       -e "s/^- Status: running | kept | delivered | dropped | parked | adopted\$/- Status: running/" \
       "$here/templates/exp-note.md" > "$dir/NOTE.md"
   if grep -qE '^(# NNN-name|- (Date|Base|Status): .*[<|])' "$dir/NOTE.md"; then
@@ -165,7 +167,7 @@ start() {  # $1 exp or night, then 1 to 4 words: check the tree and create the n
   cells="$(grep -m1 '^| [A-Z]' "$root/INDEX.md" | tr -cd '|' | wc -c)"
   printf '| %s | running |%s\n' "$num-$name" "$(printf ' |%.0s' $(seq 3 "$((cells - 1))"))" >> "$root/INDEX.md"
   mkdir -p "$work/local" && touch "$work/local/exp-start"
-  echo "Started $(basename "$root")/$num-$name on baseline ${base:0:7} + kept ${list:-none}."
+  echo "Started $(basename "$root")/$num-$name on baseline commit ${base:0:7} + kept ${list:-none}."
 }
 
 cmd_new() { start "$exp" "$@"; }
@@ -216,7 +218,7 @@ cmd_drop() {
   must_match "$start" "$now" "after reversing, the tree still differs from the start of the experiment"
   set_status "$dir" dropped
   warn_ignored
-  echo "Dropped $(basename "$dir"); the tree is back to the baseline plus the kept patches. Record why, then commit lx-work."
+  echo "Dropped $(basename "$dir"); the tree is back to the baseline commit plus the kept patches. Record why, then commit lx-work."
 }
 
 cmd_park() {
@@ -289,27 +291,27 @@ cmd_check() {
     diff_ --stat "$want" "$now" >&2
     die "the tree is not at the base until $(basename "$dir") ends with keep, park, or drop"
   fi
-  must_match "$want" "$now" "the project tree differs from the baseline plus the kept patches (files above)"
-  echo "OK: the project tree equals baseline $(git rev-parse --short "$(baseline)") plus ${#kept[@]} kept patch(es)."
+  must_match "$want" "$now" "the project tree differs from the baseline commit plus the kept patches (files above)"
+  echo "OK: the project tree equals baseline commit $(git rev-parse --short "$(baseline)") plus ${#kept[@]} kept patch(es)."
 }
 
 cmd_export() {
   local target="${1:-}" label tree out match d
   case "$target" in
-    baseline) kept=(); label=baseline ;;
+    baseline-commit) kept=(); label=baseline-commit ;;
     best) mapfile -t kept < <(exp_dirs kept); label=best ;;
     [0-9][0-9][0-9]|night/[0-9][0-9][0-9])
       if [[ "$target" == night/* ]]; then match=("$work/$target"-*/); else match=("$exp/$target"-*/); fi
       [ -d "${match[0]}" ] || die "no $target"
       # From the item's own Base line, so later experiments and deliveries do not change what it rebuilds.
-      replay_base="$(sed -n 's/^- Base: baseline \([0-9a-f]*\) .*$/\1/p' "${match[0]}NOTE.md")"
+      replay_base="$(sed -n 's/^- Base: baseline \(commit \)\{0,1\}\([0-9a-f]*\) .*$/\2/p' "${match[0]}NOTE.md")"
       [ -n "$replay_base" ] || die "${match[0]}NOTE.md has no Base line"
       mapfile -t kept < <(kept_of "${match[0]}NOTE.md")
       for d in ${kept[@]+"${kept[@]}"}; do [ -d "$d" ] || die "$d, named in its Base line, is missing"; done
       kept+=("${match[0]%/}")
       label="$(basename "${match[0]}")"
       [[ "$target" != night/* ]] || label="night-$label" ;;
-    *) die "usage: exp.sh export <NNN|night/NNN|best|baseline>" ;;
+    *) die "usage: exp.sh export <NNN|night/NNN|best|baseline-commit>" ;;
   esac
   tree="$(replay ${kept[@]+"${kept[@]}"})"
   out="$work/local/replay/$label"
@@ -327,13 +329,13 @@ cmd_delivered() {
   want="$(replay "${kept[@]}")"
   head="$(git rev-parse --short HEAD)"
   [ "$(git rev-parse "HEAD^{tree}")" = "$want" ] \
-    || die "HEAD $head is not the baseline plus the kept patches; re-baseline with the user (rules/experiment.md)"
+    || die "HEAD $head is not the baseline commit plus the kept patches; agree on a new baseline commit with the user (rules/experiment.md)"
   must_match "$want" "$(snapshot)" "the working tree differs from HEAD $head"
   for d in "${kept[@]}"; do set_status "$d" delivered; done
   sed -i "s/^- Baseline commit: .*\$/- Baseline commit: $head/" "$work/PROJECT.md"
-  # The tree did not change, so the time breakdown stays as current as it was; only its baseline is renamed.
-  sed -i "s/^- Measured on: baseline [0-9a-f]*/- Measured on: baseline $head/" "$work/MAP.md"
-  echo "Marked ${#kept[@]} kept experiment(s) delivered; HEAD $head is the new baseline. Record it in DECISIONS.md, then commit lx-work."
+  # The tree did not change, so the time breakdown stays as current as it was; only its baseline commit is renamed.
+  sed -i "s/^- Measured on: baseline \(commit \)\{0,1\}[0-9a-f]*/- Measured on: baseline commit $head/" "$work/MAP.md"
+  echo "Marked ${#kept[@]} kept experiment(s) delivered; HEAD $head is the new baseline commit, and the baseline (PROJECT.md, Metric) stays. Record it in DECISIONS.md, then commit lx-work."
 }
 
 case "${1:-}" in

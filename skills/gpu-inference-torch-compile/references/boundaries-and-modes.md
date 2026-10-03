@@ -4,11 +4,11 @@
 
 Compile the smallest stable callable that contains the main measured cost. Inputs and outputs should be tensors or structurally stable PyTrees. Keep Python I/O, JPEG bytes, PIL/OpenCV objects, logging, request metadata, weight loading, mutable callbacks, and service error handling outside.
 
-Compile after `eval()`, device placement, dtype selection, and weight loading; afterwards do not change parameters, buffers, hooks, adapters, device, or dtype. Use `torch.inference_mode()` exactly as the eager baseline does. For a VAE, compile only the inner `encode` or `decode`; the outer layer may validate shapes and route buckets, but must not catch an error and call eager.
+Compile after `eval()`, device placement, dtype selection, and weight loading; afterwards do not change parameters, buffers, hooks, adapters, device, or dtype. Use `torch.inference_mode()` exactly as the eager path does. For a VAE, compile only the inner `encode` or `decode`; the outer layer may validate shapes and route buckets, but must not catch an error and call eager.
 
 ## Mode ladder
 
-Start from an explicit baseline:
+Start from explicit defaults:
 
 ```python
 compiled = torch.compile(candidate, backend="inductor", mode="default", fullgraph=True, dynamic=False)

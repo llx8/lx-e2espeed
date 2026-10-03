@@ -91,14 +91,14 @@ def build_work(base):
     fill(work / "STATUS.md", {"Phase": "optimizing", "Updated": "2026-09-30"})
     fill(work / "PROJECT.md", {"Baseline commit": COMMIT})
     append(work / "PROJECT.md", "- Bench: `tools/bench/main.py --candidate <file>`\n\n    tools/verify/main.py --project <dir>\n")
-    fill(work / "MAP.md", {"Measured on": f"baseline {COMMIT} + exp up to 001"})
+    fill(work / "MAP.md", {"Measured on": f"baseline commit {COMMIT} + exp up to 001"})
     append(work / "MAP.md", "- Model call: `app.py:Pipe.run`, entered from `app.py:load`.\n")
     for rel in ("DECISIONS.md", "FEEDBACK.md", "BACKLOG.md", "tools/INDEX.md", "exp/INDEX.md", "night/INDEX.md"):
         fill(work / rel, {})
     item = work / "exp" / "001-fast-path"
     item.mkdir()
     write(item / "NOTE.md", read(RULES / "templates" / "exp-note.md").replace("# NNN-name", "# 001-fast-path"))
-    fill(item / "NOTE.md", {"Date": "2026-09-29", "Base": f"baseline {COMMIT} + kept none", "Status": "kept"})
+    fill(item / "NOTE.md", {"Date": "2026-09-29", "Base": f"baseline commit {COMMIT} + kept none", "Status": "kept"})
     write(item / "change.patch", PATCH)
     write(item / "run.sh", "#!/usr/bin/env bash\n")
     write(item / "result.json", "{}\n")
@@ -178,16 +178,19 @@ PROBES = [
     # check_work.py: MAP.md
     ("pointer to a missing file", "work", lambda w: append(w / "MAP.md", "- `gone.py:run`\n"), "gone.py is not in the project"),
     ("pointer to a missing function", "work", lambda w: append(w / "MAP.md", "- `app.py:Pipe.fly`\n"), "does not define fly"),
-    ("malformed Measured on", "work", lambda w: edit(w / "MAP.md", f"- Measured on: baseline {COMMIT} + exp up to 001",
+    ("malformed Measured on", "work", lambda w: edit(w / "MAP.md", f"- Measured on: baseline commit {COMMIT} + exp up to 001",
                                                      "- Measured on: last week"), "'- Measured on:' must read"),
-    ("breakdown on another baseline", "work", lambda w: edit(w / "MAP.md", f"baseline {COMMIT} +", "baseline abcdef0 +"),
-     "but PROJECT.md's baseline is"),
-    ("breakdown older than a kept change", "work", lambda w: edit(w / "MAP.md", f"baseline {COMMIT} + exp up to 001", f"baseline {COMMIT}"),
+    ("Measured on without 'commit'", "work", lambda w: edit(w / "MAP.md", f"baseline commit {COMMIT} +", f"baseline {COMMIT} +"),
+     "'- Measured on:' must read 'baseline commit <hash>'"),
+    ("breakdown on another baseline commit", "work", lambda w: edit(w / "MAP.md", f"baseline commit {COMMIT} +", "baseline commit abcdef0 +"),
+     "but PROJECT.md's Baseline commit is"),
+    ("breakdown older than a kept change", "work", lambda w: edit(w / "MAP.md", f"baseline commit {COMMIT} + exp up to 001",
+                                                                  f"baseline commit {COMMIT}"),
      "time breakdown predates exp/001-fast-path (kept), which changed app.py"),
     ("breakdown older than a delivered change", "work", lambda w: (
         edit(note(w, "001-fast-path"), "- Status: kept", "- Status: delivered"),
         edit(w / "exp" / "INDEX.md", "| 001-fast-path | kept |", "| 001-fast-path | delivered |"),
-        edit(w / "MAP.md", f"baseline {COMMIT} + exp up to 001", f"baseline {COMMIT}")),
+        edit(w / "MAP.md", f"baseline commit {COMMIT} + exp up to 001", f"baseline commit {COMMIT}")),
      "time breakdown predates exp/001-fast-path (delivered)"),
     # check_rules.py: entry doc and doc map
     ("CLAUDE.md lost a section", "rules", lambda r: edit(r / "CLAUDE.md", "## Hard rules\n", "## Rules\n"), "lost its '## Hard rules' section"),

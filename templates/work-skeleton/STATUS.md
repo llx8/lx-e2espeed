@@ -14,11 +14,11 @@ Phases: onboarding, optimizing, wrap-up, done.
 <Metric and target, and the done-when condition, from PROJECT.md.>
 
 ## Numbers
-One row per scenario in PROJECT.md, main scenario first.
+One row per scenario in PROJECT.md, main scenario first. Baseline: what results compare with (PROJECT.md, Metric), not the baseline commit's bench unless the user chose that; best: the baseline commit plus the kept patches.
 
 | Scenario | baseline median | best | vs baseline | best from |
 |---|---|---|---|---|
-| <main scenario> | | | | baseline |
+| <main scenario> | | | | <baseline commit hash> |
 
 Peak memory: baseline <value>, best <value>
 
