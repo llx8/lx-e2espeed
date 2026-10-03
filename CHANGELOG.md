@@ -6,6 +6,14 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-03: conflicts found at a project's baseline step
+- Onboarding step 5 ran verify before saving the reference that verify reads, and never named `verify --freeze`. It now freezes first, then runs `verify --self-test` on the unmodified code and says what that run shows.
+- The rules assumed the unmodified code supplies both the reference outputs and the speed reference, never subtracted numbers across environments, and required difference-level thresholds. A user chose otherwise: outputs from the framework model at full precision, speed from production's previous environment, no thresholds. The glossary, benchmarking.md, step 3, the PROJECT.md template, and the hard rule on outputs now allow each, as a user decision in DECISIONS.md.
+- The checker flagged every `<...>` in PROJECT.md after onboarding, while step 4 records commands there whose metavariables look the same. It now skips code spans, fenced blocks, and indented lines, where templates put no fields; a probe shows a placeholder beside a code span is still caught.
+- MAP.md's `- Measured on:` holds only the stamp, but nothing said where the measurement conditions go: the paragraph below it, in the template, step 5, and the checker's message.
+- An A/B read `clocks.sm` to see whether the lock held; a GPU running below its lock under the power cap cannot show that. The trigger is now a reboot or driver reload since the lock.
+- The working loop showed the baseline as a stage after onboarding; it is onboarding's last step. Step 5 no longer restates where the noise floor goes. Kept on purpose: the go-ahead and memory-cap rules in both CLAUDE.md and the user's global instructions (the rules must hold without the latter), and one-line reminders at the steps where they apply.
+
 ## 2026-10-01: Rules synced field, small caps for light commands
 - Bringing an existing lx-work up to a changed skeleton had no recorded procedure, and which rules commit lx-work matched lived in free text in STATUS.md; the first two projects each did it twice by hand. STATUS.md now has `- Rules synced:`, which `setup.sh project` fills, and `rules/naming.md` gives the sync after a pull: apply the skeleton diff since that commit, merge rejected hunks by hand, update the field.
 - A memory guard blocked `setup.sh global` and the checker for running without a cap. The cap rule now says light commands take a small one.
@@ -83,13 +91,3 @@ A pilot re-optimized an image CNN service from its unoptimized commit (6 experim
 - The edit hook shows at most 15 errors and no warnings, to save context.
 - Always-loaded text kept short: one-line skill descriptions (quoted, checked), a few words per
   playbook entry, a shorter CLAUDE.md; wrap-up points to the delivery skill instead of copying it.
-
-## 2026-09-24: NVIDIA performance skills
-- Copied five skills unchanged from NVIDIA TensorRT-LLM (Apache-2.0) into vendor/skills/:
-  nsys, ncu, CUDA graphs, host-device syncs, timing code. They are generic PyTorch and CUDA
-  guidance written for coding agents.
-- setup.sh global installs them to ~/.claude/skills/, because Claude Code skips skills inside
-  git-ignored directories, and every project ignores lx-e2espeed/. The SessionStart hook warns
-  when the installed hooks or skills differ from the clone.
-- Left out their autopilot and TensorRT-LLM-specific skills; UPSTREAM.md says why and how to update.
-- The checker skips vendor/; these rules win where a skill differs.

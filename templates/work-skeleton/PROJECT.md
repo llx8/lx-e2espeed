@@ -18,14 +18,14 @@ Facts agreed with the user during onboarding; what the code and the user showed 
 - Maximum input: <largest input the service accepts, or none>
 
 ## Metric
-<Latency by default. The exact measurement and the target.>
+<Latency by default. The exact measurement, the target, and the speed reference if it is not the baseline's own bench.>
 - Bench time budget: <how long one bench run may take; WARMUP and REPEAT in adapter/pipeline.py fit it>
 
 ## Accuracy standard
-<Comparison method and inputs covered.>
+<Source of the reference outputs (the baseline's own by default), comparison method, and inputs covered.>
 - Metrics and pass criterion: <for images, for example max error and PSNR thresholds>
-- Difference levels: <L0 identical; L1 up to ...; L2 up to ...; L3 beyond>
-- Accepted level: <the highest level the user accepts>
+- Difference levels: <L0 identical; L1 up to ...; L2 up to ...; L3 beyond; or none, when the user judges every result that is not L0>
+- Accepted level: <the highest level the user accepts, or none>
 
 ## Contracts
 - Interface: <what downstream code relies on: argument order, return structure, channel order, sizes>

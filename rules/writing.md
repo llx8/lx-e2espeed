@@ -59,7 +59,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 
 ## Glossary
 - end to end: the timed path agreed in PROJECT.md.
-- baseline: the unmodified project code, measured during onboarding.
+- baseline: the unmodified project code at the baseline commit, measured during onboarding. Its outputs become the reference outputs and its bench the speed reference, unless the user chose another source for either, recorded in DECISIONS.md: for example the framework model at full precision when the project's own outputs are known to be wrong, or production's speed in its previous environment.
 - best: the baseline plus all kept patches, which is the project tree between experiments.
 - candidate: code in an experiment's candidate/ directory that runs beside the project code; landing applies the chosen variant to the project code.
 - difference, difference level (L0 to L3), operator accuracy, cold start: defined in `rules/benchmarking.md`.
@@ -67,7 +67,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - night trial: an experiment of a night run, in night/. It never stays in the tree: it is parked (patch saved and reversed) or dropped, and the user may adopt a parked one into an experiment.
 - delivered: a kept experiment whose patch the user committed to the project; the baseline commit includes it.
 - kept patches: the change.patch files of kept experiments. Applied to the baseline commit in number order, they rebuild the project tree.
-- verify: compare outputs with the baseline reference outputs.
+- verify: compare outputs with the frozen reference outputs.
 - bench: measure the metric.
 - noise floor: the run-to-run spread of the bench on unchanged code; smaller differences are not gains.
 - time breakdown: each end-to-end step's share of the total time, recorded in MAP.md.

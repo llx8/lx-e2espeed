@@ -22,7 +22,7 @@ If this file reached you without the hook's phase and status lines, the hooks ar
 2. Tell the user in a few lines where things stand and what "Next" in STATUS.md proposes; start once they say so.
 
 ## Hard rules
-- Do not change model weights or architecture. Outputs must match the baseline within the tolerance in `lx-work/PROJECT.md`.
+- Do not change model weights or architecture. Outputs must meet the accuracy standard in `lx-work/PROJECT.md`.
 - Do not edit reference outputs, tolerances, or verify criteria to make a change pass. Only the user changes them, recorded in `lx-work/DECISIONS.md`.
 - Report results with the bench and verify tools' own summary lines, never a paraphrase or a claim without numbers.
 - One landed change per experiment, so every gain or regression has one cause.
@@ -41,7 +41,7 @@ If this file reached you without the hook's phase and status lines, the hooks ar
 - When compacting, keep the current experiment, the latest numbers, and pending user decisions.
 
 ## Working loop
-onboarding → baseline → repeat (profile → propose → user picks → plan → user approves → candidates → verify → bench → user picks → land or drop → one lx-work commit) → wrap-up. A night run (`rules/night.md`) only parks trials for the user.
+onboarding (ends with the baseline) → repeat (profile → propose → user picks → plan → user approves → candidates → verify → bench → user picks → land or drop → one lx-work commit) → wrap-up. A night run (`rules/night.md`) only parks trials for the user.
 
 ## Doc map
 Read only what the current step needs.

@@ -23,6 +23,7 @@ IGNORED_DIRS = {"__pycache__"}
 SHAPE = re.compile(r"^(## .+|- [A-Z][A-Za-z ]*:)")  # template lines a doc must keep
 COMMIT = re.compile(r"[0-9a-f]{7,40}")
 PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]*>")  # an unfilled template field such as <metric>
+CODE = re.compile(r"^```[\s\S]*?^```|`[^`\n]*`|^(?: {4}|\t)[^\n]*", re.M)  # fenced blocks, code spans, indented lines
 LANDED = {"kept", "delivered"}  # statuses whose patch is in the project tree
 POINTER = re.compile(r"`([\w./-]+\.[A-Za-z]\w*):([A-Za-z_][\w.]*)(?:\(\))?`")  # `path:function`
 PATH_TOKEN = re.compile(r"`([\w./-]+\.[A-Za-z]\w*)")  # a backticked file path, with or without :function
@@ -33,6 +34,12 @@ PATCH_FILE = re.compile(r"^diff --git a/(\S+) b/(\S+)$", re.M)
 def field(text, name):
     match = re.search(rf"^- {name}: (.+)$", text, re.M)
     return match.group(1).strip() if match else None
+
+
+def placeholder(text):
+    """The first unfilled template field outside code. Templates never put fields in code, while recorded
+    commands use <name> metavariables there."""
+    return PLACEHOLDER.search(CODE.sub("", text))
 
 
 def shape(text):
@@ -73,8 +80,8 @@ def check_work_layout(root, rep, rules_root):
         rep.error("PROJECT.md", "'- Baseline commit:' must be a commit hash once onboarding is over")
     if phase in PHASES - {"onboarding"}:
         for rel, text in (("STATUS.md", status), ("PROJECT.md", project)):
-            if PLACEHOLDER.search(text):
-                rep.error(rel, f"'{PLACEHOLDER.search(text).group(0)}' is still a template placeholder after onboarding; "
+            if found := placeholder(text):
+                rep.error(rel, f"'{found.group(0)}' is still a template placeholder after onboarding; "
                                "fill it, or write 'none' or 'not recorded'")
     if (root / "night").is_dir():
         check_shape(root / "night" / "INDEX.md", skeleton / "night" / "INDEX.md", "night/INDEX.md", rep)
@@ -123,8 +130,8 @@ def check_items(root, kind, rep, status_updated, note_template):
             rep.error(where, f"NOTE.md says {state} but {kind}/INDEX.md says '{rows[folder.name]}'")
         if state == "running":
             running.append(where.rstrip("/"))
-        elif state in ENDED_FILES and PLACEHOLDER.search(note):
-            rep.error(where + "NOTE.md", f"{state}, but '{PLACEHOLDER.search(note).group(0)}' is still a template placeholder")
+        elif state in ENDED_FILES and (found := placeholder(note)):
+            rep.error(where + "NOTE.md", f"{state}, but '{found.group(0)}' is still a template placeholder")
         for name in ENDED_FILES.get(state, ()):
             if not (folder / name).is_file():
                 rep.error(where, f"{state}, so it needs {name}")
@@ -181,7 +188,7 @@ def check_map(root, rep, phase, baseline, running):
     stamp = MEASURED_ON.fullmatch(field(text, "Measured on") or "")
     if not stamp:
         rep.error("MAP.md", "'- Measured on:' must read 'baseline <commit>' or 'baseline <commit> + exp up to <NNN>' "
-                            "once onboarding is over")
+                            "once onboarding is over; the measurement conditions go in the paragraph below it")
         return
     commit, up_to = stamp.group(1), int(stamp.group(2) or 0)
     if baseline and not (commit.startswith(baseline) or baseline.startswith(commit)):

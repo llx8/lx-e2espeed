@@ -90,6 +90,7 @@ def build_work(base):
     shutil.copytree(RULES / "templates" / "work-skeleton", work)
     fill(work / "STATUS.md", {"Phase": "optimizing", "Updated": "2026-09-30"})
     fill(work / "PROJECT.md", {"Baseline commit": COMMIT})
+    append(work / "PROJECT.md", "- Bench: `tools/bench/main.py --candidate <file>`\n\n    tools/verify/main.py --project <dir>\n")
     fill(work / "MAP.md", {"Measured on": f"baseline {COMMIT} + exp up to 001"})
     append(work / "MAP.md", "- Model call: `app.py:Pipe.run`, entered from `app.py:load`.\n")
     for rel in ("DECISIONS.md", "FEEDBACK.md", "BACKLOG.md", "tools/INDEX.md", "exp/INDEX.md", "night/INDEX.md"):
@@ -155,6 +156,8 @@ PROBES = [
     ("baseline not a commit", "work", lambda w: edit(w / "PROJECT.md", f"- Baseline commit: {COMMIT}", "- Baseline commit: head"),
      "'- Baseline commit:' must be a commit hash"),
     ("placeholder after onboarding", "work", lambda w: append(w / "STATUS.md", "- <next step>\n"), "still a template placeholder after onboarding"),
+    ("placeholder beside a code span", "work", lambda w: append(w / "PROJECT.md", "- Profilers: `nsys --version`, <working ncu command>\n"),
+     "'<working ncu command>' is still a template placeholder"),
     ("bad experiment name", "work", lambda w: (w / "exp" / "1-fast").mkdir(), "name must be a three-digit number"),
     ("number reused", "work", lambda w: add_item(w, "001-other-path", "dropped"), "number already used"),
     ("experiment without a row", "work", lambda w: add_item(w, "002-other-path", "dropped", row=False), "has no row in exp/INDEX.md"),

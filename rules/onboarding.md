@@ -31,9 +31,9 @@ Explain your understanding first, keeping the issues found in step 2 apart from 
 Record the agreed parameters in PROJECT.md, each decision with its reason in DECISIONS.md, and what the user explains about callers, contract, or deployment in the knowledge files, where an answer replaces its open question. They belong to this project only; lx-e2espeed never records them.
 - End-to-end scope: where timing starts and stops.
 - Workload: input shapes, batch sizes, request pattern, warm or cold start.
-- Metric: latency by default; throughput or memory only if the user says so.
+- Metric: latency by default; throughput or memory only if the user says so. Results compare with the baseline's own bench unless the user names another speed reference (see the glossary in `rules/writing.md`).
 - Bench time budget: how long one bench run may take. It sets WARMUP and REPEAT in the adapter and goes under Metric in PROJECT.md.
-- Accuracy standard: how outputs are compared, the metrics and pass criterion, the thresholds of difference levels L0 to L3 (see `rules/benchmarking.md`), and which level is acceptable.
+- Accuracy standard: where the reference outputs come from (the baseline's own by default), how outputs are compared, the metrics and pass criterion, the thresholds of difference levels L0 to L3 (see `rules/benchmarking.md`) or none, and which level is acceptable.
 - Contracts: the public interface downstream code relies on (argument order, return structure, channel order, sizes), the pre/post tensor contract (dtype, range, layout, color order, interpolation, rounding), and who consumes the output. Changing any of them needs the downstream impact stated first.
 - Deployment: how production runs the code (image or environment and versions, how it loads the repo and resolves weights, workers per GPU, MPS), the maximum input it accepts, and what a delivery must include (CI steps that rebuild engines, dependency locks, runtime libraries). Align the local environment with the production versions where possible.
 - Done when: the target, a point of diminishing returns (for example three experiments in a row inside the noise floor), or a deadline.
@@ -45,7 +45,7 @@ Move on only after the user confirms.
 
 ## 4. Build the harness
 Read `rules/benchmarking.md` first.
-- Check that the profilers run (`nsys --version`, `ncu --version`, then one `ncu --set full` run). Both ship in the CUDA toolkit's bin/, which may not be on PATH, and profiling permissions can change after a container restart; record the working commands in PROJECT.md.
+- Check that the profilers run (`nsys --version`, `ncu --version`, then one `ncu --set full` run). Both ship in the CUDA toolkit's bin/, which may not be on PATH, and profiling permissions can change after a container restart; record the working commands in PROJECT.md, in backticks or an indented block, where metavariables such as `<name>` are allowed.
 - If CUDA looks unavailable, check whether the command ran in a sandbox before concluding the GPU or driver is missing, and say which it was.
 - Write `lx-work/tools/check-env/`: one command that lists every gap at once (modules, CUDA in the framework, compiler, TensorRT headers matching the runtime, engines loadable, current GPU). Run it first whenever the environment misbehaves.
 - Copy `templates/tools/adapter/` to `lx-work/adapter/` and the generic `bench/`, `verify/`, and `cpu-profile/` to `lx-work/tools/`, then fill every TODO in the adapter: scenarios, stages, loading, one call, output arrays, and difference levels. The generic tools already follow `rules/benchmarking.md` (A/B and A/A modes, stage mode, GPU sampling during the run, file-descriptor-level log redirect, self-test) and load candidates the same way as the project's code.
@@ -54,8 +54,9 @@ Read `rules/benchmarking.md` first.
 ## 5. Baseline
 - The project tree must be clean: `git status --porcelain` prints nothing. Ask the user to commit or stash their own changes; untracked environment files such as weights go into `.git/info/exclude` with their okay. `exp.sh` sees only this repo's own files: if a change must touch a git submodule, ask the user first.
 - Record `git rev-parse --short HEAD` as Baseline commit in PROJECT.md. `exp.sh` builds every experiment on it.
-- Run verify and bench on the unmodified project code.
-- Measure the noise floor (`bench --ab best`) and the time breakdown (`bench --stages`) as `rules/benchmarking.md` describes. Set the noise floor in `NOISE_MS` in the adapter and in STATUS.md, and record the breakdown in MAP.md with its `- Measured on:` line.
-- Save numbers, reference outputs, and an environment snapshot (`pip freeze` or `conda list --export`) in lx-work/baseline/. Reference outputs over 50 MB go to lx-work/local/; commit their checksum and the command that regenerates them.
-- Fill the baseline row in STATUS.md, set the phase to `optimizing`, and commit lx-work.
+- Freeze the reference outputs first: `verify --freeze` writes them to lx-work/baseline/reference/ from the project's own code; if the user chose another source in step 3, adapt the tool to freeze from it. Over 50 MB they go to lx-work/local/; commit their checksum and the command that regenerates them.
+- Then run `verify --self-test` on the unmodified code. Against its own reference it shows that the outputs repeat in a fresh process and that verify can fail; against another source it gives the baseline's own difference, which the user sees.
+- Bench the unmodified code, then measure the noise floor and the time breakdown as `rules/benchmarking.md` describes. In MAP.md, `- Measured on:` reads exactly `baseline <commit>`; the measurement conditions go in the paragraph below it.
+- Save the numbers and an environment snapshot (`pip freeze` or `conda list --export`) in lx-work/baseline/.
+- Fill the baseline row in STATUS.md (a speed reference from another environment names it), set the phase to `optimizing`, and commit lx-work.
 - From here on the reference outputs are frozen.
