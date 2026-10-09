@@ -6,6 +6,10 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-09: algorithm repo merge and new pin at delivery, MPS on by default
+- The user, in a service project that pins its algorithm repo in a dependency file: at the end the algorithm's dev branch is merged back into the branch the work started from, and the dependency file pins that branch at its newest commit. Wrap-up step 1 says so, and onboarding step 3 points to it, so the layout is planned for it from the start.
+- The user: MPS is on by default in production. Onboarding step 3 now assumes it unless the user says otherwise, so MPS hazards are checked from the first experiment instead of found at delivery.
+
 ## 2026-10-03: baseline versus baseline commit, three sets per result
 - "Baseline" named two things: the glossary's unmodified code at the baseline commit, and what results are compared with. A user chose production's previous environment as the speed to compare with, and the AI then reported the baseline commit's bench in this environment as the baseline. The glossary now separates the baseline (speed and reference outputs that every result compares with, the baseline commit's own unless the user chose another source) from the baseline commit (where experiments start); best is "before" in a report and the candidate "after". Rules, templates, skills, exp.sh, and the checker use the two names; "speed reference" is gone.
 - Formats: MAP.md reads `- Measured on: baseline commit <hash>`, NOTE.md `- Base: baseline commit <hash> + kept ...`. exp.sh still parses old Base lines; the checker requires the new MAP.md line, and a probe covers the old one. `exp.sh export baseline` became `export baseline-commit`.
