@@ -54,7 +54,8 @@ Scripts have no line limit: a script is split by purpose, never by length.
 ## Maintaining lx-e2espeed
 - Give every new check a probe in `hooks/test_checks.py`, which proves each check can fail; the pre-commit hook runs it.
 - Log every change to rules, templates, or hooks in `CHANGELOG.md` with its reason.
-- During project work, change rules or cards at wrap-up, or earlier when the user asks; either way only after the user's review.
+- During project work, change rules or cards at wrap-up, or earlier when the user asks; either way only on the user's go-ahead.
+- The user does not review the diff (the user, 2026-10-10: the AI maintains lx-e2espeed). Check it yourself before committing: nothing project-specific, the checker and `hooks/test_checks.py` pass, CHANGELOG.md logs it. Then commit and sync (`rules/wrap-up.md` step 5).
 - Syncing to the main copy and pushing it to the cloud follow `rules/wrap-up.md` step 5.
 
 ## Glossary

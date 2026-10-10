@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-10: the user does not review lx-e2espeed diffs
+- Asked to review a rules diff, the user said there is no review: the AI maintains lx-e2espeed. CLAUDE.md, writing.md, and wrap-up step 5 replace the review with the AI's own check (nothing project-specific, checker and probes pass, CHANGELOG entry), then commit and sync. Whether to make a change still needs the user's go-ahead.
+
 ## 2026-10-10: linked repos in exp.sh, snapshot keeps the index mtime
 - A service project keeps its algorithm code in a separate repo, a gitignored symlink at the project top. exp.sh saw only the project repo, so it could not keep, park, or drop a change there, and exports lacked that code. PROJECT.md now names linked repos (`- Linked repos: <dir> <commit>, ...` or none). exp.sh checks, snapshots, and replays each like the project tree from its commit, saves change.<dir>.patch, applies or reverses all patches or none, and records the linked commits in the Base line; `export` writes each into `<name>/<dir>/`, and `delivered` moves their commits. Projects without the field and old Base lines work as before.
 - exp.sh copied the index for its snapshot with a fresh mtime, which defeats git's racy-file check: a file changed to the same size within the second it was staged read as unchanged, and `check` failed on a correct tree. A scratch test of the linked repos hit it. The copy keeps the mtime now.
