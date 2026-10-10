@@ -43,6 +43,18 @@ PATCH = '''diff --git a/app.py b/app.py
 -        return x
 +        return x * 1
 '''
+LIB = '''def run(x):
+    return x
+'''
+# A linked repo's patch (exp.sh: change.<dir>.patch), paths relative to lib/; its comment keeps the project's language.
+LIB_PATCH = f'''diff --git a/core.py b/core.py
+--- a/core.py
++++ b/core.py
+@@ -1,2 +1,3 @@
+ def run(x):
++    # {chr(0x5FEB)}{chr(0x901F)}
+     return x
+'''
 
 
 def read(path):
@@ -86,13 +98,14 @@ def build_rules(base):
 def build_work(base):
     project = base / PROJECT
     write(project / "app.py", APP)
+    write(project / "lib" / "core.py", LIB)
     work = project / "lx-work"
     shutil.copytree(RULES / "templates" / "work-skeleton", work)
     fill(work / "STATUS.md", {"Phase": "optimizing", "Updated": "2026-09-30"})
-    fill(work / "PROJECT.md", {"Baseline commit": COMMIT})
+    fill(work / "PROJECT.md", {"Baseline commit": COMMIT, "Linked repos": "lib 89abcde"})
     append(work / "PROJECT.md", "- Bench: `tools/bench/main.py --candidate <file>`\n\n    tools/verify/main.py --project <dir>\n")
     fill(work / "MAP.md", {"Measured on": f"baseline commit {COMMIT} + exp up to 001"})
-    append(work / "MAP.md", "- Model call: `app.py:Pipe.run`, entered from `app.py:load`.\n")
+    append(work / "MAP.md", "- Model call: `app.py:Pipe.run`, entered from `app.py:load`.\n- Preprocess: `lib/core.py:run`.\n")
     for rel in ("DECISIONS.md", "FEEDBACK.md", "BACKLOG.md", "tools/INDEX.md", "exp/INDEX.md", "night/INDEX.md"):
         fill(work / rel, {})
     item = work / "exp" / "001-fast-path"
@@ -100,6 +113,7 @@ def build_work(base):
     write(item / "NOTE.md", read(RULES / "templates" / "exp-note.md").replace("# NNN-name", "# 001-fast-path"))
     fill(item / "NOTE.md", {"Date": "2026-09-29", "Base": f"baseline commit {COMMIT} + kept none", "Status": "kept"})
     write(item / "change.patch", PATCH)
+    write(item / "change.lib.patch", LIB_PATCH)
     write(item / "run.sh", "#!/usr/bin/env bash\n")
     write(item / "result.json", "{}\n")
     append(work / "exp" / "INDEX.md", "| 001-fast-path | kept | 1.0 ms | -10% | -10% | L0 | faster |\n")
@@ -192,6 +206,10 @@ PROBES = [
         edit(w / "exp" / "INDEX.md", "| 001-fast-path | kept |", "| 001-fast-path | delivered |"),
         edit(w / "MAP.md", f"baseline commit {COMMIT} + exp up to 001", f"baseline commit {COMMIT}")),
      "time breakdown predates exp/001-fast-path (delivered)"),
+    ("breakdown older than a linked-repo change", "work", lambda w: (
+        write(w / "exp" / "001-fast-path" / "change.patch", ""),
+        edit(w / "MAP.md", f"baseline commit {COMMIT} + exp up to 001", f"baseline commit {COMMIT}")),
+     "time breakdown predates exp/001-fast-path (kept), which changed lib/core.py"),
     # check_rules.py: entry doc and doc map
     ("CLAUDE.md lost a section", "rules", lambda r: edit(r / "CLAUDE.md", "## Hard rules\n", "## Rules\n"), "lost its '## Hard rules' section"),
     ("CLAUDE.md over its limit", "rules", lambda r: append(r / "CLAUDE.md", lines(100)), "limit 100"),

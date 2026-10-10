@@ -24,6 +24,7 @@ CJK = re.compile(r"[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uff00-\
 KEBAB = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 SNAKE = re.compile(r"[a-z0-9]+(_[a-z0-9]+)*")
 FIXED = re.compile(r"[A-Z]+")
+PROJECT_PATCH = re.compile(r"change(\.[A-Za-z0-9_][A-Za-z0-9_.-]*)?\.patch")  # change.patch, change.<linked repo>.patch
 DOC_MAX = 150
 TOC_OVER = 100  # docs longer than this need a "## Contents" list near the top
 # The SessionStart hook injects both into every session; Claude Code cuts hook output above about 10 KB.
@@ -120,7 +121,8 @@ def check_name(path, rel, kind, rep):
 
 def is_project_code(rel):
     parts = rel.split("/")
-    return parts[0] in ("exp", "night") and len(parts) > 2 and parts[2] in ("change.patch", "candidate")
+    return (parts[0] in ("exp", "night") and len(parts) > 2
+            and (parts[2] == "candidate" or bool(PROJECT_PATCH.fullmatch(parts[2]))))
 
 
 def check_file(path, rel, kind, rep, prose, texts):

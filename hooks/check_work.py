@@ -29,6 +29,7 @@ POINTER = re.compile(r"`([\w./-]+\.[A-Za-z]\w*):([A-Za-z_][\w.]*)(?:\(\))?`")  #
 PATH_TOKEN = re.compile(r"`([\w./-]+\.[A-Za-z]\w*)")  # a backticked file path, with or without :function
 MEASURED_ON = re.compile(r"baseline commit ([0-9a-f]{7,40})(?: \+ exp up to (\d{3}))?")
 PATCH_FILE = re.compile(r"^diff --git a/(\S+) b/(\S+)$", re.M)
+LINKED_PATCH = re.compile(r"change\.([A-Za-z0-9_][A-Za-z0-9_.-]*)\.patch")  # exp.sh: the change to linked repo <dir>/
 
 
 def field(text, name):
@@ -198,11 +199,17 @@ def check_map(root, rep, phase, baseline_commit, running):
     for note in sorted((root / "exp").glob("[0-9][0-9][0-9]-*/NOTE.md")):
         folder = note.parent
         state = field(note.read_text(encoding="utf-8"), "Status")
-        patch = folder / "change.patch"
-        if state not in LANDED or int(folder.name[:3]) <= up_to or not patch.is_file():
+        if state not in LANDED or int(folder.name[:3]) <= up_to:
             continue
-        changed = {p for pair in PATCH_FILE.findall(patch.read_text(encoding="utf-8", errors="replace"))
-                   for p in pair} & mapped
+        changed = set()
+        for patch in sorted(folder.glob("change*.patch")):
+            linked = LINKED_PATCH.fullmatch(patch.name)
+            if patch.name != "change.patch" and not linked:
+                continue
+            prefix = f"{linked.group(1)}/" if linked else ""  # its paths are relative to the linked repo
+            changed |= {prefix + p for pair in PATCH_FILE.findall(patch.read_text(encoding="utf-8", errors="replace"))
+                        for p in pair}
+        changed &= mapped
         if changed:
             rep.error("MAP.md", f"time breakdown predates exp/{folder.name} ({state}), which changed "
                                 f"{', '.join(sorted(changed))}; re-run the stage timing on best, then update the "

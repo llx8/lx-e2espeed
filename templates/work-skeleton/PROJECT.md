@@ -52,6 +52,7 @@ Facts agreed with the user during onboarding; what the code and the user showed 
 - Profilers: <working nsys and ncu commands>
 - Rules version at onboarding: lx-e2espeed <rules-version> (written by setup.sh; later pulls leave it as is, git log of lx-e2espeed has the rest)
 - Baseline commit: <the project commit every experiment starts from; exp.sh rebuilds the tree from it. Not the baseline that results compare with (Metric)>
+- Linked repos: <git checkouts at the project top that the project ignores and experiments may change, such as a sibling algorithm repo, as 'dir commit' pairs separated by commas, or none; exp.sh rebuilds each from that commit like the project tree>
 
 ## Commands
 <How to run the project, the environment check, the bench, and verify.>

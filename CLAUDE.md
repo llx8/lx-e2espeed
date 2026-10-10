@@ -11,7 +11,7 @@ Exceptions: lx-work records (docs, indexes, notes, knowledge/) and their commits
 With this repo itself as the working directory, you are maintaining these rules: see `rules/writing.md`.
 
 ## Layout
-- `<project>/`: the user's company repo; experiments change only its working tree, through `exp.sh`.
+- `<project>/`: the user's company repo; experiments change only its working tree and its linked repos', through `exp.sh`.
 - `<project>/lx-e2espeed/`: these rules and the playbook, cloned from the main copy on this machine.
 - `<project>/lx-work/`: everything about this project, in its own git repo, laid out as `rules/naming.md` shows.
 Both lx directories are listed in the project's `.git/info/exclude`.

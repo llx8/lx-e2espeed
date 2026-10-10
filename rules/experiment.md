@@ -37,7 +37,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - The user picks one, or none.
 
 ## 3. Plan
-- Run `lx-e2espeed/exp.sh new <1 to 4 words>`. It checks that the project tree equals the baseline commit plus the kept patches, takes the next number, creates the directory with NOTE.md, and adds a running row to exp/INDEX.md.
+- Run `lx-e2espeed/exp.sh new <1 to 4 words>`. It checks that the project tree equals the baseline commit plus the kept patches, and each linked repo (PROJECT.md, `- Linked repos:`) its commit there plus the kept patches, takes the next number, creates the directory with NOTE.md, and adds a running row to exp/INDEX.md.
 - Write Evidence, Hypothesis, and Plan in NOTE.md: the functions to change, the contracts in PROJECT.md it touches and their downstream impact, how verify covers it, and the expected gain.
 - Show the plan to the user and build nothing until they approve it. For a change that fits in one sentence and touches no contract, that sentence is the plan.
 
@@ -50,8 +50,8 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 
 ## 5. Land and decide
 - The user picks a variant, or none.
-- To land it, apply the smallest change to the project code that reproduces the chosen variant, keeping file paths, interfaces, and contracts. Verify and bench again on the real code, save the exact commands as run.sh and the bench output as result.json, then run `exp.sh keep`: it saves change.patch and checks that the kept patches rebuild the tree.
-- To drop, run `exp.sh drop`: it reverses anything the experiment changed in the project and checks that the tree is back. Never undo by hand.
+- To land it, apply the smallest change to the project code that reproduces the chosen variant, keeping file paths, interfaces, and contracts. Verify and bench again on the real code, save the exact commands as run.sh and the bench output as result.json, then run `exp.sh keep`: it saves change.patch, plus change.<dir>.patch for each linked repo the change touched, and checks that the kept patches rebuild the tree.
+- To drop, run `exp.sh drop`: it reverses anything the experiment changed in the project and its linked repos, and checks that the tree is back. Never undo by hand.
 - Both warn about files the project ignores (build outputs, caches) that the experiment wrote. No patch holds them: run.sh must rebuild them, and after a drop remove the ones the experiment made, so they cannot change the next bench.
 - A gain inside the noise floor is not a gain. A small gain that adds a lot of complexity may not be worth keeping; deleting code at equal speed is a win.
 - Fill in Result and Conclusion in NOTE.md, and the numbers, difference level, and reason in exp/INDEX.md. Record the A/B's numbers everywhere (the three sets in NOTE.md, the median and its changes in exp/INDEX.md); the bench of the landed code only confirms them. A dropped experiment keeps its record and says what was learned; knowing what failed saves time later. If the user rules out a whole direction, record it in DECISIONS.md with the reason, so it is not proposed again in this project.
@@ -60,12 +60,12 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - If the done-when condition in PROJECT.md is met, tell the user and suggest wrapping up.
 
 ## When the project changes underneath
-`exp.sh new` refuses when the project HEAD is not the baseline commit or the tree differs from the baseline commit plus the kept patches. Tell the user; do not repair it yourself.
-When the user committed exactly the kept patches, `exp.sh delivered` makes that commit the new baseline commit.
-Moving to newer company code needs a new baseline commit, only with the user's approval, recorded in DECISIONS.md: set it in PROJECT.md, bring each kept patch forward until `exp.sh check` passes, then verify, bench, and re-run the stage timing for MAP.md again.
+`exp.sh new` refuses when the project HEAD is not the baseline commit or the tree differs from the baseline commit plus the kept patches, and likewise for each linked repo and its commit in PROJECT.md. Tell the user; do not repair it yourself.
+When the user committed exactly the kept patches, `exp.sh delivered` makes that commit the new baseline commit, and each linked repo's HEAD its new commit in `- Linked repos:`.
+Moving to newer company code needs a new baseline commit or linked commit, only with the user's approval, recorded in DECISIONS.md: set it in PROJECT.md, bring each kept patch forward until `exp.sh check` passes, then verify, bench, and re-run the stage timing for MAP.md again.
 Either way the baseline (speed and reference outputs) stays; only the user changes it, recorded in DECISIONS.md.
 
 ## Reproducing or reverting
-- `exp.sh export NNN` writes the code of any experiment (its baseline commit, the kept patches before it, and its own patch) to lx-work/local/replay/; run its run.sh against that copy. `exp.sh export best` and `baseline-commit` do the same for A/B benches.
-- To take back a kept experiment, run a new experiment whose change reverses it (`git apply -R` of its change.patch), so the kept patches stay one straight line.
+- `exp.sh export NNN` writes the code of any experiment (its baseline commit, the kept patches before it, and its own patch) to lx-work/local/replay/, each linked repo in its own subdirectory; run its run.sh against that copy. `exp.sh export best` and `baseline-commit` do the same for A/B benches.
+- To take back a kept experiment, run a new experiment whose change reverses it (`git apply -R` of its patches), so the kept patches stay one straight line.
 - Files deleted from lx-work stay in its history: `git -C lx-work log --diff-filter=D --name-only`.

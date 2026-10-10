@@ -6,6 +6,11 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-10: linked repos in exp.sh, snapshot keeps the index mtime
+- A service project keeps its algorithm code in a separate repo, a gitignored symlink at the project top. exp.sh saw only the project repo, so it could not keep, park, or drop a change there, and exports lacked that code. PROJECT.md now names linked repos (`- Linked repos: <dir> <commit>, ...` or none). exp.sh checks, snapshots, and replays each like the project tree from its commit, saves change.<dir>.patch, applies or reverses all patches or none, and records the linked commits in the Base line; `export` writes each into `<name>/<dir>/`, and `delivered` moves their commits. Projects without the field and old Base lines work as before.
+- exp.sh copied the index for its snapshot with a fresh mtime, which defeats git's racy-file check: a file changed to the same size within the second it was staged read as unchanged, and `check` failed on a correct tree. A scratch test of the linked repos hit it. The copy keeps the mtime now.
+- Checker: change.<dir>.patch keeps the project's language like change.patch, and MAP.md's breakdown check reads it under `<dir>/`. The clean fixture holds one, and a probe covers the breakdown check.
+
 ## 2026-10-09: algorithm repo merge and new pin at delivery, MPS on by default
 - The user, in a service project that pins its algorithm repo in a dependency file: at the end the algorithm's dev branch is merged back into the branch the work started from, or, when the algorithm repo has only its main branch, into a new develop created from it; the dependency file then pins that branch at its newest commit. Wrap-up step 1 says so, and onboarding step 3 points to it, so the layout is planned for it from the start.
 - The user: MPS is on by default in production. Onboarding step 3 now assumes it unless the user says otherwise, so MPS hazards are checked from the first experiment instead of found at delivery.

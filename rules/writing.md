@@ -67,7 +67,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - experiment: one change with one hypothesis, recorded in exp/ with its change.patch.
 - night trial: an experiment of a night run, in night/. It never stays in the tree: it is parked (patch saved and reversed) or dropped, and the user may adopt a parked one into an experiment.
 - delivered: a kept experiment whose patch the user committed to the project; the baseline commit includes it.
-- kept patches: the change.patch files of kept experiments. Applied to the baseline commit in number order, they rebuild the project tree.
+- kept patches: the change.patch files of kept experiments, with their change.<dir>.patch for each linked repo (PROJECT.md, `- Linked repos:`). Applied in number order to the baseline commit, and to each linked repo's commit, they rebuild the project tree and the linked repos.
 - verify: compare outputs with the frozen reference outputs.
 - bench: measure the metric.
 - noise floor: the run-to-run spread of the bench on unchanged code; smaller differences are not gains.

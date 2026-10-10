@@ -33,7 +33,8 @@ Never use `new`, `final`, `old`, `v2`, `tmp2`, `test1`, or similar. Git keeps ve
     ├── tools/         one directory per tool with entry file main.*; tools/INDEX.md lists them
     ├── baseline/      onboarding: numbers/<source>/ (baseline commit hash, other environment), frozen reference outputs, environment snapshots
     ├── exp/           INDEX.md results table, plus NNN-name/ per experiment from exp.sh:
-    │                  NOTE.md, candidate/, ab-<variant>.json, change.patch, run.sh, result.json
+    │                  NOTE.md, candidate/, ab-<variant>.json, change.patch, change.<dir>.patch per
+    │                  changed linked repo (PROJECT.md), run.sh, result.json
     ├── night/         INDEX.md with the queue, plus NNN-name/ per night trial, laid out as in exp/
     └── local/         not in git: logs/, profiles/, output/, replay/, scratch/, large files
 
