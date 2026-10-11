@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-11: scenario and variant names say what they are, and reports explain them
+- The user could not tell what the scenarios in a results report were, one named `main` and one after a test file: the adapter template's default scenario name was a role (`main`), naming.md had no rule for scenarios or variants, and the reporting rule asked for the tools' summary lines without explaining their names. naming.md now names scenarios after their inputs and variants after their change, never a role; the template's SCENARIOS starts empty with that pointer; the CLAUDE.md reporting rule adds a plain-words explanation of each scenario, variant, and level name. CLAUDE.md was trimmed elsewhere to stay under 6,000 bytes.
+
 ## 2026-10-10: the user does not review lx-e2espeed diffs
 - Asked to review a rules diff, the user said there is no review: the AI maintains lx-e2espeed. CLAUDE.md, writing.md, and wrap-up step 5 replace the review with the AI's own check (nothing project-specific, checker and probes pass, CHANGELOG entry), then commit and sync. Whether to make a change still needs the user's go-ahead.
 

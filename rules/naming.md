@@ -13,6 +13,7 @@ Names are ASCII only. `hooks/check_docs.py` enforces the file and directory rule
 | Fixed docs | uppercase fixed names, one word | `STATUS.md`, `NOTE.md`, `INDEX.md`, `FEEDBACK.md` |
 | Experiment and night trial directories | three-digit number plus 1 to 4 words; numbers are never reused, counted separately in exp/ and night/ | `003-cuda-graph-decode` |
 | Tool directories | named by purpose; the entry file is `main.*` | `bench/main.py` |
+| Scenarios and candidate variants | snake_case, since they are adapter keys and file names; a scenario named after its inputs, a variant after what it changes, never a role such as `main` or `test`: every report shows these names, and a role tells the user nothing (the user, 2026-10-11) | `sample200_mixed`, `one_image_one_face`; `gpu_decode_cpu_warp` |
 | Cards | `playbook/<category>/<technique>.md` | `host/cuda-graph.md` |
 | Dates | ISO 8601 | `2026-09-23` |
 

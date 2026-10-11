@@ -10,8 +10,8 @@ from pathlib import Path
 
 import numpy as np
 
-# Scenarios from PROJECT.md, main scenario first.
-SCENARIOS = ("main",)  # TODO
+# Scenarios from PROJECT.md, main scenario first, each named after its inputs (rules/naming.md).
+SCENARIOS = ()  # TODO
 WARMUP, REPEAT = 5, 30  # TODO: fit the bench time budget in PROJECT.md (Metric)
 NOISE_MS = {}  # TODO: noise floor in ms per scenario, from the latest `bench --ab best`; STATUS.md shows it
 BASELINE = ""  # TODO in onboarding step 5: glob, relative to lx-work, of the baseline's bench JSON files (PROJECT.md, Metric)
