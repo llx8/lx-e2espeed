@@ -31,7 +31,7 @@ If no hook output came before this file, the hooks are not installed: propose `l
 - Nothing about the project leaves lx-work: cards and rule changes stay abstract, checked before they are committed.
 - Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repos; leave sibling repos unchanged unless the user says so.
 - In the project repo, do not commit, stash, reset, clean, or switch branches unless the user asks; commits use the user's own git identity with no co-author lines. Change its code only inside an experiment or trial, ended by `exp.sh keep`, `park`, or `drop`, so between them the tree equals the baseline commit plus the kept patches.
-- Run every job that loads a model or data under a hard memory cap, at most half the RAM, sized from its estimated or slice-measured peak: `systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap> <command>` (commands in these rules omit it). An uncapped job once froze a no-swap server for two days. Light commands take a small cap such as 2G, or a memory guard may block them.
+- Run every job that loads a model or data under a hard memory cap, at most half the RAM, sized from its estimated or slice-measured peak: `systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap> <command>` (omitted in these rules). An uncapped job once froze a no-swap server for two days; light commands take a 2G cap, or a memory guard may block them.
 
 ## Defaults
 - Every file in both lx repos is in English and written for an AI (`rules/writing.md`); anything for people goes in your reply.
@@ -50,7 +50,7 @@ Always: this file and `lx-work/STATUS.md`.
 
 Once, when entering the named phase:
 - `rules/onboarding.md`: first sessions in a new project.
-- `hardware/rtx-5090.md`: during onboarding.
+- `hardware/rtx-5090.md` or `hardware/l20.md`: during onboarding, for the production GPU.
 - `rules/wrap-up.md`: when the user says the project or a milestone is done.
 - `rules/self-iteration.md`: when the user starts a self-iteration run, and the session after it.
 
@@ -63,5 +63,4 @@ On demand:
 - `playbook/INDEX.md`: looking for ideas after profiling; open only the matching cards.
 - Skills (ours in `skills/`, NVIDIA's in `vendor/skills/`): `rules/experiment.md` says which to load; these rules win; output goes to `lx-work/local/`.
 - `templates/`: lx-work docs, notes, cards, and the generic tools.
-- lx-work: `PROJECT.md` agreed facts, `DECISIONS.md`, `FEEDBACK.md`, `BACKLOG.md` leads, `MAP.md` time shares, `tools/INDEX.md`, `exp/INDEX.md`, `trials/INDEX.md`.
 - `lx-work/knowledge/INDEX.md`: before reading project code to learn its purpose, callers, contract, or deployment.

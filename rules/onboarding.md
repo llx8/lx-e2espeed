@@ -48,7 +48,7 @@ Record the agreed parameters in PROJECT.md, each decision with its reason in DEC
 - Done when: the target, a point of diminishing returns (for example three experiments in a row inside the noise floor), or a deadline.
 - Target hardware: where the model runs in production. If that is not this machine, gains here may not transfer; say so and agree how to confirm them.
 - Constraints: code that must not change, allowed dependencies, techniques the user rules out (for example pinned memory), and the private terms filled in provisionally in step 1: confirm them, and add any the user names.
-- Environment: which Python environment the tools run in. Installing anything into it counts as a new dependency. Read `hardware/rtx-5090.md` and note what matters.
+- Environment: which Python environment the tools run in. Installing anything into it counts as a new dependency. Read the `hardware/` doc of the production GPU (`hardware/rtx-5090.md`, `hardware/l20.md`) and note what matters.
 
 Once the user has confirmed, the baseline follows under the agreed conditions; it ends the step and the phase.
 - Put the agreed difference levels and time budget into the adapter. The project tree must be clean: `git status --porcelain` prints nothing. Ask the user to commit or stash their own changes; untracked environment files such as weights go into `.git/info/exclude` with their okay. `exp.sh` sees only this repo's own files and its linked repos: git checkouts at the project top that the project ignores, such as a sibling algorithm repo or its symlink, which experiments may change. Link one only with the user's okay, and the same cleanliness holds for it; if a change must touch any other repo or a git submodule, ask the user first.

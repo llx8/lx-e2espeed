@@ -8,6 +8,7 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 
 ## 2026-10-12: repo maintenance after the audit
 - The probe for the Evidence count check hardcoded one card's counts and broke when the card gained evidence; it now reads them from the card. The dataflow skill's warp item said "integer arithmetic", which is true only of OpenCV 4.x; it names both majors now.
+- `hardware/l20.md`, since the user's projects must run on both the RTX 5090 and the L20 (the user, 2026-10-12); onboarding reads the production GPU's doc. CLAUDE.md was 2 bytes under the limit the SessionStart hook can inject: the memory-cap bullet is shorter and the lx-work file list is gone (`rules/naming.md` has it).
 
 ## 2026-10-12: onboarding in two steps
 - The user: five onboarding steps asked for five go-aheads; two will do, one to set up and read the project, one to discuss. Step 1 now also builds the harness from the templates with what the code answers and benches once, so the discussion has numbers to look at; step 2 ends with the baseline under the agreed conditions, since no experiment can be judged without it. setup.sh, the image-service skill, and the tool templates name the new steps.
