@@ -144,7 +144,9 @@ def private_terms(root):
         doc = project / "lx-work" / "PROJECT.md"
         match = re.search(r"^- Private terms: (.+)$", doc.read_text(encoding="utf-8"), re.M) if doc.is_file() else None
         if match and not match.group(1).startswith("<"):
-            terms += match.group(1).split(",")
+            # A parenthetical note, such as who confirmed the list and when, is not a term; left in, it would also
+            # glue itself to the term before it, which then matched nothing.
+            terms += re.sub(r"\([^)]*\)", ",", match.group(1)).split(",")
     return sorted({t.strip() for t in terms if len(t.strip()) >= TERM_MIN})
 
 

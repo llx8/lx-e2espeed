@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: private terms before a note in parentheses
+- A Private terms line ending in a note such as "(confirmed by the user, 2026-10-06, D-012)" was split at its commas, so the note's date became a term (a false hit on rules text) and the last real term was glued to the note's first words, which matched nothing: that term went unprotected. check_rules.py drops parenthetical notes before splitting; one probe covers both.
+
 ## 2026-10-12: the workspace, one session above all projects
 - The user wants to work from the directory above the projects, with what is done and what is left in view, but without each session reading projects it does not work on. A hand-written status there would drift from each STATUS.md, so the SessionStart hook generates it: in the workspace (the directory holding `lx-e2espeed/` above projects `setup.sh project` registered) it prints one line per project from its STATUS.md (phase and its doc, the first Next item, items waiting, a running experiment, a due skeleton sync) and `rules/workspace.md`, not CLAUDE.md, which is read once the user names a project. The prompt reminder and the Stop check work there too, and post-edit checks an lx-work a shell command names by path.
 - `rules/workspace.md`: one project at a time; read another only when the user asks; commit records before switching; what is learned goes to lx-work, not to Claude's memory, which every workspace session loads; a night run covers one project; check the shared GPU before measuring. Sessions started in a project's root work as before. CLAUDE.md names the workspace in Layout (lines trimmed to stay under 6,000 bytes).

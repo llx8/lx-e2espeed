@@ -250,6 +250,10 @@ PROBES = [
     ("private term in the rules", "rules", lambda r: (write(r.parent / "lx-work" / "PROJECT.md", "- Private terms: Frobnicator\n"),
                                                       write(r / "local" / "projects", f"{r.parent}\n"),
                                                       append(r / "rules" / "naming.md", "Frobnicator\n")), "private term 'Frobnicator'"),
+    ("term before a note in parentheses", "rules", lambda r: (
+        write(r.parent / "lx-work" / "PROJECT.md", "- Private terms: Frobnicator, Quuxly (confirmed by the user, 2026-10-06)\n"),
+        write(r / "local" / "projects", f"{r.parent}\n"), append(r / "rules" / "naming.md", "Checked 2026-10-06.\nQuuxly\n")),
+     "private term 'Quuxly'"),
     ("registered project's name in the rules", "rules", lambda r: (write(r / "local" / "projects", f"/gone/{PROJECT}\n"),
                                                                  append(r / "rules" / "naming.md", f"{PROJECT}\n")),
      f"private term '{PROJECT}'"),
