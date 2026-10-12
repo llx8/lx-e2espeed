@@ -184,7 +184,7 @@ def combine(runs, name):
 
 def load_baseline():
     """The baseline's bench runs (PROJECT.md, Metric) from adapter.BASELINE, a glob relative to lx-work that
-    onboarding step 5 sets. They come from another session, and possibly another environment, so a change
+    onboarding step 2 sets. They come from another session, and possibly another environment, so a change
     against them is descriptive, never a verdict."""
     if not hasattr(adapter, "BASELINE"):
         sys.exit("error: the adapter has no BASELINE; add it as in lx-e2espeed/templates/tools/adapter/")
@@ -213,7 +213,7 @@ def set_line(name, label, s):
 
 def baseline_line(name, baseline, base):
     if baseline is None:
-        return f"{name:14s} baseline  not set (adapter.BASELINE, onboarding step 5)"
+        return f"{name:14s} baseline  not set (adapter.BASELINE, onboarding step 2)"
     if base is None:
         return f"{name:14s} baseline  not recorded in {baseline['where']}"
     return set_line(name, "baseline", base) + f" | {baseline['where']}"

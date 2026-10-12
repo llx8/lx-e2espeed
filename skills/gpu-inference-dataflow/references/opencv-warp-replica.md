@@ -3,6 +3,9 @@
 ## When
 The CPU reference crops, aligns, or letterboxes with `cv2.warpAffine` on uint8 images (INTER_LINEAR, BORDER_CONSTANT 0), and the GPU path should produce the same bytes. A float bilinear (`grid_sample`) differs by up to one level per pixel, which in one project moved the outputs from L1 to L2. The exact replica ran as fast as the float one (1.93 ms both), and the user picked it; two projects ship one (2026-10).
 
+## Bundled op
+`scripts/ops/opencv_warp_affine_u8.py` replicates both majors byte for byte (uint8, INTER_LINEAR, BORDER_CONSTANT; any affine; plain output or fused with the channel swap, CHW, and the lookup below), and `scripts/tests/test_opencv_warp_affine.py` checks it against the installed cv2: 4.10.0 and 5.0.0, 320 cases each, exact. OpenCV 5.x interpolates in float32 and rounds the coordinate differently in a row's SIMD body and its scalar tail; the op's docstring has the arithmetic. The two majors differ in 12.9% of the output bytes, so `opencv_major` follows the production image.
+
 ## OpenCV 4.10's arithmetic
 The 8U path (imgwarp.cpp) does not interpolate in float. The arithmetic is version-specific: replicate the OpenCV of the production image, not the local one.
 1. Without `WARP_INVERSE_MAP`, invert M in double: D = 1 / (M0 M4 - M1 M3) (0 if singular); M0' = M4 D, M4' = M0 D, M1' = -M1 D, M3' = -M3 D; M2' = -M0' M2 - M1' M5, M5' = -M3' M2 - M4' M5.

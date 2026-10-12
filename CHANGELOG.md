@@ -6,6 +6,13 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: onboarding in two steps
+- The user: five onboarding steps asked for five go-aheads; two will do, one to set up and read the project, one to discuss. Step 1 now also builds the harness from the templates with what the code answers and benches once, so the discussion has numbers to look at; step 2 ends with the baseline under the agreed conditions, since no experiment can be judged without it. setup.sh, the image-service skill, and the tool templates name the new steps.
+
+## 2026-10-12: the bit-exact warpAffine op; cards from the first image project
+- Two projects each wrote the OpenCV warpAffine replica; the dataflow skill now bundles one for both majors (4.x fixed point; 5.x float, where the scalar tail of each row rounds its coordinate differently from the SIMD body, found by measuring the contraction variants), plain or fused with the normalize lookup, with a test against the installed cv2: 4.10.0 and 5.0.0, 320 cases each, exact.
+- New cards `native-groupnorm-rewrite` and `trt-builder-level`; `trt-plugin-build-hygiene`, `fused-attention-kernel`, and `quantized-attention-plugin` extended from the first image project's records. The user, 2026-10-12: a card is a reference to read, not code to bundle; that project's GroupNorm and deformable-attention tools came from a mentor and stay there, as does its attention plugin.
+
 ## 2026-10-12: cards from the projects done before these rules
 - The kernel, research, and service records of the first two projects (Chinese, outside lx-work) had reached the playbook only in part. New cards: `fused-attention-kernel` (two kernel studies agree: P in registers, bank conflicts fixed by layout, no register caps, fewer instructions when issue-bound), `token-reuse-diffusion` (a paper reproduction: 2% to 5%, research only), `gpu-png-decode`, and `mps-multi-worker`. `quantized-attention-plugin` said FP8 PV where the shipped plugin uses FP16 PV; fixed. Triton specialization went into `gpu-preprocessing`; frame-header routing and the encode quality flag into the dataflow skill's `jpeg-codec.md`, their one home (not the card).
 - The 2026-10-01 entries left this file for its 100-line limit; the last line says where they are.
@@ -81,12 +88,4 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - Onboarding step 5 keeps the baseline's numbers in baseline/numbers/<source>/ and sets `BASELINE`; when its speed comes from another environment, it benches the same commit there three times. `exp.sh delivered` moves the baseline commit; the baseline stays, and only the user changes it.
 - Skills no longer say "baseline" for the eager path, an accuracy check, a warm memory level, or a reference kernel family.
 
-## 2026-10-03: conflicts found at a project's baseline step
-- Onboarding step 5 ran verify before saving the reference that verify reads, and never named `verify --freeze`. It now freezes first, then runs `verify --self-test` on the unmodified code and says what that run shows.
-- The rules assumed the unmodified code supplies both the reference outputs and the speed reference, never subtracted numbers across environments, and required difference-level thresholds. A user chose otherwise: outputs from the framework model at full precision, speed from production's previous environment, no thresholds. The glossary, benchmarking.md, step 3, the PROJECT.md template, and the hard rule on outputs now allow each, as a user decision in DECISIONS.md.
-- The checker flagged every `<...>` in PROJECT.md after onboarding, while step 4 records commands there whose metavariables look the same. It now skips code spans, fenced blocks, and indented lines, where templates put no fields; a probe shows a placeholder beside a code span is still caught.
-- MAP.md's `- Measured on:` holds only the stamp, but nothing said where the measurement conditions go: the paragraph below it, in the template, step 5, and the checker's message.
-- An A/B read `clocks.sm` to see whether the lock held; a GPU running below its lock under the power cap cannot show that. The trigger is now a reboot or driver reload since the lock.
-- The working loop showed the baseline as a stage after onboarding; it is onboarding's last step. Step 5 no longer restates where the noise floor goes. Kept on purpose: the go-ahead and memory-cap rules in both CLAUDE.md and the user's global instructions (the rules must hold without the latter), and one-line reminders at the steps where they apply.
-
-Older entries (2026-10-01 and before): `git show 0b96d84:CHANGELOG.md`.
+Older entries (2026-10-03 and before): `git show 2fd8224:CHANGELOG.md`.

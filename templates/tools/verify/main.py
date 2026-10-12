@@ -4,7 +4,7 @@ Usage: python main.py [--project DIR] [--candidate FILE | --saved DIR] [--agains
        python main.py --freeze [--force] [--reference DIR]
   --freeze     run the project's own code and write <reference>/<scenario>.npz
   --reference  directory of the frozen references, default lx-work/baseline/reference; a scratch directory lets a
-               trial run (onboarding step 4) freeze and verify without touching the baseline
+               trial run (onboarding step 1) freeze and verify without touching the baseline
   --against    compare with a run saved by --save instead of the references: an A/A, an engine rebuild, or the
                natural differences of a change the user is to judge
   --save       also write this run's arrays and their source (commit, candidate) to DIR/<scenario>.npz
@@ -149,7 +149,7 @@ def save(path, arrays, meta):
 
 def load(path):
     if not path.is_file():
-        sys.exit(f"error: no {path}; freeze the references (onboarding step 5), or name a saved run")
+        sys.exit(f"error: no {path}; freeze the references (onboarding step 2), or name a saved run")
     with np.load(path, allow_pickle=False) as data:
         arrays = {k: data[k] for k in data.files}
     meta = json.loads(str(arrays.pop("meta"))) if "meta" in arrays else {}

@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 Attention over very long sequences (1536x1536 feature maps) dominates the engine; stock kernels fit small head dimensions poorly.
 
 ## Technique
-A custom TensorRT plugin for sm_120 in the SageAttention style: INT8 QK with per-block K scales and smoothed K, PV in FP16 or BF16 with V unquantized, one fused kernel, then tuned (card `fused-attention-kernel`). Optional block-sparse routing skips low-weight tiles. Keep a dense reference family and a candidate family, and apply every later change to both.
+A custom TensorRT plugin for sm_120 in the SageAttention style: INT8 QK with per-block K scales and smoothed K, PV in FP16 or BF16 with V unquantized, one fused kernel, then tuned (card `fused-attention-kernel`). Optional block-sparse routing skips low-weight tiles; its parameters are a tile threshold, a dispersion weight, a minimum sequence length (routing costs about 61 us per launch, so short shapes stay dense), and a second threshold for the largest shapes. Compile them in as validated numeric defaults, let runtime environment variables override them, and keep routing off byte-identical to the dense kernel with the same workspace, so the plugin drops into a frozen engine. Keep a dense reference family and a candidate family, and apply every later change to both.
 
 ## Effect
 With the TensorRT move: 1133 -> 390 ms end to end (2.9x). Block routing added 21% (tau -0.5, max error 5 levels) to 35% (tau 0, max 8).

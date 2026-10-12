@@ -242,7 +242,7 @@ PROBES = [
     ("Evidence line without a verdict", "rules", lambda r: append(r / "playbook" / "env" / "trt-plugin-build-hygiene.md", "- 2026-09: unmarked\n"),
      "Evidence line must start with"),
     ("index count differs from Evidence", "rules", lambda r: append(r / "playbook" / "env" / "trt-plugin-build-hygiene.md", "- ✗ 2026-09: failed\n"),
-     "trt-plugin-build-hygiene.md says ✓1 ✗0, but its Evidence has ✓1 ✗1"),
+     "trt-plugin-build-hygiene.md says ✓2 ✗0, but its Evidence has ✓2 ✗1"),
     # check_rules.py: repetition and private terms
     ("line repeated across rules", "rules", lambda r: append(r / "rules" / "self-iteration.md", next(
         l for l in read(r / "rules" / "experiment.md").splitlines() if l.startswith("- ") and len(l) > 80) + "\n"),

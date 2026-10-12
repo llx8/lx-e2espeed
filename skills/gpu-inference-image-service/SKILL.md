@@ -12,7 +12,7 @@ The common part of several of the user's projects (2026-09 to 2026-10), so a new
 - Algorithm repo: model, pre- and postprocessing, engine export and loading. Most of the time is spent there, so it changes first.
 
 ## Onboarding: the user's usual answers
-Propose these in onboarding step 3 as the starting point, one or two at a time; record only what the user confirms.
+Propose these in onboarding step 2 as the starting point, one or two at a time; record only what the user confirms.
 - Layout: when the algorithm repo needs its own model work (precision, plugins, engine shipping), onboard it as its own project first, then the service, which picks it up through the pin. Otherwise link the algorithm checkout into the service project (a symlink at the project top to the sibling checkout on a dev branch, recorded in `- Linked repos:`), so one experiment changes both.
 - Baseline: the speed of the released version in the previous production image, run there through the run-image tool (`templates/tools/run-image/`; when it cannot run, the repo README's numbers); the outputs of the baseline commit, or of the model at full precision (PyTorch FP32, TF32 off) when production's outputs are known to be wrong.
 - Metric: warm end-to-end latency, request bytes to response bytes, one worker; cold start reported beside it.

@@ -30,6 +30,8 @@ Weeks of kernel work. Fragment and register layouts differed from the documentat
 - Double buffering or 8 warps that grow shared memory enough to drop blocks per SM: equal or slower.
 - Block skipping for random sparsity: at 75% random sparsity almost no 64-key tile is fully masked, removing the skip changed nothing, and dense flash-attn without a mask stayed 1.16x faster. Skipping needs block-structured masks.
 - Software-pipelined ldmatrix, occupancy via sub-block softmax, hand strength reduction of addresses (identical SASS): no gain or slower.
+- A softmax shift frozen from the first key tile instead of the running max: -15% on synthetic data, but it overflowed FP32 on real inputs, and the clamp that made it safe ran as slow as the running max.
+- `__launch_bounds__` with a minimum of 6 blocks per SM: 12 registers spilled, +3.5%.
 
 ## Evidence
 - ✓ 2026-09: image color-transfer UNet, D=16 attention over up to 147k keys, INT8 QK and FP16 PV TensorRT plugin, RTX 5090: 1.45x to 2.86x per shape, network 208 -> 171 ms.
