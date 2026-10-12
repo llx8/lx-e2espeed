@@ -7,7 +7,7 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
 ## 2026-10-12: cards from the projects done before these rules
-- The kernel, research, and service records of the first two projects (Chinese, outside lx-work) had reached the playbook only in part. New cards: `fused-attention-kernel` (two kernel studies agree: P in registers, bank conflicts fixed by layout, no register caps, fewer instructions when issue-bound), `token-reuse-diffusion` (a paper reproduction: 2% to 5%, research only), `gpu-png-decode`, and `mps-multi-worker`. `quantized-attention-plugin` said FP8 PV where the shipped plugin uses FP16 PV; fixed. Triton specialization and NVJPG routing went into `gpu-preprocessing` and `gpu-jpeg-decode`.
+- The kernel, research, and service records of the first two projects (Chinese, outside lx-work) had reached the playbook only in part. New cards: `fused-attention-kernel` (two kernel studies agree: P in registers, bank conflicts fixed by layout, no register caps, fewer instructions when issue-bound), `token-reuse-diffusion` (a paper reproduction: 2% to 5%, research only), `gpu-png-decode`, and `mps-multi-worker`. `quantized-attention-plugin` said FP8 PV where the shipped plugin uses FP16 PV; fixed. Triton specialization went into `gpu-preprocessing`; frame-header routing and the encode quality flag into the dataflow skill's `jpeg-codec.md`, their one home (not the card).
 - The 2026-10-01 entries left this file for its 100-line limit; the last line says where they are.
 
 ## 2026-10-12: tool templates from four projects; the plugin template tested on a GPU
