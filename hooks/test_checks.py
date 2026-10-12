@@ -13,6 +13,7 @@ import io
 import json
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -23,7 +24,7 @@ sys.path.insert(0, str(HOOKS))
 import check_docs  # noqa: E402
 import dispatch  # noqa: E402
 
-PROJECT = "qzxproject"  # the fixture project's directory; the checker treats its name as a private term
+PROJECT = "qzxproject"  # the fixture project's directory; once registered, the checker treats its name as a private term
 COMMIT = "1234567"
 PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]*>")
 APP = '''def load():
@@ -247,7 +248,11 @@ PROBES = [
         l for l in read(r / "rules" / "experiment.md").splitlines() if l.startswith("- ") and len(l) > 80) + "\n"),
      "repeats a line from"),
     ("private term in the rules", "rules", lambda r: (write(r.parent / "lx-work" / "PROJECT.md", "- Private terms: Frobnicator\n"),
+                                                      write(r / "local" / "projects", f"{r.parent}\n"),
                                                       append(r / "rules" / "naming.md", "Frobnicator\n")), "private term 'Frobnicator'"),
+    ("registered project's name in the rules", "rules", lambda r: (write(r / "local" / "projects", f"/gone/{PROJECT}\n"),
+                                                                 append(r / "rules" / "naming.md", f"{PROJECT}\n")),
+     f"private term '{PROJECT}'"),
 ]
 
 # dispatch.py: the Stop hook's reply check. (reply text, labels it must find); the circled numbers and the Chinese
@@ -266,10 +271,10 @@ def reply_check_failures(tmp):
     2 inside a project that uses these rules, and stays quiet on its second stop or outside such a project."""
     failures = [f"reply check on {text!r}: expected {want}, got {got}" for text, want in REPLY_CASES
                 if (got := dispatch.number_labels(text)) != want]
-    project = tmp / "reply-project"
-    (project / "lx-e2espeed").mkdir(parents=True)
-    (project / "lx-e2espeed" / "CLAUDE.md").write_text("# rules\n")
-    (project / "lx-work").mkdir()
+    rules, location, project = tmp / "reply-rules", tmp / "lx_rules", tmp / "reply-project"
+    write(rules / "CLAUDE.md", "# rules\n")
+    write(location, f"{rules}\n")
+    (project / "lx-work").mkdir(parents=True)
     entries = [{"type": "user", "message": {"content": "first prompt"}},
                {"type": "assistant", "message": {"content": [{"type": "text", "text": "old turn \u2460"}]}},
                {"type": "user", "message": {"content": [{"type": "text", "text": "second prompt"}]}},
@@ -286,12 +291,41 @@ def reply_check_failures(tmp):
             failures.append("reply check: a tail without the last prompt is not grown until it holds it")
     finally:
         dispatch.TRANSCRIPT_TAIL = saved
-    for data, want in (({"cwd": str(project)}, 2), ({"cwd": str(project), "stop_hook_active": True}, 0),
-                       ({"cwd": str(tmp)}, 0)):
-        with contextlib.redirect_stderr(io.StringIO()):
-            got = dispatch.stop({**data, "transcript_path": str(transcript)})
-        if got != want:
-            failures.append(f"reply check: stop() returned {got}, expected {want}, for {data}")
+    saved, dispatch.LOCATION = dispatch.LOCATION, location  # the rules directory setup.sh global would record
+    try:
+        for data, want in (({"cwd": str(project)}, 2), ({"cwd": str(project), "stop_hook_active": True}, 0),
+                           ({"cwd": str(tmp)}, 0)):
+            with contextlib.redirect_stderr(io.StringIO()):
+                got = dispatch.stop({**data, "transcript_path": str(transcript)})
+            if got != want:
+                failures.append(f"reply check: stop() returned {got}, expected {want}, for {data}")
+    finally:
+        dispatch.LOCATION = saved
+    return failures
+
+
+def skeleton_check_failures(tmp):
+    """The SessionStart note on lx-work's skeleton: quiet while templates/work-skeleton is unchanged since the
+    '- Rules synced:' commit, and given once it changed or that commit is unknown."""
+    rules = tmp / "skeleton-rules"
+    git = ["git", "-C", str(rules), "-c", "user.name=probe", "-c", "user.email=probe@localhost",
+           "-c", "core.hooksPath=/dev/null", "-c", "commit.gpgsign=false"]
+    commits = []
+    for rel, text in (("templates/work-skeleton/STATUS.md", "- Phase: onboarding\n"),
+                      ("templates/work-skeleton/STATUS.md", "- Phase: onboarding\n- Updated: <date>\n"),
+                      ("CLAUDE.md", "# rules\n")):
+        write(rules / rel, text)
+        if not commits:
+            subprocess.run(["git", "init", "-q", str(rules)], check=True, capture_output=True)
+        subprocess.run(git + ["add", "-A"], check=True, capture_output=True)
+        subprocess.run(git + ["commit", "-q", "-m", rel], check=True, capture_output=True)
+        commits.append(subprocess.run(git + ["rev-parse", "--short", "HEAD"], check=True, capture_output=True,
+                                      text=True).stdout.strip())
+    failures = []
+    for synced, want in ((commits[0], True), (commits[1], False), ("0000000", True), (None, False)):
+        status = f"- Phase: optimizing\n- Rules synced: {synced}\n" if synced else "- Phase: optimizing\n"
+        if bool(dispatch.skeleton_behind(rules, status)) != want:
+            failures.append(f"skeleton check: Rules synced {synced} should {'' if want else 'not '}give a note")
     return failures
 
 
@@ -321,10 +355,12 @@ def main():
                 failures.append(f"{name}: expected exit 1 with '{expect}', got exit {code}:\n{out.strip() or '(no output)'}")
             shutil.rmtree(base)
         failures += reply_check_failures(tmp)
+        failures += skeleton_check_failures(tmp)
     for failure in failures:
         print(f"FAIL {failure}")
     print(f"{len(PROBES)} of {len(PROBES)} probes caught; both clean fixtures pass; the reply check passes its "
-          f"{len(REPLY_CASES)} cases." if not failures else f"{len(failures)} probe or reply check failure(s).")
+          f"{len(REPLY_CASES)} cases, and the skeleton check its 4." if not failures
+          else f"{len(failures)} probe, reply, or skeleton check failure(s).")
     return 1 if failures else 0
 
 

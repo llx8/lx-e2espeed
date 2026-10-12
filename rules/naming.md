@@ -1,6 +1,6 @@
 ---
 tier: on-demand
-read_when: creating files, directories, branches, or commit messages, deciding where something goes in lx-work, or after pulling lx-e2espeed
+read_when: creating files, directories, branches, or commit messages, deciding where something goes in lx-work, or when the SessionStart hook says the lx-work skeleton changed
 ---
 # Naming
 
@@ -20,7 +20,7 @@ Names are ASCII only. `hooks/check_docs.py` enforces the file and directory rule
 Never use `new`, `final`, `old`, `v2`, `tmp2`, `test1`, or similar. Git keeps versions; names describe content.
 
 ## lx-work layout
-`setup.sh project` creates the docs, the indexes, knowledge/, and local/ from `templates/work-skeleton/`, and writes the clone's commit into `- Rules synced:` in STATUS.md. The rest is built where noted.
+`setup.sh project` creates the docs, the indexes, knowledge/, and local/ from `templates/work-skeleton/`, and writes lx-e2espeed's commit into `- Rules synced:` in STATUS.md. The rest is built where noted.
 
     lx-work/
     ├── STATUS.md      handoff: phase, numbers, in progress, next, waiting for the user
@@ -39,8 +39,8 @@ Never use `new`, `final`, `old`, `v2`, `tmp2`, `test1`, or similar. Git keeps ve
     ├── night/         INDEX.md with the queue, plus NNN-name/ per night trial, laid out as in exp/
     └── local/         not in git: logs/, profiles/, output/, replay/, scratch/, large files
 
-## Sync after a pull
-After every pull of lx-e2espeed, bring lx-work up to the new skeleton; otherwise the checker and the next reader miss the fields and headings the rules now expect.
+## Skeleton sync
+When templates/work-skeleton changed after the `- Rules synced:` commit (the SessionStart hook says so), bring lx-work up to the new skeleton; otherwise the checker and the next reader miss the fields and headings the rules now expect.
 - `git -C lx-e2espeed diff --relative=templates/work-skeleton <Rules synced> HEAD -- templates/work-skeleton > lx-work/local/scratch/skeleton.patch`. If it is empty, skip to the last item.
 - `git -C lx-work apply --reject local/scratch/skeleton.patch`. A hunk on a line the project already filled in lands in a `.rej` file: apply it by hand, keep the project's values, and delete the `.rej` file.
 - Set `- Rules synced:` to `git -C lx-e2espeed rev-parse --short HEAD` and commit lx-work: `docs: align lx-work with rules <commit>: <what changed>`.

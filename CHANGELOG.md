@@ -6,6 +6,10 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: one shared rules directory instead of a clone per project
+- Each project had its own clone, synced through a main copy at wrap-up. Clones drifted: one held an unsynced rules commit with a wrong `origin`, and the commit was lost when that project's directory was deleted. The user decided: one lx-e2espeed for every project, reached by a single symlink beside the projects; a project has only lx-work; no branches. writing.md: before editing, `git status` must be clean (another session may be midway); commit at once, staging files by name; never rewrite history. Wrap-up step 5 only pushes, at the end of the project as before.
+- dispatch.py finds a project by lx-work/ and the rules at the path `setup.sh global` records in `~/.claude/hooks/lx_rules`, and prints that path first. With no pull left to start the skeleton sync, it notes when templates/work-skeleton changed after `- Rules synced:`. exp.sh takes the project from the git repo it runs in, not from its own location. `setup.sh project` excludes only lx-work, sets lx-work's hooks path to an absolute one, and registers the project in `local/projects` (ignored). check_rules.py reads the private terms of every registered project: they used to come from the lx-work beside the clone, which no longer exists. Probes cover the registry and the skeleton note.
+
 ## 2026-10-11: replies name things in words, enforced by hooks
 - The user, after several corrections: replies and their tables kept labelling versions and steps with circled numbers and experiment numbers, which the user cannot follow, and a rule alone had not stopped it; the user asked for a rule plus hooks. The CLAUDE.md reporting rule now says to name each version, step, scenario, and level by what it is or does, never by a number or an experiment ID (other lines trimmed to stay under 6,000 bytes). dispatch.py gets a `prompt` mode (UserPromptSubmit: prints the rule before every reply in a project) and a `stop` mode (Stop: finds circled numbers and experiment numbers in the current turn's reply text outside code and link targets, and exits 2 so Claude sends a correction; never on its own second stop). setup.sh registers both; hooks/test_checks.py covers the matcher, the turn extraction, and the exit codes.
 
@@ -86,7 +90,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - The bench A/A mode is built in (`--ab baseline`); a pilot had to write its own control candidate. The noise floor is per scenario (`adapter.NOISE_MS` is a dict), as the rules already required; an A/B without one exits. Under three rounds the A/B gives no verdict: an identical-code A/B with one round read as a 38 ms loss. Rounds swap which side runs first.
 - The checker flags template placeholders left in STATUS.md or PROJECT.md after onboarding; a pilot finished with one in STATUS.md. "Rules version" became "Rules version at onboarding": later pulls do not update it.
 - The verify and cpu-profile templates flush stderr before redirecting it, as the bench does.
-
-## 2026-09-25: pilot, second project
-- Generic bench, verify, and cpu-profile in templates/tools/, with an adapter skeleton that holds everything project-specific. The second project would otherwise rewrite the first project's tools and could repeat its measurement mistakes.
-- Onboarding checks that weights are real files, not Git LFS pointers. The verify template refuses to overwrite frozen references: once optimized code lands, freezing again would hide every change.

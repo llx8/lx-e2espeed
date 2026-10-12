@@ -7,7 +7,7 @@ read_when: the user says the project or a milestone is done
 Set the phase in STATUS.md to `wrap-up` first, so a later session resumes here.
 Track the steps with this checklist in your reply:
 
-    - [ ] 1 Deliver  - [ ] 2 Close  - [ ] 3 Cards  - [ ] 4 Rules review  - [ ] 5 Sync
+    - [ ] 1 Deliver  - [ ] 2 Close  - [ ] 3 Cards  - [ ] 4 Rules review  - [ ] 5 Push
 
 ## 1. Deliver
 - Run `lx-e2espeed/exp.sh check`: the project tree must equal the baseline commit plus the kept patches. Then run verify and bench, and record the numbers in STATUS.md.
@@ -28,7 +28,7 @@ Track the steps with this checklist in your reply:
 - State gains honestly: gains from different rows or dates do not add up, a comparison across dates is descriptive rather than a paired A/B, and a hardware or driver change is not a software gain.
 
 ## 3. Distill cards
-First bring the clone up to date with `git -C lx-e2espeed pull --ff-only`, so new cards merge into the newest playbook instead of duplicating it.
+Cards go straight into lx-e2espeed, which every project shares, so the playbook you search is always the newest; edit and commit it as `rules/writing.md` says.
 For each kept experiment, and each dropped one that taught something:
 - Search playbook/INDEX.md for the same technique. If a card exists, update its effect range, conditions, and evidence instead of adding a card.
 - Each Evidence line is one data point, marked ✓ (worked) or ✗ (failed); a rerun of an earlier project counts as its own line. Update the index line's `✓N ✗M` to match; the checker recounts it.
@@ -40,12 +40,8 @@ For each kept experiment, and each dropped one that taught something:
 Start from lx-work/FEEDBACK.md. Then ask: where did the work drift from these rules, what was missing, which docs were never read?
 Propose changes to the user. Apply the approved ones, log them in CHANGELOG.md, and delete the FEEDBACK.md entries they resolve.
 
-## 5. Sync to the main copy, then the cloud
-The main copy is the clone's `origin` (`git -C lx-e2espeed remote get-url origin`), a directory on this machine; its own `origin` is the cloud repo. During a project, rule updates move only between the clone and the main copy. The cloud gets them at the end of the project, in this step, or when the user asks; a milestone wrap-up skips the push.
-- Check the full diff of lx-e2espeed yourself as `rules/writing.md` says (the user does not review it), then commit in the clone.
-- Bring the change into the main copy by pulling from its side: `git -C <main copy> pull --ff-only <project>/lx-e2espeed main`. Pull, not push: git refuses a push into a repo whose branch is checked out.
-- If the main copy has uncommitted changes, stop and ask the user.
-- If the pull cannot fast-forward, another project synced first. Run `git -C lx-e2espeed pull --rebase`, merge any card both projects touched, run the checker, show the user the result, then pull into the main copy again.
-- Other project clones pick the change up with `git -C lx-e2espeed pull --ff-only`, then sync their lx-work (`rules/naming.md`).
-- At the end of the project, run the checker in the main copy, then push it: `git -C <main copy> push origin main`. If the cloud has commits the main copy lacks, pull them into the main copy first (`git -C <main copy> pull --ff-only origin main`), run the checker again, and ask the user if it cannot fast-forward.
+## 5. Push to the cloud
+lx-e2espeed is one repo on this machine, and its `origin` is the cloud repo. Rule changes were committed as they were made (`rules/writing.md`), so every project already has them. The cloud gets them at the end of the project, in this step, or when the user asks; a milestone wrap-up skips the push.
+- Run the checker in lx-e2espeed. If it fails on files you did not change, another session is midway through a change: ask the user.
+- Push: `git -C lx-e2espeed push origin main`. If the cloud has commits lx-e2espeed lacks, pull them first (`git -C lx-e2espeed pull --ff-only origin main`), run the checker again, and ask the user if it cannot fast-forward.
 - Set the phase in STATUS.md to `done` at the end of the project, or back to `optimizing` after a milestone, and commit lx-work. It never goes to the lx-e2espeed cloud repo, and stays local unless the user sets up a remote of its own.

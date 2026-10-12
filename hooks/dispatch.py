@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Global Claude Code hook for lx-e2espeed, installed as ~/.claude/hooks/lx_dispatch.py.
 
-  session-start  In a project that has lx-e2espeed/, print the phase and its rules doc, warnings,
-                 the project status, and the entry rules, shortest first: Claude Code cuts long hook
-                 output to a short preview. Without lx-work/ yet, route to onboarding. Elsewhere,
-                 print nothing. It also runs after compaction, so the handoff survives it.
+  session-start  In a project that has lx-work/, print where the rules are, the phase and its rules
+                 doc, warnings, the project status, and the entry rules, shortest first: Claude Code
+                 cuts long hook output to a short preview. Elsewhere, print nothing. It also runs
+                 after compaction, so the handoff survives it.
   post-edit      After an edit inside lx-e2espeed/ or lx-work/, or a shell command in or naming
-                 one of them, run that clone's checker.
+                 one of them, run the rules' checker on it.
                  Problems go to stderr with exit code 2, which Claude Code shows to Claude.
   prompt         On every prompt in such a project, print the reply naming rule as a reminder.
   stop           When Claude ends its turn there, flag the turn's reply text if it names things by
@@ -33,6 +33,7 @@ PHASE_DOCS = {
     "done": "The project is done; ask the user what comes next.",
 }
 PHASE = re.compile(r"^- Phase: (\S+)", re.M)
+SYNCED = re.compile(r"^- Rules synced: ([0-9a-f]{7,40})\s*$", re.M)
 HOOK_MAX_ERRORS = 15  # the rest costs context without helping the next fix
 # The user could not follow replies that named versions and steps by circled numbers or experiment numbers, and
 # asked for a rule enforced by hooks (2026-10-11). NUMBER_LABEL finds them; the experiment word is matched in
@@ -46,6 +47,17 @@ REPLY_RULE = ("lx-e2espeed reply rule (CLAUDE.md, Hard rules): name every versio
               "experiment ID in its place.")
 TRANSCRIPT_TAIL = 4 << 20  # bytes of the transcript read first for the current turn (turn_text)
 STAMP = Path.home() / ".claude" / "hooks" / "lx_installed"  # written by setup.sh global
+# Every project shares one rules directory, outside the projects; setup.sh global writes its path here.
+LOCATION = Path.home() / ".claude" / "hooks" / "lx_rules"
+
+
+def rules_dir():
+    """The rules directory setup.sh global installed from, or None before it ran."""
+    try:
+        path = Path(LOCATION.read_text(encoding="utf-8").strip())
+    except OSError:
+        return None
+    return path if (path / "CLAUDE.md").is_file() else None
 
 
 def project_root(cwd):
@@ -64,9 +76,8 @@ def lx_repo_of(path):
 
 
 def in_project(data):
-    """Whether the session runs in a project that uses these rules (lx-e2espeed/ and lx-work/ at its root)."""
-    root = project_root(Path(data.get("cwd") or "."))
-    return (root / RULES / "CLAUDE.md").is_file() and (root / WORK).is_dir()
+    """Whether the session runs in a project that uses these rules (lx-work/ at its root)."""
+    return rules_dir() is not None and (project_root(Path(data.get("cwd") or ".")) / WORK).is_dir()
 
 
 def number_labels(text):
@@ -128,7 +139,7 @@ def stop(data):
 
 
 def install_stamp(rules):
-    """Hash of what setup.sh global installs from a clone: this hook and every skill."""
+    """Hash of what setup.sh global installs from the rules directory: this hook and every skill."""
     digest = hashlib.sha256()
     skills = [p for d in (rules / "skills", rules / "vendor" / "skills") for p in d.rglob("*")]
     files = [rules / "hooks" / "dispatch.py",
@@ -138,22 +149,32 @@ def install_stamp(rules):
     return digest.hexdigest()
 
 
+def skeleton_behind(rules, status):
+    """A note when templates/work-skeleton changed after lx-work's '- Rules synced:' commit, or that commit is gone.
+    With one rules directory for every project, no pull marks the moment to sync lx-work (rules/naming.md)."""
+    match = SYNCED.search(status)
+    if not match:
+        return None
+    result = subprocess.run(["git", "-C", str(rules), "diff", "--quiet", match.group(1), "HEAD", "--",
+                             "templates/work-skeleton"], capture_output=True, timeout=10)
+    if result.returncode == 0:
+        return None
+    return (f"templates/work-skeleton changed after the commit lx-work last synced with ({match.group(1)}), or that "
+            "commit is gone: tell the user and propose the sync in lx-e2espeed/rules/naming.md.")
+
+
 def session_start(data):
-    root = project_root(Path(data.get("cwd") or "."))
-    entry, work = root / RULES / "CLAUDE.md", root / WORK
-    if not entry.is_file():
-        return 0
-    if not (work.is_dir() or (root / ".git").exists()):
-        return 0  # the rules repo opened on its own loads its CLAUDE.md without this hook
+    root, rules = project_root(Path(data.get("cwd") or ".")), rules_dir()
+    work = root / WORK
+    if rules is None or not work.is_dir():
+        return 0  # a project starts using the rules with setup.sh project, which creates lx-work/
     # Shortest and most urgent first: past about 10 KB, Claude Code shows only the first 2 KB.
-    print(f"This project uses {RULES}. Paths below are relative to {root}. If this output was cut short, "
-          f"read {RULES}/CLAUDE.md and {WORK}/STATUS.md in full before anything else.\n")
+    print(f"This project uses {RULES}, the rules directory {rules}; every `{RULES}/` path below and in the rules "
+          f"means that directory. Other paths are relative to {root}. If this output was cut short, read "
+          f"{rules}/CLAUDE.md and {WORK}/STATUS.md in full before anything else.\n")
     status = work / "STATUS.md"
-    text = status.read_text(encoding="utf-8") if work.is_dir() and status.is_file() else None
-    if not work.is_dir():
-        print(f"{WORK}/ does not exist yet: onboarding starts at step 1 once the user says so. "
-              + PHASE_DOCS["onboarding"])
-    elif text is not None:
+    text = status.read_text(encoding="utf-8") if status.is_file() else None
+    if text is not None:
         match = PHASE.search(text)
         phase = match.group(1) if match else "unknown"
         print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
@@ -162,13 +183,16 @@ def session_start(data):
                 print(f"{note.parent.relative_to(work)} is still running, and its change is in the project tree, "
                       "so nothing else can start until it ends. During a night run, go on with it (rules/night.md); "
                       "otherwise tell the user and propose how to end it (its NOTE.md has the plan).")
+        behind = skeleton_behind(rules, text)
+        if behind:
+            print(behind)
     installed = STAMP.read_text(encoding="utf-8").strip() if STAMP.is_file() else ""
-    if installed != install_stamp(root / RULES):
-        print("The hooks and skills installed on this machine differ from this clone's. Tell the user and "
-              "propose `git -C lx-e2espeed pull --ff-only`, then `lx-e2espeed/setup.sh global` if they still differ.")
+    if installed != install_stamp(rules):
+        print("The hooks and skills installed on this machine differ from lx-e2espeed's. Tell the user and "
+              "propose `lx-e2espeed/setup.sh global`.")
     if text is not None:
         print("\n" + text)
-    print(entry.read_text(encoding="utf-8"))
+    print((rules / "CLAUDE.md").read_text(encoding="utf-8"))
     return 0
 
 
@@ -186,14 +210,17 @@ def post_edit(data):
         repo = lx_repo_of(cwd)
         if repo:
             repos.add(repo)
-        if any(n in tool_input.get("command", "") for n in LX_NAMES):
-            root = project_root(cwd)
-            repos.update(root / n for n in LX_NAMES if (root / n).is_dir())
+        command = tool_input.get("command", "")
+        if WORK in command and (project_root(cwd) / WORK).is_dir():
+            repos.add(project_root(cwd) / WORK)
+        if RULES in command and rules_dir():
+            repos.add(rules_dir())
     failures = []
     for repo in sorted(repos):
-        rules = repo if repo.name == RULES else repo.parent / RULES
-        checker = rules / "hooks" / "check_docs.py"
-        if not checker.is_file():
+        # A rules repo is checked by its own checker, lx-work by that of the rules every project shares.
+        rules = repo if repo.name == RULES else rules_dir()
+        checker = rules / "hooks" / "check_docs.py" if rules else None
+        if not checker or not checker.is_file():
             continue
         result = subprocess.run([sys.executable, str(checker), str(repo)],
                                 capture_output=True, text=True, timeout=60)

@@ -20,15 +20,17 @@
 # The baseline commit is only where experiments start; the baseline that results compare with is in PROJECT.md (Metric).
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-project="$(dirname "$here")"
+die() { echo "error: $*" >&2; exit 1; }
+# Every project shares this rules directory, so the project is the git repo this runs in, not a parent of
+# this script; from inside lx-work, its own repo, the project is one level up.
+project="$(git rev-parse --show-toplevel 2>/dev/null)" || die "run exp.sh from inside the project repo"
+if [ "$(basename "$project")" = lx-work ]; then project="$(dirname "$project")"; fi
+[ "$project" != "$here" ] || die "run exp.sh from the project repo, not from lx-e2espeed"
 work="$project/lx-work"
 exp="$work/exp"
 night="$work/night"
-die() { echo "error: $*" >&2; exit 1; }
-[ -d "$exp" ] || die "$exp not found; run lx-e2espeed/setup.sh project first"
+[ -d "$exp" ] || die "$exp not found; run $here/setup.sh project first"
 cd "$project"
-top="$(git rev-parse --show-toplevel 2>/dev/null)" || die "$project is not a git repo"
-[ "$(cd "$top" && pwd -P)" = "$project" ] || die "lx-e2espeed must sit at the top of the project repo"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 

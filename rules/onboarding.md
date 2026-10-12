@@ -13,8 +13,7 @@ Copy this checklist into your reply and tick it off as you go. Start each step o
 
 ## 1. Setup
 - If the project is not a git repo, ask the user. With their okay, run `git init` and commit the code as delivered; exp.sh needs a baseline commit, and nothing is pushed.
-- If lx-work/ is missing, run `lx-e2espeed/setup.sh project` from the project root once the user agrees. It adds both lx directories to `.git/info/exclude`, creates lx-work from `templates/work-skeleton/`, and makes lx-work a git repo.
-- Check that `git -C lx-e2espeed remote get-url origin` is the main copy on this machine; wrap-up syncs rule changes through it.
+- A project starts using these rules with `lx-e2espeed/setup.sh project`, run from the project root on the user's word; until lx-work/ exists, the SessionStart hook injects nothing there. It adds lx-work/ to `.git/info/exclude`, creates lx-work from `templates/work-skeleton/`, makes lx-work a git repo, and registers the project, so the checker keeps its private terms out of lx-e2espeed.
 - The rest of lx-work is built in steps 2 to 5, following the lx-work layout in `rules/naming.md`.
 
 ## 2. Read the project

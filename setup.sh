@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # Set up lx-e2espeed.
 #   setup.sh global   once per machine, and after hooks/dispatch.py, skills/, or vendor/skills/ change:
-#                     install the Claude Code hooks and skills into ~/.claude
-#   setup.sh project  once per project, from inside the project repo: exclude the lx dirs, create lx-work
+#                     install the Claude Code hooks and skills into ~/.claude, and record this directory
+#                     as the rules every project uses; run it by the path the projects should use
+#   setup.sh project  once per project, from inside the project repo: exclude lx-work, create it, register the project
 set -euo pipefail
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+# Not pwd -P: the path this was run by is the one recorded, so a symlink to the repo can be the rules' address.
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 install_global() {
   mkdir -p "$HOME/.claude/hooks"
   cp "$here/hooks/dispatch.py" "$HOME/.claude/hooks/lx_dispatch.py"
+  echo "$here" > "$HOME/.claude/hooks/lx_rules"
   # Merge into settings.json without touching existing hooks; keep a backup first.
   python3 - <<'PY'
 import json
@@ -39,9 +42,9 @@ ensure("UserPromptSubmit", None, "prompt")
 ensure("Stop", None, "stop")
 path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
-  # Skills go to the personal skills directory: Claude Code does not look for skills inside
-  # git-ignored directories such as <project>/lx-e2espeed/. A marker file tells ours apart, so
-  # a skill of the same name from anywhere else is never overwritten.
+  # Skills go to the personal skills directory: Claude Code does not look for skills in this
+  # directory, which is outside every project. A marker file tells ours apart, so a skill of the
+  # same name from anywhere else is never overwritten.
   local src dst name
   mkdir -p "$HOME/.claude/skills"
   for dst in "$HOME/.claude/skills"/*/; do
@@ -62,44 +65,50 @@ PY
     find "$dst" -name __pycache__ -prune -exec rm -rf {} +
     touch "$dst/.lx-e2espeed"
   done
-  # The SessionStart hook compares this with the clone, so an outdated install is noticed.
+  # The SessionStart hook compares this with the rules directory, so an outdated install is noticed.
   python3 "$here/hooks/dispatch.py" stamp "$here" > "$HOME/.claude/hooks/lx_installed"
-  echo "Installed ~/.claude/hooks/lx_dispatch.py, registered its hooks, and installed the skills in skills/ and vendor/skills/."
+  echo "Installed ~/.claude/hooks/lx_dispatch.py for the rules in $here, registered its hooks, and installed the skills in skills/ and vendor/skills/."
   echo "Backup of the previous settings: ~/.claude/settings.json.bak"
 }
 
 setup_project() {
-  local root exclude entry version
+  local root exclude entry version registry
   root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
-    echo "error: run this from inside the project's git repo; without one, see onboarding step 1" >&2; exit 1; }
-  if [ "$here" != "$(cd "$root" && pwd -P)/lx-e2espeed" ]; then
-    echo "error: this clone must sit at $root/lx-e2espeed" >&2; exit 1
+    echo "error: run this from inside the project's git repo; without one, see $here/rules/onboarding.md step 1" >&2; exit 1; }
+  if [ "$root" = "$(cd "$here" && pwd -P)" ]; then
+    echo "error: run this from the project repo, not from lx-e2espeed" >&2; exit 1
   fi
   cd "$root"
   exclude="$(git rev-parse --git-path info/exclude)"
   mkdir -p "$(dirname "$exclude")"
-  # The lx dirs stay out of the project repo. Python caches appear after any run; excluding them
+  # lx-work stays out of the project repo. Python caches appear after any run; excluding them
   # keeps exp.sh's tree check from reporting them as changes. The exclude file is local and never pushed.
-  for entry in /lx-e2espeed/ /lx-work/ __pycache__/ '*.py[cod]'; do
+  for entry in /lx-work/ __pycache__/ '*.py[cod]'; do
     grep -qxF "$entry" "$exclude" 2>/dev/null || echo "$entry" >> "$exclude"
   done
   if [ -e "$here/.git" ]; then
     git -C "$here" config core.hooksPath hooks/git
   fi
+  # The checker keeps every project's private terms out of the rules, so it needs the list of projects.
+  registry="$here/local/projects"
+  mkdir -p "$here/local"
+  grep -qxF "$root" "$registry" 2>/dev/null || echo "$root" >> "$registry"
   if [ -e lx-work ]; then
     echo "lx-work already exists; left unchanged."
   else
     cp -R "$here/templates/work-skeleton" lx-work
     mkdir -p lx-work/local/logs lx-work/local/profiles lx-work/local/scratch
     # Record which rules this project started with, so its results can be traced to them, and which
-    # skeleton lx-work matches, so the sync after a pull knows where to diff from (rules/naming.md).
+    # skeleton lx-work matches, so the skeleton sync knows where to diff from (rules/naming.md).
     version="$(git -C "$here" rev-parse --short HEAD 2>/dev/null || echo uncommitted)"
     sed -i "s/<rules-version>/$version/" lx-work/PROJECT.md lx-work/STATUS.md
     git -C lx-work init -q -b main
-    git -C lx-work config core.hooksPath ../lx-e2espeed/hooks/git
     echo "Created lx-work."
   fi
-  echo "Done: $root is set up (onboarding step 1). Step 2 starts once the user says so."
+  # Also for an lx-work made before the rules moved out of the projects, whose hooks path was relative.
+  git -C lx-work config core.hooksPath "$here/hooks/git"
+  echo "Done: $root uses the rules in $here (onboarding step 1). The SessionStart hook injects them from the next"
+  echo "session on; in this one, read $here/CLAUDE.md and lx-work/STATUS.md. Step 2 starts once the user says so."
 }
 
 case "${1:-}" in

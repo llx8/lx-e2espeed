@@ -1,9 +1,10 @@
 """Checks for the lx-e2espeed repo as a whole, called by check_docs.py.
 
 Keeps the entry doc, the doc map, the hook's phase routing, and the playbook consistent, stops
-rules from repeating each other, and keeps a project's private terms out of a project clone.
+rules from repeating each other, and keeps every project's private terms out of the rules.
 """
 import re
+from pathlib import Path
 
 MAP_REF = re.compile(r"`((?:rules|hardware|playbook|templates|hooks|vendor|skills)/[^`]*)`")
 SKILL_NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
@@ -131,18 +132,24 @@ def check_duplicates(prose, rep):
 
 
 def private_terms(root):
-    """The project's private terms, when this clone sits in a project next to lx-work."""
-    project = root.parent / "lx-work" / "PROJECT.md"
-    if not project.is_file():
-        return []
-    match = re.search(r"^- Private terms: (.+)$", project.read_text(encoding="utf-8"), re.M)
-    terms = [] if not match or match.group(1).startswith("<") else match.group(1).split(",")
-    terms.append(root.parent.name)
+    """Every registered project's private terms and directory name. The rules directory is shared, so a term of any
+    project must stay out; setup.sh project registers each project in local/projects, one path per line."""
+    registry = root / "local" / "projects"
+    terms = []
+    for line in registry.read_text(encoding="utf-8").splitlines() if registry.is_file() else []:
+        if not line.strip():
+            continue
+        project = Path(line.strip())
+        terms.append(project.name)
+        doc = project / "lx-work" / "PROJECT.md"
+        match = re.search(r"^- Private terms: (.+)$", doc.read_text(encoding="utf-8"), re.M) if doc.is_file() else None
+        if match and not match.group(1).startswith("<"):
+            terms += match.group(1).split(",")
     return sorted({t.strip() for t in terms if len(t.strip()) >= TERM_MIN})
 
 
 def check_private(texts, terms, rep):
-    """texts: (rel, lines) for every text file in the clone."""
+    """texts: (rel, lines) for every text file in the rules repo."""
     if not terms:
         return
     pattern = re.compile(r"(?<![\w-])(" + "|".join(map(re.escape, terms)) + r")(?![\w-])", re.I)
