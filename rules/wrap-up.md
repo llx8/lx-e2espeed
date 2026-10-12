@@ -24,7 +24,7 @@ Track the steps with this checklist in your reply:
 - Once the kept patches are committed, run `exp.sh delivered`: it checks that HEAD is exactly the baseline commit plus the kept patches, and each linked repo's HEAD its commit plus its kept patches, makes HEAD the new baseline commit and the linked HEADs the new linked commits (the baseline stays), and marks those experiments delivered, so work can go on after a milestone.
 
 ## 2. Close the record
-- List known risks, ideas not tried, and parked night trials the user did not adopt under "Next" in STATUS.md, so a session that reopens the project starts from them.
+- List known risks, ideas not tried, and parked trials the user did not adopt under "Next" in STATUS.md, so a session that reopens the project starts from them.
 - Tell the user the outcome in your reply, with the facts the `gpu-inference-delivery` skill lists for a delivery, each kept change with its gain and difference level, and the risks. STATUS.md, exp/INDEX.md, and DECISIONS.md are the full record; write no separate report into lx-work.
 - State gains honestly: gains from different rows or dates do not add up, a comparison across dates is descriptive rather than a paired A/B, and a hardware or driver change is not a software gain.
 

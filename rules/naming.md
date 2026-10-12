@@ -11,7 +11,7 @@ Names are ASCII only. `hooks/check_docs.py` enforces the file and directory rule
 | Directories, general files | lowercase kebab-case | `gen-inputs/`, `run.sh` |
 | Python files and packages | lowercase snake_case, so they can be imported | `load_model.py` |
 | Fixed docs | uppercase fixed names, one word | `STATUS.md`, `NOTE.md`, `INDEX.md`, `FEEDBACK.md` |
-| Experiment and night trial directories | three-digit number plus 1 to 4 words; numbers are never reused, counted separately in exp/ and night/ | `003-cuda-graph-decode` |
+| Experiment and trial directories | three-digit number plus 1 to 4 words; numbers are never reused, counted separately in exp/ and trials/ | `003-cuda-graph-decode` |
 | Tool directories | named by purpose; the entry file is `main.*` | `bench/main.py` |
 | Scenarios and candidate variants | snake_case, since they are adapter keys and file names; a scenario named after its inputs, a variant after what it changes, never a role such as `main` or `test`: every report shows these names, and a role tells the user nothing (the user, 2026-10-11) | `sample200_mixed`, `one_image_one_face`; `gpu_decode_cpu_warp` |
 | Cards | `playbook/<category>/<technique>.md` | `host/cuda-graph.md` |
@@ -36,7 +36,7 @@ Never use `new`, `final`, `old`, `v2`, `tmp2`, `test1`, or similar. Git keeps ve
     ├── exp/           INDEX.md results table, plus NNN-name/ per experiment from exp.sh:
     │                  NOTE.md, candidate/, ab-<variant>.json, change.patch, change.<dir>.patch per
     │                  changed linked repo (PROJECT.md), run.sh, result.json
-    ├── night/         INDEX.md with the queue, plus NNN-name/ per night trial, laid out as in exp/
+    ├── trials/        INDEX.md with the queue, plus NNN-name/ per trial of a self-iteration run, laid out as in exp/
     └── local/         not in git: logs/, profiles/, output/, replay/, scratch/, large files
 
 ## Skeleton sync
@@ -46,6 +46,6 @@ When templates/work-skeleton changed after the `- Rules synced:` commit (the Ses
 - Set `- Rules synced:` to `git -C lx-e2espeed rev-parse --short HEAD` and commit lx-work: `docs: align lx-work with rules <commit>: <what changed>`.
 
 ## Commit messages
-- lx-work, the closing commit of each experiment, kept or dropped: `exp-003: cuda graph for decode (kept, latency -18%)`, `exp-004: pinned host memory (dropped, inside noise)`; commits while it runs: `exp-003: plan (running)`. Night trials: `night-004: cuda graph for decode (parked, -18%)`. Other commits: `baseline: ...`, `tools: ...`, `docs: ...`.
+- lx-work, the closing commit of each experiment, kept or dropped: `exp-003: cuda graph for decode (kept, latency -18%)`, `exp-004: pinned host memory (dropped, inside noise)`; commits while it runs: `exp-003: plan (running)`. Trials: `trial-004: cuda graph for decode (parked, -18%)`. Other commits: `baseline: ...`, `tools: ...`, `docs: ...`.
 - lx-e2espeed: `rules: ...`, `card(host): add cuda-graph`, `templates: ...`, `hooks: ...`.
 - Commits delivered to the project follow the project's own conventions.

@@ -276,7 +276,7 @@ def session_start(data):
         print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
         for name in running_notes(work):
             print(f"{name} is still running, and its change is in the project tree, so nothing else can start "
-                  "until it ends. During a night run, go on with it (rules/night.md); otherwise tell the user and "
+                  "until it ends. During a self-iteration run, go on with it (rules/self-iteration.md); otherwise tell the user and "
                   "propose how to end it (its NOTE.md has the plan).")
         behind = skeleton_behind(rules, text)
         if behind:

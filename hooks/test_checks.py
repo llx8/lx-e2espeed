@@ -109,7 +109,7 @@ def build_work(base):
     append(work / "PROJECT.md", "- Bench: `tools/bench/main.py --candidate <file>`\n\n    tools/verify/main.py --project <dir>\n")
     fill(work / "MAP.md", {"Measured on": f"baseline commit {COMMIT} + exp up to 001"})
     append(work / "MAP.md", "- Model call: `app.py:Pipe.run`, entered from `app.py:load`.\n- Preprocess: `lib/core.py:run`.\n")
-    for rel in ("DECISIONS.md", "FEEDBACK.md", "BACKLOG.md", "tools/INDEX.md", "exp/INDEX.md", "night/INDEX.md"):
+    for rel in ("DECISIONS.md", "FEEDBACK.md", "BACKLOG.md", "tools/INDEX.md", "exp/INDEX.md", "trials/INDEX.md"):
         fill(work / rel, {})
     item = work / "exp" / "001-fast-path"
     item.mkdir()
@@ -189,7 +189,7 @@ PROBES = [
      "update the handoff"),
     ("row without a directory", "work", lambda w: append(w / "exp" / "INDEX.md", "| 009-ghost-path | dropped | | | | | |\n"), "has no directory"),
     ("two items running", "work", lambda w: (add_item(w, "002-one-path", "running"), add_item(w, "003-two-path", "running")),
-     "only one experiment or night trial runs at a time"),
+     "only one experiment or trial runs at a time"),
     ("tool without main", "work", lambda w: (w / "tools" / "bench").mkdir(), "missing entry file main.*"),
     ("tool not listed", "work", lambda w: write(w / "tools" / "bench" / "main.py", ""), "not listed in tools/INDEX.md"),
     # check_work.py: MAP.md
@@ -244,7 +244,7 @@ PROBES = [
     ("index count differs from Evidence", "rules", lambda r: append(r / "playbook" / "env" / "trt-plugin-build-hygiene.md", "- ✗ 2026-09: failed\n"),
      "trt-plugin-build-hygiene.md says ✓1 ✗0, but its Evidence has ✓1 ✗1"),
     # check_rules.py: repetition and private terms
-    ("line repeated across rules", "rules", lambda r: append(r / "rules" / "night.md", next(
+    ("line repeated across rules", "rules", lambda r: append(r / "rules" / "self-iteration.md", next(
         l for l in read(r / "rules" / "experiment.md").splitlines() if l.startswith("- ") and len(l) > 80) + "\n"),
      "repeats a line from"),
     ("private term in the rules", "rules", lambda r: (write(r.parent / "lx-work" / "PROJECT.md", "- Private terms: Frobnicator\n"),

@@ -30,7 +30,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - Avoid the classic anti-methods: changing things at random, looking only where the tools make it easy, and benchmarking without a question to answer.
 
 ## 2. Propose
-- Parked night trials in `lx-work/night/INDEX.md` are proposals already measured; `rules/night.md` says how to adopt one.
+- Parked trials in `lx-work/trials/INDEX.md` are proposals already measured; `rules/self-iteration.md` says how to adopt one.
 - Read the matching category in `playbook/INDEX.md`, then only the matching cards, and `lx-work/BACKLOG.md`. A card's "Does not apply" lists conditions from past projects: check whether they hold here, and do not skip a technique only because it failed elsewhere.
 - Give the user one to three options as a short table: change, evidence, expected gain (bounded by the step's share), expected difference level, risk, effort.
 - Default order, which evidence may change: measurement correctness; redundant work, CPU/GPU round trips, syncs, and repeated initialization; peak memory and large-input routing; mature backends such as TensorRT or an established diffusion backend; `torch.compile`, only after explicit approval; custom kernels, only for a measured hotspot with no adequate mature implementation.

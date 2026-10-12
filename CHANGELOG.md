@@ -6,6 +6,11 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: night run renamed self-iteration run; the research stage
+- The user renamed the night run on 2026-10-11: one ran by day with the user watching, so "night" no longer fit; the procedure is unchanged. rules/night.md is now rules/self-iteration.md, lx-work/night/ is trials/, and its items are trials (`trial-004:` commits, `exp.sh export trials/NNN`) in exp.sh, the checkers, dispatch.py, the skeleton, and every rule that named them. A watched run sends the status lines of reporting.md. An existing lx-work moves its night/ to trials/ by hand (`git mv`, then the INDEX.md header), since its rows make the skeleton patch fail.
+- The research stage (the user, 2026-10-10, and on 2026-10-12: try it, and what conflicts may change, but only in one named project): a self-iteration run of research trials that change the method itself (a paper's formula, modified, or one's own), only where PROJECT.md has a `- Research stage:` line in the user's words. There the hard rules on weights, architecture, and the accuracy standard give way as that line says; quality is judged by the metric it names beside speed; adoption needs the user's acceptance, recorded in DECISIONS.md. CLAUDE.md's hard rule points to it (CLAUDE.md trimmed elsewhere to stay under 6,000 bytes).
+- The user confirmed that every project always runs on the latest rules (the shared directory), so nothing pins a project to a rules commit.
+
 ## 2026-10-12: two image-service defaults set by the user
 - Asked about the two points the projects had answered differently, the user decided: every service image starts the MPS daemon by default, and inputs NVJPG does not take fail fast, never going to the original decoder. image-service, dataflow (and jpeg-codec.md), mps-hang, delivery, the gpu-jpeg-decode card, and onboarding step 3 state them as defaults instead of questions.
 
@@ -90,8 +95,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - The SM clock stays locked and is never reset: the user has the GPU to themselves, and a lock that stays keeps every session at the same clock. A reboot drops it, so an A/B reads the clock first.
 - Memory cap: an uncapped job filled a no-swap server's RAM and froze it for two days. Every job that loads a model or data runs under a systemd-run memory cap of at most half the RAM; a night run also kills a run when free RAM falls below 20%, and reruns a crash only once it is understood.
 - Consistency fixes from the first project on the maintained rules: rules may change mid-project when the user asks, as knowledge/ did; benchmarking.md is on demand, since every A/B and difference level needs it after onboarding; a milestone wrap-up skips the cloud push and sets the phase back to optimizing; `exp.sh check` fails while an item runs, because the tree is not at the base; a night question that concerns no single trial goes under "Waiting for the user" in STATUS.md, and the morning report lists it with the night's FEEDBACK.md lines; exp/INDEX.md archives before 100 lines, where a Contents list would become due, instead of past the 150-line limit.
-
-## 2026-10-01: knowledge/ in lx-work
-- What onboarding step 2 learned beyond the timed path (who calls the model, what the outputs mean, the exact contract, how production builds and runs it) lived only in the chat, so each compaction or new session read the code again. The skeleton now has knowledge/: INDEX.md with the writing rules (one tagged, sourced conclusion per line; open questions per topic; the commits it was read at), and business.md, contract.md, and deployment.md. Step 2 writes there while reading, step 3 records the user's answers there, and PROJECT.md and STATUS.md point there. An lx-work made earlier copies it from the skeleton.
-- The checker requires knowledge/INDEX.md and keeps the topic files' headings, like the other skeleton docs.
-- Changed during a project instead of at wrap-up, at the user's request, so the next project starts with it.

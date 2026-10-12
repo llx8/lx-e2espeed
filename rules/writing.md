@@ -24,10 +24,10 @@ Every doc starts with frontmatter (checked):
 | lx-e2espeed/CLAUDE.md and CHANGELOG.md | 100 |
 | lx-work/STATUS.md | 60 |
 | lx-work/FEEDBACK.md | 60 |
-| experiment or night trial NOTE.md | 50 |
+| experiment or trial NOTE.md | 50 |
 | playbook card | 40 |
 | any other doc | 150 |
-| exp/ and night/ ARCHIVE.md | none: grep it, never read it whole |
+| exp/ and trials/ ARCHIVE.md | none: grep it, never read it whole |
 
 Bytes, too: CLAUDE.md at most 6,000 and STATUS.md at most 3,000. The SessionStart hook injects both, and Claude Code cuts hook output above about 10 KB to a 2 KB preview (seen 2026-10-01 at 10.8 KB); move detail into on-demand docs.
 
@@ -38,7 +38,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - References go one level deep: CLAUDE.md names every rules and hardware doc directly (checked). A doc may point to another, but must not depend on a chain of them.
 - A doc over 100 lines starts with a `## Contents` list (checked).
 - A doc made from a template keeps the template's `##` headings and `- Field:` lines, and CLAUDE.md keeps its sections (checked). Losing one breaks the next reader or script.
-- Indexes and logs hold one line per entry, and files that grow during a project stay bounded. exp/INDEX.md moves old dropped rows, and night/INDEX.md old dropped or adopted rows, to `ARCHIVE.md` next to it; FEEDBACK.md deletes entries once they became rule changes; DECISIONS.md deletes superseded entries and CHANGELOG.md its oldest entries when they near their limit. Git history keeps everything removed.
+- Indexes and logs hold one line per entry, and files that grow during a project stay bounded. exp/INDEX.md moves old dropped rows, and trials/INDEX.md old dropped or adopted rows, to `ARCHIVE.md` next to it; FEEDBACK.md deletes entries once they became rule changes; DECISIONS.md deletes superseded entries and CHANGELOG.md its oldest entries when they near their limit. Git history keeps everything removed.
 - Point, do not copy: refer to code as `path:function`. Pasted code goes stale.
 - Re-measuring the same thing updates its existing record instead of adding a new section. Raw data lives in one artifact file; the doc keeps the adopted result with its measurement conditions.
 - Each fact lives in one place and other docs point to it. Long lines repeated across docs fail the check (checked).
@@ -67,7 +67,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - candidate: code in an experiment's candidate/ directory that runs beside the project code; landing applies the chosen variant to the project code. In a report it is "after".
 - difference, difference level (L0 to L3), operator accuracy, cold start: defined in `rules/benchmarking.md`.
 - experiment: one change with one hypothesis, recorded in exp/ with its change.patch.
-- night trial: an experiment of a night run, in night/. It never stays in the tree: it is parked (patch saved and reversed) or dropped, and the user may adopt a parked one into an experiment.
+- trial: an experiment of a self-iteration run (`rules/self-iteration.md`), in trials/. It never stays in the tree: it is parked (patch saved and reversed) or dropped, and the user may adopt a parked one into an experiment.
 - delivered: a kept experiment whose patch the user committed to the project; the baseline commit includes it.
 - kept patches: the change.patch files of kept experiments, with their change.<dir>.patch for each linked repo (PROJECT.md, `- Linked repos:`). Applied in number order to the baseline commit, and to each linked repo's commit, they rebuild the project tree and the linked repos.
 - verify: compare outputs with the frozen reference outputs.

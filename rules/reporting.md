@@ -32,4 +32,4 @@ The user decides from your replies, not from the files. Most corrections in the 
 - Show a quality gap as counts per error band, with a hard input split out, not as one median.
 
 ## While the user watches
-During a long run the user is watching, send a short status line at each step and before each long wait; silence reads as a stall. A night run, where the user is away, reports in the morning instead (`rules/night.md`).
+During a long run the user is watching, send a short status line at each step and before each long wait; silence reads as a stall. A self-iteration run the user is away from reports at its end instead (`rules/self-iteration.md`).

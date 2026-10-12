@@ -6,17 +6,17 @@
 # algorithm repo or its symlink, named in lx-work/PROJECT.md as '- Linked repos: <dir> <commit>, ...'
 # or none. Each is handled like the project tree, from that commit (its base commit), and an item's
 # change to it is saved as change.<dir>.patch beside change.patch.
-# Night trials (rules/night.md) live in lx-work/night/ and never stay in the tree: each is parked.
+# Trials of a self-iteration run (rules/self-iteration.md) live in lx-work/trials/ and never stay in the tree: each is parked.
 #   exp.sh new <1 to 4 words>          start the next experiment; checks the tree first
-#   exp.sh try <1 to 4 words>          start the next night trial, on best (the baseline commit plus all kept patches)
+#   exp.sh try <1 to 4 words>          start the next trial, on best (the baseline commit plus all kept patches)
 #   exp.sh save                        write the running item's change.patch, new files included, and change.<dir>.patch per changed linked repo
 #   exp.sh keep                        end the experiment and keep the change (needs run.sh and result.json)
-#   exp.sh park                        end the night trial: save its patch, reverse it, confirm the tree is back
+#   exp.sh park                        end the trial: save its patch, reverse it, confirm the tree is back
 #   exp.sh drop                        end either, reverse the change, and confirm the tree is back
-#   exp.sh adopt <NNN>                 turn parked night trial NNN into the next experiment
+#   exp.sh adopt <NNN>                 turn parked trial NNN into the next experiment
 #   exp.sh delivered                   the user committed the kept patches: HEAD becomes the baseline commit, each linked repo's HEAD its base commit
 #   exp.sh check                       confirm the tree equals the baseline commit plus the kept patches; fails while an item runs
-#   exp.sh export <NNN|night/NNN|best|baseline-commit>  write that code to lx-work/local/replay/<name>/, each linked repo in <name>/<dir>/
+#   exp.sh export <NNN|trials/NNN|best|baseline-commit>  write that code to lx-work/local/replay/<name>/, each linked repo in <name>/<dir>/
 # The baseline commit is only where experiments start; the baseline that results compare with is in PROJECT.md (Metric).
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -28,7 +28,7 @@ if [ "$(basename "$project")" = lx-work ]; then project="$(dirname "$project")";
 [ "$project" != "$here" ] || die "run exp.sh from the project repo, not from lx-e2espeed"
 work="$project/lx-work"
 exp="$work/exp"
-night="$work/night"
+trials="$work/trials"
 [ -d "$exp" ] || die "$exp not found; run $here/setup.sh project first"
 cd "$project"
 tmp="$(mktemp -d)"
@@ -120,7 +120,7 @@ replay() {  # $1 repo, then experiment dirs: tree id of its base commit plus tho
   GIT_INDEX_FILE="$index" git_in "$r" write-tree
 }
 
-items() {  # dirs under $1 (exp or night) in number order, with status $2 (any status when empty)
+items() {  # dirs under $1 (exp or trials) in number order, with status $2 (any status when empty)
   local d
   for d in "$1"/[0-9][0-9][0-9]-*/; do
     [ -f "$d/NOTE.md" ] || continue
@@ -139,11 +139,11 @@ kept_below() {  # kept experiment dirs numbered below $1
   done < <(exp_dirs kept)
 }
 
-running() { local all; all="$(items "$exp" running; items "$night" running)"; printf '%s' "${all%%$'\n'*}"; }
+running() { local all; all="$(items "$exp" running; items "$trials" running)"; printf '%s' "${all%%$'\n'*}"; }
 
-is_trial() { [[ "$1" == "$night"/* ]]; }
+is_trial() { [[ "$1" == "$trials"/* ]]; }
 
-kept_for() {  # kept experiments the item $1 builds on: all of them for a night trial
+kept_for() {  # kept experiments the item $1 builds on: all of them for a trial
   if is_trial "$1"; then exp_dirs kept; else kept_below "$(num_of "$1")"; fi
 }
 
@@ -231,7 +231,7 @@ set_status() {  # $1 experiment or trial dir, $2 new status, in NOTE.md and its 
   sed -i "s/^| $name | [a-z]* |/| $name | $2 |/" "$(dirname "$1")/INDEX.md"
 }
 
-start() {  # $1 exp or night, then 1 to 4 words: check the tree and create the next dir there
+start() {  # $1 exp or trials, then 1 to 4 words: check the tree and create the next dir there
   local root="$1" name base list="" linked="" last=0 n num dir d r cells
   shift
   name="$(printf '%s' "$*" | tr 'A-Z ' 'a-z-' | tr -s '-')"
@@ -281,7 +281,7 @@ start() {  # $1 exp or night, then 1 to 4 words: check the tree and create the n
 
 cmd_new() { start "$exp" "$@"; }
 
-cmd_try() { start "$night" "$@"; }
+cmd_try() { start "$trials" "$@"; }
 
 cmd_save() {
   local dir r p start now stat
@@ -306,7 +306,7 @@ cmd_keep() {
   local dir f
   dir="$(running)"
   [ -n "$dir" ] || die "no running experiment"
-  ! is_trial "$dir" || die "night trials end with park or drop; the user adopts them into experiments"
+  ! is_trial "$dir" || die "trials end with park or drop; the user adopts them into experiments"
   for f in run.sh result.json; do
     [ -f "$dir/$f" ] || die "save $f in lx-work/exp/$(basename "$dir")/ first"
   done
@@ -334,9 +334,9 @@ cmd_drop() {
 cmd_park() {
   local dir f
   dir="$(running)"
-  [ -n "$dir" ] && is_trial "$dir" || die "no running night trial"
+  [ -n "$dir" ] && is_trial "$dir" || die "no running trial"
   for f in run.sh result.json; do
-    [ -f "$dir/$f" ] || die "save $f in lx-work/night/$(basename "$dir")/ first"
+    [ -f "$dir/$f" ] || die "save $f in lx-work/trials/$(basename "$dir")/ first"
   done
   cmd_save
   has_change "$dir" || die "the tree holds no change; land the smallest change and verify it before parking"
@@ -346,16 +346,16 @@ cmd_park() {
   match_all "still differs from the base after reversing" ${kept[@]+"${kept[@]}"}
   set_status "$dir" parked
   warn_ignored
-  echo "Parked night/$(basename "$dir"): its patches rebuild the change, and the tree is back to the base. Record the result, then commit lx-work."
+  echo "Parked trials/$(basename "$dir"): its patches rebuild the change, and the tree is back to the base. Record the result, then commit lx-work."
 }
 
 cmd_adopt() {
   local match trial was dir now words
-  [[ "${1:-}" =~ ^[0-9]{3}$ ]] || die "usage: exp.sh adopt <night trial number>"
-  match=("$night/$1"-*/)
-  [ -d "${match[0]}" ] || die "no night trial $1"
+  [[ "${1:-}" =~ ^[0-9]{3}$ ]] || die "usage: exp.sh adopt <trial number>"
+  match=("$trials/$1"-*/)
+  [ -d "${match[0]}" ] || die "no trial $1"
   trial="${match[0]%/}"
-  grep -qx -- "- Status: parked" "$trial/NOTE.md" || die "night/$(basename "$trial") is not parked"
+  grep -qx -- "- Status: parked" "$trial/NOTE.md" || die "trials/$(basename "$trial") is not parked"
   was="$(sed -n 's/^- Base: //p' "$trial/NOTE.md")"
   words="$(basename "$trial" | cut -d- -f2- | tr '-' ' ')"
   start "$exp" "$words" > /dev/null
@@ -363,21 +363,21 @@ cmd_adopt() {
   now="$(sed -n 's/^- Base: //p' "$dir/NOTE.md")"
   # The experiment carries the trial's record from Evidence on, and its candidates.
   { sed -n '1,/^## Evidence$/p' "$dir/NOTE.md" | sed '$d'; sed -n '/^## Evidence$/,$p' "$trial/NOTE.md"; } > "$tmp/note"
-  sed -i "s|^- Base: .*\$|&; adopted from night/$(basename "$trial")|" "$tmp/note"
+  sed -i "s|^- Base: .*\$|&; adopted from trials/$(basename "$trial")|" "$tmp/note"
   command cp -f "$tmp/note" "$dir/NOTE.md"
   if [ -d "$trial/candidate" ]; then command cp -R "$trial/candidate" "$dir/candidate"; fi
   if [ "$was" = "$now" ]; then
     apply_all "$trial" || die "the patches did not apply; run exp.sh drop, and the trial stays parked"
     command cp -f "$trial/run.sh" "$trial/result.json" "$dir/"
     set_status "$trial" adopted
-    echo "Adopted night/$(basename "$trial") as $(basename "$dir"), change applied. The base is unchanged, so its numbers stand: run verify once, then exp.sh keep."
+    echo "Adopted trials/$(basename "$trial") as $(basename "$dir"), change applied. The base is unchanged, so its numbers stand: run verify once, then exp.sh keep."
     return
   fi
   set_status "$trial" adopted
   if patches_check "$trial" 2>/dev/null; then
-    echo "Adopted night/$(basename "$trial") as $(basename "$dir"), nothing applied: the base moved ($was -> $now). A/B the candidate against the current tree, then land it; the patches in night/$(basename "$trial")/ still apply."
+    echo "Adopted trials/$(basename "$trial") as $(basename "$dir"), nothing applied: the base moved ($was -> $now). A/B the candidate against the current tree, then land it; the patches in trials/$(basename "$trial")/ still apply."
   else
-    echo "Adopted night/$(basename "$trial") as $(basename "$dir"), nothing applied: the base moved ($was -> $now) and its patches no longer apply. A/B the candidate against the current tree, then land it by hand."
+    echo "Adopted trials/$(basename "$trial") as $(basename "$dir"), nothing applied: the base moved ($was -> $now) and its patches no longer apply. A/B the candidate against the current tree, then land it by hand."
   fi
 }
 
@@ -409,12 +409,12 @@ cmd_export() {
   case "$target" in
     baseline-commit) kept=(); label=baseline-commit ;;
     best) mapfile -t kept < <(exp_dirs kept); label=best ;;
-    [0-9][0-9][0-9]|night/[0-9][0-9][0-9])
-      if [[ "$target" == night/* ]]; then match=("$work/$target"-*/); else match=("$exp/$target"-*/); fi
+    [0-9][0-9][0-9]|trials/[0-9][0-9][0-9])
+      if [[ "$target" == trials/* ]]; then match=("$work/$target"-*/); else match=("$exp/$target"-*/); fi
       [ -d "${match[0]}" ] || die "no $target"
       note="${match[0]}NOTE.md"
       label="$(basename "${match[0]}")"
-      [[ "$target" != night/* ]] || label="night-$label"
+      [[ "$target" != trials/* ]] || label="trial-$label"
       # From the item's own Base line, so later experiments and deliveries do not change what it rebuilds.
       replay_bases[.]="$(sed -n 's/^- Base: baseline \(commit \)\{0,1\}\([0-9a-f]*\) .*$/\2/p' "$note")"
       [ -n "${replay_bases[.]}" ] || die "${note} has no Base line"
@@ -431,7 +431,7 @@ cmd_export() {
       mapfile -t kept < <(kept_of "$note")
       for d in ${kept[@]+"${kept[@]}"}; do [ -d "$d" ] || die "$d, named in its Base line, is missing"; done
       kept+=("${match[0]%/}") ;;
-    *) die "usage: exp.sh export <NNN|night/NNN|best|baseline-commit>" ;;
+    *) die "usage: exp.sh export <NNN|trials/NNN|best|baseline-commit>" ;;
   esac
   for r in "${parts[@]}"; do trees[$r]="$(replay "$r" ${kept[@]+"${kept[@]}"})"; done
   out="$work/local/replay/$label"

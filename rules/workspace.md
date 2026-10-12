@@ -18,7 +18,7 @@ A session started in a project's own root still works as before: the hook then i
 - Before switching, commit the active project's lx-work records, then start the next one as above. When compacting, keep which project is active and its root.
 - Write what you learn about a project, and the user's corrections, into its lx-work (knowledge/, DECISIONS.md, FEEDBACK.md), never into Claude's memory: the workspace's memory loads in every session here, whichever project it works on.
 - Only `setup.sh project`, run from a project's root, creates lx-work; never create one in the workspace itself.
-- A night run (`rules/night.md`) covers the one project the user names.
+- A self-iteration run (`rules/self-iteration.md`) covers the one project the user names.
 
 ## The shared GPU
 Every project measures on the same GPU, and a session started in a project's own root may be running. Before a bench, A/B, or profile, check `nvidia-smi` for other processes (`rules/benchmarking.md`, GPU state) and tell the user instead of measuring next to one.

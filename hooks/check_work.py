@@ -7,9 +7,9 @@ describe the project code it points to.
 import re
 
 PHASES = {"onboarding", "optimizing", "wrap-up", "done"}
-# Experiments land (kept, later delivered in the user's commits) or not; night trials are parked for the
-# user, who adopts them into experiments.
-STATUSES = {"exp": {"running", "kept", "delivered", "dropped"}, "night": {"running", "parked", "adopted", "dropped"}}
+# Experiments land (kept, later delivered in the user's commits) or not; trials of a self-iteration run are parked
+# for the user, who adopts them into experiments.
+STATUSES = {"exp": {"running", "kept", "delivered", "dropped"}, "trials": {"running", "parked", "adopted", "dropped"}}
 # What each finished item needs: landed and parked ones must rebuild and rerun, dropped ones reverse cleanly.
 RERUN = ("change.patch", "run.sh", "result.json")
 ENDED_FILES = {"kept": RERUN, "delivered": RERUN, "parked": RERUN, "adopted": RERUN, "dropped": ("change.patch",)}
@@ -84,8 +84,8 @@ def check_work_layout(root, rep, rules_root):
             if found := placeholder(text):
                 rep.error(rel, f"'{found.group(0)}' is still a template placeholder after onboarding; "
                                "fill it, or write 'none' or 'not recorded'")
-    if (root / "night").is_dir():
-        check_shape(root / "night" / "INDEX.md", skeleton / "night" / "INDEX.md", "night/INDEX.md", rep)
+    if (root / "trials").is_dir():
+        check_shape(root / "trials" / "INDEX.md", skeleton / "trials" / "INDEX.md", "trials/INDEX.md", rep)
     running = check_experiments(root, rep, updated if DATE.fullmatch(updated) else None,
                                 rules_root / "templates" / "exp-note.md")
     check_tools(root, rep)
@@ -94,16 +94,16 @@ def check_work_layout(root, rep, rules_root):
 
 def check_experiments(root, rep, status_updated, note_template):
     running = []
-    for kind in ("exp", "night"):
+    for kind in ("exp", "trials"):
         if (root / kind).is_dir():
             running += check_items(root, kind, rep, status_updated, note_template)
     if len(running) > 1:
-        rep.error("exp/", f"only one experiment or night trial runs at a time: {', '.join(running)}")
+        rep.error("exp/", f"only one experiment or trial runs at a time: {', '.join(running)}")
     return running
 
 
 def check_items(root, kind, rep, status_updated, note_template):
-    """Check the numbered dirs of exp/ or night/ against their index; return the running ones."""
+    """Check the numbered dirs of exp/ or trials/ against their index; return the running ones."""
     exp = root / kind
     listed = "".join((exp / n).read_text(encoding="utf-8")
                      for n in ("INDEX.md", "ARCHIVE.md") if (exp / n).is_file())

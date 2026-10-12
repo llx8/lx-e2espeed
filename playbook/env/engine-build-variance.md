@@ -25,4 +25,4 @@ A timing cache binds to its TensorRT version and GPU; the fastest build is not a
 ## Evidence
 - ✓ 2026-09: DETR-style pose model, FP32 with TF32, TensorRT 10.16: 2 of 4 builds found 30 instead of 35 persons in a crowd image (a near-tie in a top-k query selection); TF32 off matched PyTorch.
 - ✓ 2026-10: the same model, FP16: builds loading one build's timing cache were byte-identical.
-- ✓ 2026-10: an image classifier and a small detector, TensorRT FP32, night trial: the fastest of four builds 1.55 -> 1.52 ms and 1.36 -> 1.31 ms, not landed.
+- ✓ 2026-10: an image classifier and a small detector, TensorRT FP32, self-iteration trial: the fastest of four builds 1.55 -> 1.52 ms and 1.36 -> 1.31 ms, not landed.
