@@ -23,7 +23,7 @@ In practice the plugin fixed the hang under 6 workers with MPS and concurrency 1
 
 ## Which models are at risk
 
-MPS is on in the user's production by default, even at one worker per container: assume it in every service.
+MPS is on in the user's production by default, even at one worker per container: assume it in every service, and have the service image start the daemon by default (the user, 2026-10-12).
 
 The ONNX decides first: GroupNormalization or InstanceNormalization nodes, or a mean of a mean written out by hand, left for TensorRT. The user treats GroupNorm in the model as the criterion (2026-10-11), and the evidence agrees: models without these ops (LayerNormalization, Softmax, ReduceSum only) had no barrier kernel, so a rebuild with the same TensorRT needs no scan. A model with them gets the plugin (`gpu-inference-trt-plugins`), then the scan below to confirm. Scan again after a TensorRT upgrade, since lowering changes between versions.
 

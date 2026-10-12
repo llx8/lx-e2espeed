@@ -21,7 +21,7 @@ JPEG is lossy. Compare decoded pixels with tolerances and final image quality, n
 ## Hardware decode in a service (NVJPG through nvImageCodec, 2026-09 to 2026-10)
 - The container needs the video driver capability (`NVIDIA_DRIVER_CAPABILITIES=compute,utility,video`); without it the hardware decoder cannot be created (`Could not create decoder. Code: 7`). Create it at Init with a small probe image and fail there.
 - Send NVJPG only complete baseline JPEGs: SOI (`FF D8`) first and EOI (`FF D9`) last. It does not take progressive (`FF C2`) or truncated files, and OpenCV versions disagree on truncated ones (one returned None, another half an image). A file that ends in EOI but is corrupt inside cannot be told apart before decoding; its damaged area fills differently from the CPU decoder.
-- What happens to the inputs NVJPG does not take is the user's call per project: fail fast with an error response, or the original decoder. A GPU error is never routed to the CPU.
+- Inputs NVJPG does not take fail fast with an error response; never route them to the original decoder (the user, 2026-10-12). A GPU error fails the same way.
 - Match the CPU decoder the service replaces: chroma upsampling mode and EXIF orientation. NVJPG then differs by about one level from libjpeg; one project accepted that as L1.
 - NVJPG runs one job at a time: when several images are decoded per request, submit the small ones first and the large one last on its own stream.
 - A declined input makes nvImageCodec print a warning to stderr; expect it in service logs.

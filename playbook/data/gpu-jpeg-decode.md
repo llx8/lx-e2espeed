@@ -17,7 +17,7 @@ Decode with nvImageCodec (NVJPG hardware) straight into a resident CUDA tensor, 
 Service end to end 5.9 to 16 ms faster per request; with GPU preprocessing after it, 11.35 -> 1.93 ms in a small-crop service.
 
 ## Side effects
-The algorithm's input type widens (a CUDA tensor besides a NumPy array); the service and algorithm repos change together. NVJPG decodes up to ±1 level differently from libjpeg (L1 in one project, accepted as not L0 in another). Inputs NVJPG does not take (other formats, progressive, truncated) need a policy the user picks: fail fast, or the original decoder.
+The algorithm's input type widens (a CUDA tensor besides a NumPy array); the service and algorithm repos change together. NVJPG decodes up to ±1 level differently from libjpeg (L1 in one project, accepted as not L0 in another). Inputs NVJPG does not take (other formats, progressive, truncated) fail fast with an error response, the user's default; never the original decoder.
 
 ## Does not apply
 - Paths that need the decoded image on the CPU anyway.

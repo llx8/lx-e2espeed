@@ -17,7 +17,8 @@ Propose these in onboarding step 3 as the starting point, one or two at a time; 
 - Baseline: the speed of the released version in the previous production image, run there through a run-image tool (when it cannot run, the repo README's numbers); the outputs of the baseline commit, or of the model at full precision (PyTorch FP32, TF32 off) when production's outputs are known to be wrong.
 - Metric: warm end-to-end latency, request bytes to response bytes, one worker; cold start reported beside it.
 - Levels: L1 is the spread of N engine rebuilds from one ONNX (card `engine-build-variance`); above L0 the user judges each result, no thresholds.
-- MPS: on in production, about four workers per GPU (ask the count), so no grid-barrier kernel may ship (`gpu-inference-mps-hang`).
+- MPS: on in production, about four workers per GPU (ask the count), so no grid-barrier kernel may ship (`gpu-inference-mps-hang`). The service image starts the MPS daemon by default in its start command, before the server, even at one worker; `ENABLE_MPS=0` skips it (the user, 2026-10-12; reference Dockerfile in `local/site.md`).
+- Input NVJPG does not take (other formats, progressive, truncated): fail fast with an error response, never route it to the original decoder (the user, 2026-10-12).
 - Production GPUs: ask which, as compute capabilities, before building anything that ships.
 - Environment: the runtime image's versions locally (a conda env from its pip freeze); never the old CUDA major.
 - Interface: the algorithm may take a CUDA tensor beside its NumPy input when that removes copies (the user prefers the faster path); the NumPy path keeps working.
@@ -28,7 +29,7 @@ One experiment each, in this order unless the profile says otherwise; skip a ste
 | Step | Evidence first | Change | Seen |
 |---|---|---|---|
 | Runtime port | the new image's TensorRT rejects the code | TensorRT 8 binding API to the tensor-name API (`set_input_shape`, `set_tensor_address`, `execute_async_v3`), raising when a call returns False | needed for the move |
-| JPEG on NVJPG | decode is a large share of the service | nvImageCodec into a CUDA tensor in PreProcess, the algorithm takes it, the video capability in the Dockerfile (card `gpu-jpeg-decode`) | -6 to -16 ms |
+| JPEG on NVJPG | decode is a large share of the service | nvImageCodec into a CUDA tensor in PreProcess, the algorithm takes it, the video capability in the Dockerfile, other inputs fail fast (card `gpu-jpeg-decode`) | -6 to -16 ms |
 | Preprocessing on the GPU | CPU warp, letterbox, normalize | one Triton kernel bit-exact with the CPU reference (`gpu-inference-dataflow`) | 11.35 to 1.93 ms with the decode, L1 |
 | FP16 engine | the engine dominates in FP32 | pure FP16, strongly typed; needs approval (card `fp16-trt-engine`) | -62% |
 | CUDA Graph | enqueue gaps | capture `execute_async_v3` per shapes and addresses (card `cuda-graph-trt`) | -6.6%, -9.1% |
@@ -42,11 +43,9 @@ Small service changes beside them: `.dockerignore` keeps weights, ONNX, and offl
 
 ## Decisions that differed
 Ask each; never carry one project's answer into another.
-- Input NVJPG does not take (other formats, progressive, truncated): fail fast with an error response, or route it to the original decoder. Both were chosen. A GPU failure (decoder creation, a CUDA error) is never routed: Init or the request fails.
 - Pinned memory: allowed in one project, ruled out in another.
 - Several items per request: pipelining items over slots was landed, then removed by the user (production's GPU also runs other work); a dynamic batch replaced it.
 - Precision past FP16: FP8 and BF16 were measured, never landed.
-- Where the MPS daemon starts, in the image's start command or in the deployment: `local/site.md`.
 
 ## Cleanup before delivery
 The user's wish: code a person can read, each item its own experiment, verify L0.

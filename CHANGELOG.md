@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: two image-service defaults set by the user
+- Asked about the two points the projects had answered differently, the user decided: every service image starts the MPS daemon by default, and inputs NVJPG does not take fail fast, never going to the original decoder. image-service, dataflow (and jpeg-codec.md), mps-hang, delivery, the gpu-jpeg-decode card, and onboarding step 3 state them as defaults instead of questions.
+
 ## 2026-10-12: what the image services taught the existing skills
 - mps-hang: the GroupNorm criterion the user applies (the ONNX decides; a rebuild on the same TensorRT needs no scan), MPS on even at one worker, and the partition test, since a 600 s load test with 12 workers never hung a plan that the partition test failed at once. dataflow: the bit-exact OpenCV 4.10 warpAffine recipe (`references/opencv-warp-replica.md`), the CUDA tensor input, NVJPG in a service, and the input policy as the user's decision, not a fallback. delivery: the shipped engine, pin order, and decode capability checks, and credit for colleagues' code. reporting.md: answer how code behaves from the code (the user, 2026-10-12), and credit colleagues inside the text (2026-10-10).
 
@@ -92,8 +95,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - What onboarding step 2 learned beyond the timed path (who calls the model, what the outputs mean, the exact contract, how production builds and runs it) lived only in the chat, so each compaction or new session read the code again. The skeleton now has knowledge/: INDEX.md with the writing rules (one tagged, sourced conclusion per line; open questions per topic; the commits it was read at), and business.md, contract.md, and deployment.md. Step 2 writes there while reading, step 3 records the user's answers there, and PROJECT.md and STATUS.md point there. An lx-work made earlier copies it from the skeleton.
 - The checker requires knowledge/INDEX.md and keeps the topic files' headings, like the other skeleton docs.
 - Changed during a project instead of at wrap-up, at the user's request, so the next project starts with it.
-
-## 2026-09-30: drift checks from a docs review
-- MAP.md drift: a pilot's time breakdown still showed the shares from before five delivered experiments, so it pointed at steps already solved. MAP.md now carries `- Measured on: baseline <commit> + exp up to NNN`; the checker holds the lx-work commit once a kept or delivered experiment past NNN changed a file MAP.md names, and checks that every `path:function` pointer still resolves. `exp.sh delivered` renames the stamp's commit, since the tree does not change.
-- `hooks/test_checks.py` breaks one thing per check in clean fixtures and expects the checker to fail; a check that never fires looks like one that passes. The pre-commit hook runs it.
-- Playbook counts: `✓N ✗M` in playbook/INDEX.md was maintained by hand and counted inconsistently (some cards counted pilot reruns, some did not). Evidence lines now start with ✓ or ✗ and the checker recounts them; gpu-preprocessing became ✓3 and numpy-temporaries ✓2.
