@@ -14,9 +14,9 @@ The common part of several of the user's projects (2026-09 to 2026-10), so a new
 ## Onboarding: the user's usual answers
 Propose these in onboarding step 3 as the starting point, one or two at a time; record only what the user confirms.
 - Layout: when the algorithm repo needs its own model work (precision, plugins, engine shipping), onboard it as its own project first, then the service, which picks it up through the pin. Otherwise link the algorithm checkout into the service project (a symlink at the project top to the sibling checkout on a dev branch, recorded in `- Linked repos:`), so one experiment changes both.
-- Baseline: the speed of the released version in the previous production image, run there through a run-image tool (when it cannot run, the repo README's numbers); the outputs of the baseline commit, or of the model at full precision (PyTorch FP32, TF32 off) when production's outputs are known to be wrong.
+- Baseline: the speed of the released version in the previous production image, run there through the run-image tool (`templates/tools/run-image/`; when it cannot run, the repo README's numbers); the outputs of the baseline commit, or of the model at full precision (PyTorch FP32, TF32 off) when production's outputs are known to be wrong.
 - Metric: warm end-to-end latency, request bytes to response bytes, one worker; cold start reported beside it.
-- Levels: L1 is the spread of N engine rebuilds from one ONNX (card `engine-build-variance`); above L0 the user judges each result, no thresholds.
+- Levels: L1 is the spread of N engine rebuilds from one ONNX (card `engine-build-variance`, tool `templates/tools/engine-noise/`); above L0 the user judges each result, no thresholds.
 - MPS: on in production, about four workers per GPU (ask the count), so no grid-barrier kernel may ship (`gpu-inference-mps-hang`). The service image starts the MPS daemon by default in its start command, before the server, even at one worker; `ENABLE_MPS=0` skips it (the user, 2026-10-12; reference Dockerfile in `local/site.md`).
 - Input NVJPG does not take (other formats, progressive, truncated): fail fast with an error response, never route it to the original decoder (the user, 2026-10-12).
 - Production GPUs: ask which, as compute capabilities, before building anything that ships.
