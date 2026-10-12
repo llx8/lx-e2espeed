@@ -21,6 +21,28 @@ Run GroupNorm/InstanceNorm through a TensorRT plugin that reduces within a block
 
 In practice the plugin fixed the hang under 6 workers with MPS and concurrency 12 for 8 stress rounds, with unchanged latency and outputs matching the old engine (worst case 0.055% of pixels off by more than one level). It can even help: one embedder no longer needed an FP32 lock for precision and dropped from 9.4 ms to 5.1 ms.
 
+## Which models are at risk
+
+MPS is on in the user's production by default, even at one worker per container: assume it in every service.
+
+The ONNX decides first: GroupNormalization or InstanceNormalization nodes, or a mean of a mean written out by hand, left for TensorRT. The user treats GroupNorm in the model as the criterion (2026-10-11), and the evidence agrees: models without these ops (LayerNormalization, Softmax, ReduceSum only) had no barrier kernel, so a rebuild with the same TensorRT needs no scan. A model with them gets the plugin (`gpu-inference-trt-plugins`), then the scan below to confirm. Scan again after a TensorRT upgrade, since lowering changes between versions.
+
+## Prove a fix: the partition test
+
+A load test proves little: 12 workers without a partition ran 600 s on a plan with a barrier kernel and none hung. One worker on a small MPS partition shows the fault at once, because the barrier grid can never be resident:
+
+```bash
+# A private daemon, in a window the user gives (it shares the GPU). Short paths: the pipe is a Unix socket,
+# and a long directory path made MPS fail to start in one project.
+export CUDA_MPS_PIPE_DIRECTORY=/tmp/mpsp CUDA_MPS_LOG_DIRECTORY=/tmp/mpsl
+mkdir -p "$CUDA_MPS_PIPE_DIRECTORY" "$CUDA_MPS_LOG_DIRECTORY" && nvidia-cuda-mps-control -d
+CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=5 python worker_loop.py old.plan   # first call: CUDA error 720 or a hang
+CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=5 python worker_loop.py new.plan   # runs; count calls for 60 s
+echo quit | nvidia-cuda-mps-control
+```
+
+Seen: the old plan failed its first call every time, with CUDA error 720 (cooperative launch too large) at `__myl_Gnor` in 2026-10 and as a hang at the first warmup in 2026-09; the plugin plan ran 683 calls in 60 s. Judge a hang by the time since the last completed call (60 s), not by request errors.
+
 ## Before delivering a multi-worker service
 
 Scan every engine the service loads:

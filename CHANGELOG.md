@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: what the image services taught the existing skills
+- mps-hang: the GroupNorm criterion the user applies (the ONNX decides; a rebuild on the same TensorRT needs no scan), MPS on even at one worker, and the partition test, since a 600 s load test with 12 workers never hung a plan that the partition test failed at once. dataflow: the bit-exact OpenCV 4.10 warpAffine recipe (`references/opencv-warp-replica.md`), the CUDA tensor input, NVJPG in a service, and the input policy as the user's decision, not a fallback. delivery: the shipped engine, pin order, and decode capability checks, and credit for colleagues' code. reporting.md: answer how code behaves from the code (the user, 2026-10-12), and credit colleagues inside the text (2026-10-10).
+
 ## 2026-10-12: skill gpu-inference-image-service, and local/site.md
 - The user: the later projects are much alike, so make the common part reusable and leave only the differences to them. Three image services, each pinning a separate algorithm repo, went through the same changes, onboarding answers, and delivery order. The new skill holds that sequence with its measured ranges, the user's usual answers to propose in onboarding, the decisions that differed between projects (to ask, not to copy), the cleanup and delivery order, and the pitfalls. Company names and reference code cannot enter the rules, so they go to `local/site.md`, ignored by git, each line pointing to the project record it came from; onboarding step 2 reads it, wrap-up step 3 adds to it, and the workspace does not count it as another project. experiment.md and onboarding step 3 route to the skill.
 

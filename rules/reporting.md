@@ -11,6 +11,7 @@ The user decides from your replies, not from the files. Most corrections in the 
 - When a question or a go-ahead can mean two things (which two sides to compare, speed or output quality), ask which in one line before measuring. A wrong guess costs a whole run.
 - Follow settled decisions (DECISIONS.md, PROJECT.md, what the user said in this session); never ask them again as open questions. Extra detail about one is information, not a question.
 - Work from the inputs the user agreed stand for production (PROJECT.md, Workload); do not open questions they already answer.
+- A question about how code or configuration behaves is answered from the code and configuration; reach live systems (CI runners, servers, remote APIs) only when the user asks (the user, 2026-10-12: "reason from the code alone").
 - Explain an option by what it means for the user; the mechanics only when asked.
 - Name runs, builds, and settings in the user's terms ("fp32, TF32 on", not an implementation flag), and say in words what a build sets before running it.
 - When saying where steps run (CPU or GPU), say which data each step reads and writes: a CPU step on metadata otherwise reads as the data going back to the CPU.
@@ -25,6 +26,7 @@ The user decides from your replies, not from the files. Most corrections in the 
 - One point per table: no cells packed with slashes, and an input that dominates a column is shown apart.
 
 ## Summaries for others
+- Credit colleagues inside the text where their work is used (a plugin library and the gain it brought), never in a separate block.
 - Speed and output quality in separate tables, holding only the options being decided.
 - Every cell holds a number or says where it was measured; no empty or dash cells.
 - Show a quality gap as counts per error band, with a hard input split out, not as one median.
