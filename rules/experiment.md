@@ -20,6 +20,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 | `.cpu()`, `.numpy()`, PIL/OpenCV round trips, syncs, repeated resize or cast, empty work | `gpu-inference-dataflow`, `perf-torch-sync-free` |
 | OOM, high peak, large inputs, many tiles | `gpu-inference-memory` |
 | a CNN, restoration, or segmentation stage dominates with stable shapes | `gpu-inference-cnn-tensorrt` |
+| GroupNorm or InstanceNorm in the ONNX, deformable attention, or any plugin in the engine | `gpu-inference-trt-plugins` |
 | an eager path bound by kernel launches | `perf-torch-cuda-graphs` |
 | diffusion transformer, VAE, LoRA | `gpu-inference-diffusion` |
 | an eager hotspot remains after the above | `gpu-inference-torch-compile`, only after explicit approval |

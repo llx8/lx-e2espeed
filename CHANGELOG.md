@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: skill gpu-inference-trt-plugins
+- The user: projects kept rebuilding the same plugin work, and a colleague's tested library already holds a GroupNorm without a grid barrier (the MPS deadlock) and a fused deformable attention. Two projects integrated them the same way. The skill says to look for an existing library first (`local/site.md`), how to vendor, build, load, export, and check them, what each measured, and the pitfalls met; `scripts/trt_plugin_export.py` is the loader and export wrappers as an English template, with CPU tests against independent references. experiment.md routes GroupNorm, deformable attention, and engine plugins to it.
+
 ## 2026-10-12: private terms before a note in parentheses
 - A Private terms line ending in a note such as "(confirmed by the user, 2026-10-06, D-012)" was split at its commas, so the note's date became a term (a false hit on rules text) and the last real term was glued to the note's first words, which matched nothing: that term went unprotected. check_rules.py drops parenthetical notes before splitting; one probe covers both.
 
@@ -91,9 +94,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 
 ## 2026-09-25: no line limit for scripts
 - The user lifted the script limit: some scripts are long by nature, and splitting exp.sh would spread shared functions across files. Docs keep their limits, which keep them maintainable.
-
-## 2026-09-25: night runs
-- Night run (rules/night.md, lx-work/night/): the user asked for a mode that tries every method with evidence overnight, each in its own directory, reproducible and applicable to the project at any time, for the user to pick from in the morning. It is the one autonomous mode and lands nothing: `exp.sh try` starts a trial on the current tree, `park` saves its verified patch and reverses it, and `adopt` turns a parked trial into an experiment, applying the patch when the base has not moved. `export night/NNN` rebuilds a trial from its own base. The SessionStart hook names any experiment or trial left running.
-- `exp.sh delivered`: after the user committed the kept patches, `exp.sh` refused every command, because HEAD was no longer the baseline. It now checks that HEAD is exactly the baseline plus the kept patches, makes HEAD the new baseline, and marks those experiments delivered. `export NNN` rebuilds from the item's own Base line, so a delivery does not change it.
-- The skeleton PROJECT.md kept the `<rules-version>` token that setup.sh fills; the previous rename had broken it.
-- From the first real night run: the queue leaves out directions DECISIONS.md rules out (a trial of a ruled-out precision change would have been queued), less code at equal speed may be parked, and run.sh writes next to itself (a copied run.sh wrote into the trial's directory after adopt). The adapter docstring no longer ties candidates to exp/.
