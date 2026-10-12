@@ -335,6 +335,61 @@ def skeleton_check_failures(tmp):
     return failures
 
 
+def workspace_check_failures(tmp):
+    """The workspace mode: in the directory holding the rules as lx-e2espeed/, session start lists the registered
+    projects below it, one line each and nothing from inside them beyond STATUS.md, and the prompt reminder shows;
+    a directory without the rules, or without a registered project below it, gets nothing. A shell command there
+    that names a project's lx-work runs the checker on it."""
+    rules, location, space = tmp / "ws-rules", tmp / "ws-location", tmp / "ws"
+    shutil.copytree(RULES, rules, ignore=shutil.ignore_patterns(".git", "local", "__pycache__"))
+    write(location, f"{rules}\n")
+    space.mkdir()
+    (space / dispatch.RULES).symlink_to(rules)
+    active, other, outside = space / "p1" / "alpha", space / "p2" / "beta", tmp / "ws-outside"
+    for root, phase in ((active, "optimizing"), (other, "wrap-up"), (outside, "onboarding")):
+        subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
+        write(root / "lx-work" / "STATUS.md", f"- Phase: {phase}\n\n## Next\n- next for {root.name}\n\n"
+                                              "## Waiting for the user\n- one\n- two\n")
+    write(active / "lx-work" / "PROJECT.md", "secret-of-alpha\n")
+    write(rules / "local" / "projects", "".join(f"{p}\n" for p in (active, other, outside)))
+    failures = []
+
+    def run(mode, data):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = getattr(dispatch, mode)(data)
+        return code, out.getvalue(), err.getvalue()
+
+    saved, dispatch.LOCATION = dispatch.LOCATION, location
+    try:
+        _, out, _ = run("session_start", {"cwd": str(space)})
+        want = ["- p1/alpha: phase optimizing (rules/experiment.md); next: next for alpha; 2 item(s) waiting",
+                "- p2/beta: phase wrap-up (rules/wrap-up.md)", "# Working from the workspace"]
+        failures += [f"workspace: session start lacks {w!r}" for w in want if w not in out]
+        failures += [f"workspace: session start shows {w!r}" for w in ("ws-outside", "secret-of-alpha", "# lx-e2espeed")
+                     if w in out]
+        empty = tmp / "ws-empty"
+        empty.mkdir()
+        (empty / dispatch.RULES).symlink_to(rules)
+        for cwd in (space / "p1", empty, active):  # no rules link; nothing registered below; a project
+            _, out, _ = run("session_start", {"cwd": str(cwd)})
+            if "lx workspace" in out:
+                failures.append(f"workspace: session start in {cwd} gives the overview")
+        if "language the user writes in" not in run("prompt", {"cwd": str(space)})[1]:
+            failures.append("workspace: the prompt reminder is missing")
+        if run("prompt", {"cwd": str(space / "p1")})[1]:
+            failures.append("workspace: the prompt reminder shows outside the workspace")
+        # This lx-work holds only STATUS.md and PROJECT.md, so the checker fails on it once it runs.
+        for command, want in (("git -C p1/alpha/lx-work add STATUS.md", 2), ("git -C p1/gamma/lx-work log", 0),
+                              ("git status", 0)):
+            code, _, err = run("post_edit", {"cwd": str(space), "tool_name": "Bash", "tool_input": {"command": command}})
+            if code != want or (want and "in lx-work" not in err):
+                failures.append(f"workspace: post-edit on {command!r} returned {code}, expected {want}")
+    finally:
+        dispatch.LOCATION = saved
+    return failures
+
+
 def main():
     failures = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -362,11 +417,12 @@ def main():
             shutil.rmtree(base)
         failures += reply_check_failures(tmp)
         failures += skeleton_check_failures(tmp)
+        failures += workspace_check_failures(tmp)
     for failure in failures:
         print(f"FAIL {failure}")
     print(f"{len(PROBES)} of {len(PROBES)} probes caught; both clean fixtures pass; the reply check passes its "
-          f"{len(REPLY_CASES)} cases, and the skeleton check its 4." if not failures
-          else f"{len(failures)} probe, reply, or skeleton check failure(s).")
+          f"{len(REPLY_CASES)} cases, the skeleton check its 4, and the workspace check its 14." if not failures
+          else f"{len(failures)} probe, reply, skeleton, or workspace check failure(s).")
     return 1 if failures else 0
 
 

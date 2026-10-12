@@ -3,13 +3,15 @@
 
   session-start  In a project that has lx-work/, print where the rules are, the phase and its rules
                  doc, warnings, the project status, and the entry rules, shortest first: Claude Code
-                 cuts long hook output to a short preview. Elsewhere, print nothing. It also runs
-                 after compaction, so the handoff survives it.
+                 cuts long hook output to a short preview. In the workspace (the directory holding
+                 the rules as lx-e2espeed/ above registered projects), print one line per project
+                 and rules/workspace.md instead, so no project is read before the user names it.
+                 Elsewhere, print nothing. It also runs after compaction, so the handoff survives it.
   post-edit      After an edit inside lx-e2espeed/ or lx-work/, or a shell command in or naming
                  one of them, run the rules' checker on it.
                  Problems go to stderr with exit code 2, which Claude Code shows to Claude.
-  prompt         On every prompt in such a project, print the reply naming rule, the reply language, and
-                 answering only what was asked, as a reminder.
+  prompt         On every prompt in such a project or the workspace, print the reply naming rule, the
+                 reply language, and answering only what was asked, as a reminder.
   stop           When Claude ends its turn there, flag the turn's reply text if it names things by
                  number (circled numbers, experiment numbers), with exit code 2 so Claude corrects it;
                  never twice in a row (stop_hook_active).
@@ -35,6 +37,10 @@ PHASE_DOCS = {
 }
 PHASE = re.compile(r"^- Phase: (\S+)", re.M)
 SYNCED = re.compile(r"^- Rules synced: ([0-9a-f]{7,40})\s*$", re.M)
+WORKSPACE_DOC = "rules/workspace.md"
+LINE_MAX = 160  # characters of a STATUS.md item in the workspace overview; the full text is one Read away
+# A path to an lx-work directory in a shell command, such as `git -C p3/demo/lx-work commit`.
+WORK_PATH = re.compile(r"[^\s'\"=;|&<>()]*lx-work(?![\w-])")
 HOOK_MAX_ERRORS = 15  # the rest costs context without helping the next fix
 # The user could not follow replies that named versions and steps by circled numbers or experiment numbers, and
 # asked for a rule enforced by hooks (2026-10-11). NUMBER_LABEL finds them; the experiment word is matched in
@@ -81,8 +87,68 @@ def lx_repo_of(path):
 
 
 def in_project(data):
-    """Whether the session runs in a project that uses these rules (lx-work/ at its root)."""
-    return rules_dir() is not None and (project_root(Path(data.get("cwd") or ".")) / WORK).is_dir()
+    """Whether the session runs in a project that uses these rules (lx-work/ at its root), or in the workspace."""
+    cwd, rules = Path(data.get("cwd") or "."), rules_dir()
+    return rules is not None and ((project_root(cwd) / WORK).is_dir() or bool(workspace_projects(cwd, rules)))
+
+
+def workspace_projects(cwd, rules):
+    """(path relative to cwd, root) of each project setup.sh registered below cwd, when cwd is the workspace: the
+    directory that holds the rules as lx-e2espeed/ (a symlink to the shared rules directory) and is no project.
+    Elsewhere none, so a session in an unrelated directory gets nothing."""
+    if (project_root(cwd) / WORK).is_dir() or (cwd / RULES).resolve() != rules.resolve():
+        return []
+    try:
+        registered = [l.strip() for l in (rules / "local" / "projects").read_text(encoding="utf-8").splitlines()
+                      if l.strip()]  # one project root per line, as setup.sh project writes it
+    except OSError:
+        return []
+    found = []
+    for root in map(Path, registered):
+        try:
+            rel = root.resolve().relative_to(cwd.resolve())
+        except ValueError:
+            continue
+        if (root / WORK).is_dir():
+            found.append((rel, root))
+    return sorted(found)
+
+
+def section_items(text, title):
+    """The bullets of a STATUS.md section, without the skeleton's <placeholder> ones."""
+    match = re.search(rf"^## {re.escape(title)}\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    items = [l[2:].strip() for l in match.group(1).splitlines() if l.startswith("- ")] if match else []
+    return [i for i in items if not i.startswith("<")]
+
+
+def shorten(text):
+    return text if len(text) <= LINE_MAX else text[:LINE_MAX - 3].rstrip() + "..."
+
+
+def running_notes(work):
+    return [note.parent.relative_to(work).as_posix() for note in sorted(work.glob("*/[0-9][0-9][0-9]-*/NOTE.md"))
+            if re.search(r"^- Status: running$", note.read_text(encoding="utf-8"), re.M)]
+
+
+def project_line(rel, root, rules):
+    """One overview line for a workspace project, from its STATUS.md: phase and its rules doc, the first Next item,
+    how many items wait for the user, and what needs attention before work starts."""
+    work = root / WORK
+    status = work / "STATUS.md"
+    text = status.read_text(encoding="utf-8") if status.is_file() else ""
+    match = PHASE.search(text)
+    phase = match.group(1) if match else "unknown"
+    doc = re.search(r"rules/[\w-]+\.md", PHASE_DOCS.get(phase, ""))
+    parts = [f"- {rel.as_posix()}: phase {phase}" + (f" ({doc.group(0)})" if doc else "")]
+    nxt, waiting = section_items(text, "Next"), section_items(text, "Waiting for the user")
+    if nxt:
+        parts.append(f"next: {shorten(nxt[0].rstrip('.'))}")
+    if waiting:
+        parts.append(f"{len(waiting)} item(s) waiting for the user")
+    parts += [f"{name} is still running" for name in running_notes(work)]
+    if skeleton_behind(rules, text):
+        parts.append("skeleton sync due (rules/naming.md)")
+    return "; ".join(parts) + "."
 
 
 def number_labels(text):
@@ -168,9 +234,34 @@ def skeleton_behind(rules, status):
             "commit is gone: tell the user and propose the sync in lx-e2espeed/rules/naming.md.")
 
 
+def stamp_note(rules):
+    installed = STAMP.read_text(encoding="utf-8").strip() if STAMP.is_file() else ""
+    if installed != install_stamp(rules):
+        print("The hooks and skills installed on this machine differ from lx-e2espeed's. Tell the user and "
+              "propose `lx-e2espeed/setup.sh global`.")
+
+
+def workspace_start(cwd, rules, projects):
+    """The workspace overview: one line per project and the workspace rules, nothing read from inside a project
+    beyond its STATUS.md, so the session reads a project only once the user names it."""
+    print(f"This is the lx workspace {cwd}: the projects below use {RULES}, the rules directory {rules}; every "
+          f"`{RULES}/` path in the rules means that directory. Work on one project at a time, the one the user "
+          f"names, as {WORKSPACE_DOC} below says.\n\nProjects, from each {WORK}/STATUS.md:")
+    for rel, root in projects:
+        print(project_line(rel, root, rules))
+    stamp_note(rules)
+    print("\n" + (rules / WORKSPACE_DOC).read_text(encoding="utf-8"))
+    return 0
+
+
 def session_start(data):
-    root, rules = project_root(Path(data.get("cwd") or ".")), rules_dir()
+    cwd, rules = Path(data.get("cwd") or "."), rules_dir()
+    root = project_root(cwd)
     work = root / WORK
+    if rules is not None and not work.is_dir():
+        projects = workspace_projects(cwd, rules)
+        if projects:
+            return workspace_start(cwd, rules, projects)
     if rules is None or not work.is_dir():
         return 0  # a project starts using the rules with setup.sh project, which creates lx-work/
     # Shortest and most urgent first: past about 10 KB, Claude Code shows only the first 2 KB.
@@ -183,18 +274,14 @@ def session_start(data):
         match = PHASE.search(text)
         phase = match.group(1) if match else "unknown"
         print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
-        for note in sorted(work.glob("*/[0-9][0-9][0-9]-*/NOTE.md")):
-            if re.search(r"^- Status: running$", note.read_text(encoding="utf-8"), re.M):
-                print(f"{note.parent.relative_to(work)} is still running, and its change is in the project tree, "
-                      "so nothing else can start until it ends. During a night run, go on with it (rules/night.md); "
-                      "otherwise tell the user and propose how to end it (its NOTE.md has the plan).")
+        for name in running_notes(work):
+            print(f"{name} is still running, and its change is in the project tree, so nothing else can start "
+                  "until it ends. During a night run, go on with it (rules/night.md); otherwise tell the user and "
+                  "propose how to end it (its NOTE.md has the plan).")
         behind = skeleton_behind(rules, text)
         if behind:
             print(behind)
-    installed = STAMP.read_text(encoding="utf-8").strip() if STAMP.is_file() else ""
-    if installed != install_stamp(rules):
-        print("The hooks and skills installed on this machine differ from lx-e2espeed's. Tell the user and "
-              "propose `lx-e2espeed/setup.sh global`.")
+    stamp_note(rules)
     if text is not None:
         print("\n" + text)
     print((rules / "CLAUDE.md").read_text(encoding="utf-8"))
@@ -218,10 +305,14 @@ def post_edit(data):
         command = tool_input.get("command", "")
         if WORK in command and (project_root(cwd) / WORK).is_dir():
             repos.add(project_root(cwd) / WORK)
+        for named in WORK_PATH.findall(command):  # from the workspace, a command names its project's lx-work
+            work = (cwd / Path(named).expanduser()).resolve()
+            if work.name == WORK and work.is_dir():
+                repos.add(work)
         if RULES in command and rules_dir():
             repos.add(rules_dir())
     failures = []
-    for repo in sorted(repos):
+    for repo in sorted({r.resolve() for r in repos}):  # one run per repo, however the paths spelled it
         # A rules repo is checked by its own checker, lx-work by that of the rules every project shares.
         rules = repo if repo.name == RULES else rules_dir()
         checker = rules / "hooks" / "check_docs.py" if rules else None
