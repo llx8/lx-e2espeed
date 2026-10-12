@@ -24,13 +24,13 @@ Proceed only when profiling identifies a material CNN-like stage, representative
 9. Validate PyTorch, ONNX, and TensorRT in sequence, then benchmark end to end.
 10. Fail fast on incompatible engines, plugins, shape, dtype, strides, or device.
 
-Use `scripts/runtime/shared_trt_runtime.py` for the shared context-memory runtime and engine framework. Read [references/framework.md](references/framework.md) before adapting it and [references/operators.md](references/operators.md) when an operator or plugin is needed.
+Use `scripts/runtime/shared_trt_runtime.py` (not run on this machine, 2026-10-12) for the shared context-memory runtime and engine framework. Read [references/framework.md](references/framework.md) before adapting it and [references/operators.md](references/operators.md) when an operator or plugin is needed.
 
 ## Bundled implementations
 
-- `scripts/plugins/tscnn_groupnorm_silu_plugin.py`: Triton-backed TensorRT GroupNorm and GroupNorm+SiLU plugin.
-- `scripts/plugins/replace_tscnn_groupnorm_onnx.py`: TSCNN graph matcher and plugin rewrite.
-- `scripts/plugins/replace_seedvr_groupnorm_onnx.py`: broader SeedVR/Klein GroupNorm graph rewrite.
+- `scripts/plugins/tscnn_groupnorm_silu_plugin.py`: Triton-backed TensorRT GroupNorm and GroupNorm+SiLU plugin; not run on this machine (2026-10-12).
+- `scripts/plugins/replace_tscnn_groupnorm_onnx.py`: TSCNN graph matcher and plugin rewrite; not run on this machine (2026-10-12).
+- `scripts/plugins/replace_seedvr_groupnorm_onnx.py`: broader SeedVR/Klein GroupNorm graph rewrite; not run on this machine (2026-10-12).
 - `scripts/plugins/color_attn_d16/`: SM120 D=16 fused color-attention CUDA/TensorRT plugin source.
 - `scripts/examples/vae_tensorrt.py`: static convolutional VAE tile, pad/crop, blend, self-check, and runtime integration.
 - `scripts/tests/`: plugin numerical and VAE tiling semantic tests.

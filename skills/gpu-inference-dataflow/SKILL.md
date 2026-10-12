@@ -30,8 +30,8 @@ Read [references/interpolation-map.md](references/interpolation-map.md) before r
 - `scripts/ops/triton_lanczos_resize.py`: separable CUDA Lanczos3 for BCHW tensors.
 - `scripts/ops/large_kernel_eroder.py`: rectangular pooling and Kornia shaped-kernel erosion with split passes and overlap tiles.
 - `scripts/ops/large_kernel_gaussian_blur.py`: separable Gaussian blur with multi-pass sigma composition.
-- `scripts/ops/cucim_distance.py`: cuCIM EDT with DLPack and PyTorch-stream interoperability.
-- `scripts/ops/nvimgcodec_jpeg.py`: resident CUDA JPEG decode/encode bridge.
+- `scripts/ops/cucim_distance.py`: cuCIM EDT with DLPack and PyTorch-stream interoperability; not run on this machine (2026-10-12).
+- `scripts/ops/nvimgcodec_jpeg.py`: resident CUDA JPEG decode/encode bridge; not run on this machine (2026-10-12).
 - `scripts/ops/opencv_warp_affine_u8.py`: bit-exact `cv2.warpAffine` (uint8, INTER_LINEAR, BORDER_CONSTANT) for OpenCV 4.x and 5.x, plain or fused with channel reversal, CHW, and a normalize lookup; `scripts/tests/test_opencv_warp_affine.py` checks it against the installed cv2.
 - `scripts/tests/`: focused correctness, finite-output, latency, and peak-memory tests.
 
