@@ -196,14 +196,16 @@ class MSDAFullPlugin(torch.nn.Module):
         return self.output_proj(out)
 
 
-def use_msda_full_plugin(model, module_type, head_dim=32, levels=(3, 4), points=4):
+def use_msda_full_plugin(model, module_type, head_dim=32, levels=(3, 4), points=4, heads=(8,)):
     """Swap every module_type instance for the plugin wrapper; return the count.
 
-    The defaults are the constraints of the library this template was written for (FP16, batch 1, 32 channels per
-    head, 3 or 4 levels, 4 points); take the real ones from its header. A module outside them raises.
+    The defaults are the constraints of the library this template was written for (FP16, batch 1, 8 heads of 32
+    channels, 3 or 4 levels, 4 points); take the real ones from its sources. That library's creator ignores the
+    num_heads attribute and builds 8 heads, so another head count fails only at enqueue. A module outside them raises.
     """
     def make(name, m):
-        if m.d_model // m.n_heads != head_dim or m.n_levels not in levels or m.n_points != points:
+        if (m.d_model // m.n_heads != head_dim or m.n_heads not in heads or m.n_levels not in levels
+                or m.n_points != points):
             raise ValueError(f"{name}: the MSDA plugin does not support d_model={m.d_model} n_heads={m.n_heads} "
                              f"n_levels={m.n_levels} n_points={m.n_points}")
         return MSDAFullPlugin(m)

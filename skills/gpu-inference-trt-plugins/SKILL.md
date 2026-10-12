@@ -22,7 +22,7 @@ Measured 2026-10 with TensorRT 10.16 on an RTX 5090 (sm_120), FP16 engines, unle
 | Plugin | Replaces | Constraints in the library seen | Effect |
 |---|---|---|---|
 | block-reduce GroupNorm (LINEAR and HWC8) | ONNX GroupNormalization, which Myelin lowers to grid-barrier kernels | FP16; gamma, beta as attributes | grid-barrier kernels 1 to 0; latency +0.07 ms, inside noise (the plugin splits the Myelin graph); the HWC8 variant removed 37 reformats (0.96 ms) on sm_86, where convolutions pick HWC8 |
-| full deformable attention: both linears as one cuBLAS GEMM, then softmax, locations, and sampling in one kernel | the middle of the attention module, between value_proj and output_proj | FP16, batch 1, 32 channels per head, 3 or 4 levels, 4 points | -0.43 ms (-4.5%) over the V3 built-in; process memory +270 MiB (one cuBLAS handle per instance, 12 instances); cold start +0.19 s; needs libcublas at run time |
+| full deformable attention: both linears as one cuBLAS GEMM, then softmax, locations, and sampling in one kernel | the middle of the attention module, between value_proj and output_proj | FP16, batch 1, 8 heads of 32 channels, 3 or 4 levels, 4 points | -0.43 ms (-4.5%) over the V3 built-in; process memory +270 MiB (one cuBLAS handle per instance, 12 instances); cold start +0.19 s; needs libcublas at run time |
 | built-in MultiscaleDeformableAttnPlugin_TRT version 2 (IPluginV3), by the ONNX node attribute `plugin_version="2"` | the same plugin's version 1 (IPluginV2DynamicExt) | same kernel | 956 to 634 layers, 48 reformats to 0, engine 8.76 to 7.37 ms (-14.8%); the plan lost its auxiliary streams, giving back 0.73 ms of overlap |
 
 The library seen also has window attention, LayerNorm with shift and partition (Swin), ECA, reflection padding, and segmentation heads; those were measured only in the project that wrote them (Swin hybrid -12% on Ampere, -1.4% on the RTX 5090).
@@ -41,9 +41,10 @@ One experiment per plugin, in the repo that builds the engine.
 - Reformats: count layers named `Reformatting CopyNode` next to the plugin in `engine.create_engine_inspector().get_engine_information(trt.LayerInformationFormat.JSON)`.
 - In the production image: `readelf -d lib.so | grep NEEDED` resolves, the plan deserializes, and one run equals the local run (L0).
 - Under MPS: the partition test in the `gpu-inference-mps-hang` skill.
-- After editing the template: `python scripts/tests/test_trt_plugin_export.py [lib.so]` (CPU, no GPU needed).
+- After editing the template: `python scripts/tests/test_trt_plugin_export.py [lib.so]` (CPU, no GPU needed), then `python scripts/tests/test_trt_plugin_engine.py lib.so` on a GPU (export, parse, build, run, compare with eager).
 
 ## Pitfalls
+- A creator can ignore an attribute: the deformable-attention library seen builds every instance with 8 heads whatever `num_heads` says, so a 2-head module built and then failed at enqueue ("unsupported shape"). The template checks the head count; for a new library, read `createPlugin`, and run the engine test.
 - Constants such as gamma, beta, and weights go in as attributes or initializers, never as graph inputs: an input cost a copy layer per block (+0.35 ms in one network). The template passes them by integer key for this reason.
 - Keep the plugin's tensor 3-D where the library expects it: 4-D and 5-D views brought reformats (+1.8 ms).
 - `supportsFormatCombination` must force the output format to equal the input's, or TensorRT inserts reformats.

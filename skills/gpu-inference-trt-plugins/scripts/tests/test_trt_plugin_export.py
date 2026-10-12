@@ -2,7 +2,7 @@
 and the loader's failure paths. With a compiled plugin library as the argument, also loads it for real.
 
 Usage: python test_trt_plugin_export.py [libtrt_plugins.so]   (torch, onnx, and tensorrt installed; no GPU needed)
-Passed 2026-10-12 with torch 2.11, onnx 1.21, TensorRT 10.16, and a delivered library: 20 checks.
+Passed 2026-10-12 with torch 2.11, onnx 1.21, TensorRT 10.16, and a delivered library: 21 checks.
 """
 import importlib.util
 import io
@@ -47,7 +47,7 @@ def check(cond, what):
 class RefMSDA(torch.nn.Module):
     """Deformable-DETR's MSDeformAttn forward, [N, Q, L, 2] reference points."""
 
-    def __init__(self, d_model=64, n_levels=3, n_heads=2, n_points=4):
+    def __init__(self, d_model=256, n_levels=3, n_heads=8, n_points=4):
         super().__init__()
         self.d_model, self.n_levels, self.n_heads, self.n_points = d_model, n_levels, n_heads, n_points
         self.sampling_offsets = torch.nn.Linear(d_model, n_heads * n_levels * n_points * 2)
@@ -106,10 +106,10 @@ start = torch.cat([torch.zeros(1, dtype=torch.long), (shapes[:, 0] * shapes[:, 1
 s = int((shapes[:, 0] * shapes[:, 1]).sum())
 attn = RefMSDA()
 for p in attn.parameters():
-    torch.nn.init.normal_(p, std=0.2)
+    torch.nn.init.normal_(p, std=0.1)
 holder = torch.nn.Module()
 holder.attn = attn
-query, src = torch.randn(1, 7, 64), torch.randn(1, s, 64)
+query, src = torch.randn(1, 7, 256), torch.randn(1, s, 256)
 refp = torch.rand(1, 7, 3, 2)
 mask = torch.zeros(1, s, dtype=torch.bool)
 mask[0, -3:] = True
@@ -133,6 +133,11 @@ try:
 except ValueError:
     check(True, "an unsupported level count raises")
 try:
+    tpe.use_msda_full_plugin(torch.nn.Sequential(RefMSDA(d_model=64, n_heads=2)), RefMSDA, levels=(3,))
+    check(False, "a head count the library ignores raises")
+except ValueError:
+    check(True, "a head count the library ignores raises")
+try:
     holder.attn(query, torch.rand(1, 7, 3, 4), src, shapes, start)
     check(False, "box reference points raise")
 except ValueError:
@@ -154,7 +159,7 @@ torch.onnx.export(Wrap(holder.attn), (query, refp, src), buf, opset_version=17, 
 model = onnx.load_from_string(buf.getvalue())
 nodes = [n for n in model.graph.node if n.op_type == tpe.MSDA_FULL_OP]
 check(len(nodes) == 1 and len(nodes[0].input) == 7 and nodes[0].attribute[0].name == "num_heads"
-      and nodes[0].attribute[0].i == 2, "one MSDA Full node, 7 inputs, num_heads=2")
+      and nodes[0].attribute[0].i == 8, "one MSDA Full node, 7 inputs, num_heads=8")
 casts = {n.output[0]: n.attribute[0].i for n in model.graph.node if n.op_type == "Cast"}
 inits = {t.name: t.data_type for t in model.graph.initializer}
 consts = {n.output[0]: n.attribute[0].t.data_type for n in model.graph.node if n.op_type == "Constant"}
@@ -186,5 +191,7 @@ if len(sys.argv) > 1:
             check(False, "a creator missing from the registry raises")
         except RuntimeError as e:
             check("lacks NoSuchPlugin_TRT" in str(e), "a creator missing from the registry raises")
-print(f"passed {ok}, failed {fail}")
-sys.exit(1 if fail else 0)
+if __name__ == "__main__":
+    # test_trt_plugin_engine.py imports this file for its modules and counts.
+    print(f"passed {ok}, failed {fail}")
+    sys.exit(1 if fail else 0)

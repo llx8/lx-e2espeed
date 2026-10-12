@@ -6,9 +6,10 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
-## 2026-10-12: verify template from four projects; run-image and engine-noise templates
+## 2026-10-12: tool templates from four projects; the plugin template tested on a GPU
 - Four projects had each extended their copy of verify in the same directions. The template takes them back, each optional so an adapter without them behaves as before: `--reference` (a scratch reference for a trial run), `--save`, `--saved`, and `--against` (A/A, rebuilds, and natural differences against a saved run), `--out` JSON with both runs' sources, `VERIFY_SCENARIOS` (more inputs than the bench), `LEVEL_METRIC` (`rel_l2` beside the largest difference), `verify_call` (one call per input), `tolerate` (differences the accuracy standard allows), and the number of differing values of an EXACT array. Frozen references now carry their source; old ones without it still load.
 - run-image (a tool command inside a production image, with its own container cap and a MemAvailable watch) and engine-noise (the L1 bound from N engine rebuilds) were written in two projects and copied by later ones; now generic templates, with linked repos mounted in run-image. Tested on a fake project (29 checks) and run-image in a production image.
+- New `test_trt_plugin_engine.py`: exports each wrapper, builds an FP16 engine with the library, runs it, and compares with eager; 29 checks pass on an RTX 5090. Its first run found that the deformable-attention library builds every instance with 8 heads whatever `num_heads` says: the 2-head test module built and failed at enqueue. The template now checks the head count (`heads=(8,)`), the tests use 8 heads, and the skill names the pitfall.
 
 ## 2026-10-12: agreed report layouts in PROJECT.md; the weekly report
 - At the switch to the shared rules, Claude's per-project memories moved into each lx-work, since a workspace session does not load them. One project's agreed report layout (main scenario only, split by input size) lived only there; reporting.md now gives such agreements one home, a `- Reports:` line under Metric in PROJECT.md, read before any report.
