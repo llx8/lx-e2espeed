@@ -52,7 +52,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - Use one term per concept, as defined below.
 
 ## Maintaining lx-e2espeed
-- Give every new check a probe in `hooks/test_checks.py`, which proves each check can fail; the pre-commit hook runs it.
+- Give every new check a probe in `hooks/test_checks.py`, which proves each check can fail, and every change to `exp.sh` a step in `hooks/test_exp.py`, which runs it on a throwaway project; the pre-commit hook runs both.
 - Log every change to rules, templates, or hooks in `CHANGELOG.md` with its reason.
 - During project work, change rules or cards at wrap-up, or earlier when the user asks; either way only on the user's go-ahead.
 - lx-e2espeed is one working tree that the sessions of every project edit, and a saved change reaches every project at once. Before editing, `git -C lx-e2espeed status --porcelain` must print nothing; anything else is another session's unfinished change, so stop and ask the user. Try a change to a script or hook on a copy first.

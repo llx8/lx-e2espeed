@@ -11,7 +11,8 @@ if [ -d "$top/rules" ]; then  # the rules repo: every change to how the work is 
     echo "error: rules, templates, hooks, skills, or scripts changed without an entry in CHANGELOG.md" >&2
     exit 1
   fi
-  # Every check must still be able to fail; the probes take under a second.
+  # Every check must still be able to fail, and exp.sh must still run a project's experiments; together under three seconds.
   python3 "$(dirname "$checker")/test_checks.py" >&2
+  python3 "$(dirname "$checker")/test_exp.py" >&2
 fi
 exec python3 "$checker" "$(git rev-parse --show-toplevel)"
