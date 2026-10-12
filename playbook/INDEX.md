@@ -12,7 +12,7 @@ Entry format, a few words each: `- [<technique>](<category>/<technique>.md): <sy
 Loading, decoding, tokenization, CPU-side preprocessing.
 - [gpu-preprocessing](data/gpu-preprocessing.md): CPU preprocessing dominates → 5-7x, L0 | ✓3 ✗0
 - [exact-resize-on-gpu](data/exact-resize-on-gpu.md): CPU mask resize → 5x, L0 | ✓1 ✗0
-- [gpu-jpeg-decode](data/gpu-jpeg-decode.md): JPEG decode dominates → -8 to -16 ms | ✓1 ✗0
+- [gpu-jpeg-decode](data/gpu-jpeg-decode.md): JPEG decode dominates → -6 to -16 ms | ✓3 ✗0
 - [numpy-temporaries](data/numpy-temporaries.md): full-array temporaries, copies → up to -50 ms | ✓2 ✗0
 - [mask-cleanup-integer](data/mask-cleanup-integer.md): float thresholds, per-label loops → cleanup 3x, L0 | ✓1 ✗0
 - [pack-model-input](data/pack-model-input.md): input built by cvtColor/transpose/concat → -35%, L0 | ✓1 ✗0
@@ -20,7 +20,7 @@ Loading, decoding, tokenization, CPU-side preprocessing.
 ## host
 Python overhead, kernel launch overhead, unnecessary synchronization, CUDA Graphs.
 - [fused-preprocess-kernel](host/fused-preprocess-kernel.md): many small prep kernels → -0.3 ms/RoI, L0 | ✓1 ✗0
-- [cuda-graph-trt](host/cuda-graph-trt.md): enqueue overhead → -0.1 to -0.4 ms, L0 | ✓1 ✗0
+- [cuda-graph-trt](host/cuda-graph-trt.md): enqueue overhead → -0.1 to -1 ms, L0 | ✓4 ✗0
 
 ## transfer
 Host-device copies, pinned memory, asynchronous copies, overlap.
@@ -30,8 +30,10 @@ Host-device copies, pinned memory, asynchronous copies, overlap.
 
 ## compute
 Operator fusion, torch.compile, kernel selection, custom kernels.
-- [fp16-trt-engine](compute/fp16-trt-engine.md): FP32 engine dominates → 2.2x, L2; FP32 edges eat it | ✓1 ✗1
-- [tensorrt-groupnorm-plugin](compute/tensorrt-groupnorm-plugin.md): Myelin norm kernels, MPS hang → fixed, up to 1.8x | ✓1 ✗0
+- [fp16-trt-engine](compute/fp16-trt-engine.md): FP32 engine dominates → 2.2x to -62%, L2; FP32 edges eat it | ✓2 ✗1
+- [tensorrt-groupnorm-plugin](compute/tensorrt-groupnorm-plugin.md): Myelin norm kernels, MPS hang → fixed, up to 1.8x | ✓2 ✗0
+- [plugin-v3-version](compute/plugin-v3-version.md): reformats around a built-in plugin → -14.8% | ✓1 ✗0
+- [deformable-attention-plugin](compute/deformable-attention-plugin.md): deformable attention glue kernels → -4.5%, +270 MiB | ✓1 ✗0
 - [quantized-attention-plugin](compute/quantized-attention-plugin.md): long D=16 attention on sm_120 → 2.9x, max 5 levels | ✓1 ✗0
 - [torch-compile](compute/torch-compile.md): eager stages, no mature backend → ~1% | ✓0 ✗1
 
@@ -41,8 +43,11 @@ Allocator behavior, fragmentation, buffer reuse.
 
 ## serving
 Batching, concurrency, scheduling, pipelining.
-- [mps-grid-barrier](serving/mps-grid-barrier.md): MPS workers hang → fixed | ✓1 ✗0
+- [mps-grid-barrier](serving/mps-grid-barrier.md): MPS workers hang → fixed | ✓2 ✗0
+- [dynamic-batch-profiles](serving/dynamic-batch-profiles.md): one engine call per item → P99 -39%, L1 | ✓1 ✗0
 
 ## env
 Driver and library versions, build flags, GPU settings.
 - [trt-plugin-build-hygiene](env/trt-plugin-build-hygiene.md): plugin not found, binaries overwritten → prevented | ✓1 ✗0
+- [ship-prebuilt-engine](env/ship-prebuilt-engine.md): engine built at start or in CI → cold start about halved | ✓4 ✗0
+- [engine-build-variance](env/engine-build-variance.md): rebuilds differ in speed and outputs → identical or best of N | ✓3 ✗0

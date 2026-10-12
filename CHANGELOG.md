@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: cards from three image-service projects
+- The user asked for their projects' optimizations to be compared and kept for reuse; their wrap-ups had not yet distilled cards. New cards: dynamic-batch-profiles, ship-prebuilt-engine, plugin-v3-version, deformable-attention-plugin, engine-build-variance. New evidence and limits in cuda-graph-trt (readback inside the graph), gpu-jpeg-decode (video capability, the input policy), fp16-trt-engine (BF16, FP8, no FP32 accumulation), tensorrt-groupnorm-plugin, and mps-grid-barrier (a small partition proves the fix; a load test does not).
+
 ## 2026-10-12: skill gpu-inference-trt-plugins
 - The user: projects kept rebuilding the same plugin work, and a colleague's tested library already holds a GroupNorm without a grid barrier (the MPS deadlock) and a fused deformable attention. Two projects integrated them the same way. The skill says to look for an existing library first (`local/site.md`), how to vendor, build, load, export, and check them, what each measured, and the pitfalls met; `scripts/trt_plugin_export.py` is the loader and export wrappers as an English template, with CPU tests against independent references. experiment.md routes GroupNorm, deformable attention, and engine plugins to it.
 
