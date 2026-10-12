@@ -8,7 +8,7 @@ Rules for making a trained model faster end to end, together with the user.
 This is a collaboration, not an autonomous loop: you and the user discuss, and the user decides. Answer a question in words; reading files, code, logs, and history to answer it is fine.
 Act only after the user explicitly says to: changing any file, running anything beyond read-only inspection, or installing. A go-ahead covers exactly what was agreed; anything more needs its own. If it is unclear whether the user asks or tells you to act, ask.
 Exceptions: lx-work records (docs, indexes, notes, knowledge/) and their commits, written as things happen and listed at the end of your reply (PROJECT.md and DECISIONS.md still hold only what the user agreed); and a night run the user starts (`rules/night.md`), where nothing lands.
-With this repo itself as the working directory, you are maintaining these rules: see `rules/writing.md`.
+With this repo as the working directory, you maintain these rules: see `rules/writing.md`.
 
 ## Layout
 - `<project>/`: the user's company repo; experiments change only its working tree and its linked repos', through `exp.sh`.
@@ -24,20 +24,20 @@ If this file reached you without the hook's phase and status lines, the hooks ar
 ## Hard rules
 - Do not change model weights or architecture. Outputs must meet the accuracy standard in `lx-work/PROJECT.md`.
 - Do not edit reference outputs, tolerances, or verify criteria to make a change pass. Only the user changes them, recorded in `lx-work/DECISIONS.md`.
-- Report results with the bench and verify tools' own summary lines, never a paraphrase or a claim without numbers; explain each scenario, variant, and level name in plain words: identifiers mean nothing to the user.
+- Report results with the bench and verify tools' own summary lines, never a paraphrase or a number-free claim. In replies and tables, name each version, step, scenario, and level by what it is or does, never by a number or experiment ID: the user knows none.
 - One landed change per experiment, so every gain or regression has one cause.
 - Changing numeric precision, enabling `torch.compile`, and adding a dependency each need the user's explicit approval.
 - Production code fails fast: never add a silent fallback to a slower path. Keep the reference path as an explicit offline configuration.
-- Nothing about the project leaves lx-work. Cards and rule changes are abstract; you check that before they reach the main copy.
-- Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repositories; do not modify a sibling repository unless the user says so.
+- Nothing about the project leaves lx-work: cards and rule changes stay abstract, checked before they reach the main copy.
+- Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repositories; leave sibling repositories unchanged unless the user says so.
 - In the project repo, do not commit, stash, reset, clean, or switch branches unless the user asks; commits use the user's own git identity with no co-author lines. Change its code only inside an experiment or night trial, ended by `exp.sh keep`, `park`, or `drop`, so between them the tree equals the baseline commit plus the kept patches.
-- Run every job that loads a model or data under a hard memory cap, at most half the RAM and sized from its estimated or slice-measured peak: `systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap> <command>` (commands in these rules omit it). An uncapped job once froze a no-swap server for two days. Light commands (setup.sh, checkers) take a small cap such as 2G: a memory guard may block uncapped Python or scripts.
+- Run every job that loads a model or data under a hard memory cap, at most half the RAM, sized from its estimated or slice-measured peak: `systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap> <command>` (commands in these rules omit it). An uncapped job once froze a no-swap server for two days. Light commands (setup.sh, checkers) take a small cap such as 2G: a memory guard may block uncapped ones.
 
 ## Defaults
 - Every file in both lx repos is in English and written for an AI (`rules/writing.md`); anything for people goes in your reply.
 - Send long command output to `lx-work/local/logs/` and read only the summary.
 - When the user corrects how you work, record it in `lx-work/FEEDBACK.md`.
-- Change lx files with Edit or Write, or with shell commands that name the lx directory, so the checker hook runs.
+- Change lx files with Edit, Write, or shell commands naming the lx directory, so the checker hook runs.
 - When compacting, keep the current experiment, the latest numbers, and pending user decisions.
 
 ## Working loop

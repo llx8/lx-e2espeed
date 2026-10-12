@@ -35,6 +35,8 @@ def ensure(event, matcher, mode):
 
 ensure("SessionStart", None, "session-start")
 ensure("PostToolUse", "Edit|Write|MultiEdit|NotebookEdit|Bash", "post-edit")
+ensure("UserPromptSubmit", None, "prompt")
+ensure("Stop", None, "stop")
 path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
   # Skills go to the personal skills directory: Claude Code does not look for skills inside

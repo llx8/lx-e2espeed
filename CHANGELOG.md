@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-11: replies name things in words, enforced by hooks
+- The user, after several corrections: replies and their tables kept labelling versions and steps with circled numbers and experiment numbers, which the user cannot follow, and a rule alone had not stopped it; the user asked for a rule plus hooks. The CLAUDE.md reporting rule now says to name each version, step, scenario, and level by what it is or does, never by a number or an experiment ID (other lines trimmed to stay under 6,000 bytes). dispatch.py gets a `prompt` mode (UserPromptSubmit: prints the rule before every reply in a project) and a `stop` mode (Stop: finds circled numbers and experiment numbers in the current turn's reply text outside code and link targets, and exits 2 so Claude sends a correction; never on its own second stop). setup.sh registers both; hooks/test_checks.py covers the matcher, the turn extraction, and the exit codes.
+
 ## 2026-10-11: scenario and variant names say what they are, and reports explain them
 - The user could not tell what the scenarios in a results report were, one named `main` and one after a test file: the adapter template's default scenario name was a role (`main`), naming.md had no rule for scenarios or variants, and the reporting rule asked for the tools' summary lines without explaining their names. naming.md now names scenarios after their inputs and variants after their change, never a role; the template's SCENARIOS starts empty with that pointer; the CLAUDE.md reporting rule adds a plain-words explanation of each scenario, variant, and level name. CLAUDE.md was trimmed elsewhere to stay under 6,000 bytes.
 
@@ -87,11 +90,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 ## 2026-09-25: pilot, second project
 - Generic bench, verify, and cpu-profile in templates/tools/, with an adapter skeleton that holds everything project-specific. The second project would otherwise rewrite the first project's tools and could repeat its measurement mistakes.
 - Onboarding checks that weights are real files, not Git LFS pointers. The verify template refuses to overwrite frozen references: once optimized code lands, freezing again would hide every change.
-
-## 2026-09-24: pilot on a real project
-A pilot re-optimized an image CNN service from its unoptimized commit (6 experiments, 5 kept, -58% at L0) to find what the rules got wrong.
-- Onboarding asks a few plain questions with proposed answers; the MAP.md template has a place for the stage flow; the adapter loads candidates too.
-- Benchmarking: inline steps split with a function-level profiler; native logs redirected at the file-descriptor level; an A/B mode with one fresh process per scenario, since scenarios sharing a process shifted each other by several ms and produced a fake gain; noise floor per scenario from A/A runs, re-measured after large gains; targeted tests for branches the scenarios never reach; A/B medians are the recorded numbers.
-- Templates: per-scenario numbers with a main scenario, no `<metric>` placeholders, lx-work ignores Python caches (8 .pyc files had been committed).
-- Checker: project code in change.patch and candidate/ keeps its language (exp.sh keep produced a patch the English check rejected); finished notes cannot keep placeholders; template-shape errors also cover fields added by newer rules.
-- Wrap-up commits kept patches from a temporary index; the rules repo refuses rule changes without a CHANGELOG entry, because the pilot's own rule fixes went unlogged.

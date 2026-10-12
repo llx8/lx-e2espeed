@@ -10,6 +10,7 @@ Exits 1 if a fixture fails or a probe goes undetected.
 """
 import contextlib
 import io
+import json
 import re
 import shutil
 import sys
@@ -20,6 +21,7 @@ HOOKS = Path(__file__).resolve().parent
 RULES = HOOKS.parent
 sys.path.insert(0, str(HOOKS))
 import check_docs  # noqa: E402
+import dispatch  # noqa: E402
 
 PROJECT = "qzxproject"  # the fixture project's directory; the checker treats its name as a private term
 COMMIT = "1234567"
@@ -248,6 +250,50 @@ PROBES = [
                                                       append(r / "rules" / "naming.md", "Frobnicator\n")), "private term 'Frobnicator'"),
 ]
 
+# dispatch.py: the Stop hook's reply check. (reply text, labels it must find); the circled numbers and the Chinese
+# word for experiment are escaped, since files here are English only.
+REPLY_CASES = [
+    ("plain names: GPU decode, then CUDA Graph, 1.80 ms (24 faces)", []),
+    ("rows \u2460 GPU decode, \u2461 plus the kernel", ["\u2460", "\u2461"]),
+    ("since exp 007 the median is 1.80 ms; exp001 before", ["exp 007", "exp001"]),
+    ("\u5b9e\u9a8c 5 \u548c\u5b9e\u9a8c4, Experiment #4", ["\u5b9e\u9a8c 5", "\u5b9e\u9a8c4", "Experiment #4"]),
+    ("paths stay: `exp 7`, [note](lx-work/exp 007/NOTE.md), ```\nexp 7\n```, expect 3, exp/007", []),
+]
+
+
+def reply_check_failures(tmp):
+    """Each REPLY_CASES text gives exactly its labels; the Stop hook reads only the current turn, flags it with exit
+    2 inside a project that uses these rules, and stays quiet on its second stop or outside such a project."""
+    failures = [f"reply check on {text!r}: expected {want}, got {got}" for text, want in REPLY_CASES
+                if (got := dispatch.number_labels(text)) != want]
+    project = tmp / "reply-project"
+    (project / "lx-e2espeed").mkdir(parents=True)
+    (project / "lx-e2espeed" / "CLAUDE.md").write_text("# rules\n")
+    (project / "lx-work").mkdir()
+    entries = [{"type": "user", "message": {"content": "first prompt"}},
+               {"type": "assistant", "message": {"content": [{"type": "text", "text": "old turn \u2460"}]}},
+               {"type": "user", "message": {"content": [{"type": "text", "text": "second prompt"}]}},
+               {"type": "assistant", "message": {"content": [{"type": "text", "text": "measured exp 3"}]}},
+               {"type": "user", "message": {"content": [{"type": "tool_result", "content": "exp 9"}]}},
+               {"type": "assistant", "message": {"content": [{"type": "text", "text": "done"}]}}]
+    transcript = tmp / "transcript.jsonl"
+    transcript.write_text("".join(json.dumps(e) + "\n" for e in entries))
+    if dispatch.number_labels(dispatch.turn_text({"transcript_path": str(transcript)})) != ["exp 3"]:
+        failures.append("reply check: the current turn's text is not what the transcript's last turn holds")
+    saved, dispatch.TRANSCRIPT_TAIL = dispatch.TRANSCRIPT_TAIL, 64  # a first tail that misses the last prompt
+    try:
+        if dispatch.number_labels(dispatch.turn_text({"transcript_path": str(transcript)})) != ["exp 3"]:
+            failures.append("reply check: a tail without the last prompt is not grown until it holds it")
+    finally:
+        dispatch.TRANSCRIPT_TAIL = saved
+    for data, want in (({"cwd": str(project)}, 2), ({"cwd": str(project), "stop_hook_active": True}, 0),
+                       ({"cwd": str(tmp)}, 0)):
+        with contextlib.redirect_stderr(io.StringIO()):
+            got = dispatch.stop({**data, "transcript_path": str(transcript)})
+        if got != want:
+            failures.append(f"reply check: stop() returned {got}, expected {want}, for {data}")
+    return failures
+
 
 def main():
     failures = []
@@ -274,10 +320,11 @@ def main():
             if code != 1 or expect not in out:
                 failures.append(f"{name}: expected exit 1 with '{expect}', got exit {code}:\n{out.strip() or '(no output)'}")
             shutil.rmtree(base)
+        failures += reply_check_failures(tmp)
     for failure in failures:
         print(f"FAIL {failure}")
-    print(f"{len(PROBES) - len(failures)} of {len(PROBES)} probes caught; both clean fixtures pass." if not failures
-          else f"{len(failures)} of {len(PROBES)} probes failed.")
+    print(f"{len(PROBES)} of {len(PROBES)} probes caught; both clean fixtures pass; the reply check passes its "
+          f"{len(REPLY_CASES)} cases." if not failures else f"{len(failures)} probe or reply check failure(s).")
     return 1 if failures else 0
 
 
