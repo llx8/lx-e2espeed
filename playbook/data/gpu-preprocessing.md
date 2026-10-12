@@ -17,7 +17,7 @@ Upload the input once and run the preprocessing chain on the GPU: PyTorch or Kor
 Preprocessing-heavy paths: 5x to 7x on the preprocessing share; lossless when the kernels replicate the reference exactly.
 
 ## Side effects
-Triton kernels need a compiler at first run and a cold cache costs about 90 s. Bit-exactness can tie the code to a library version and CPU features of the reference (for example an OpenCV version with AVX2/FMA3).
+Triton kernels need a compiler at first run and a cold cache costs about 90 s. Triton also compiles a new variant per specialization: a block size derived from the image width compiled at the first very wide request (39 to 46 s, over a 10 s worker timeout), and a view whose pointer was not 16-byte aligned cost 2 s once. Use a fixed block with a loop over columns (cold Init 57.5 -> 9.9 s), clone unaligned views, and warm up every variant at Init. Bit-exactness can tie the code to a library version and CPU features of the reference (for example an OpenCV version with AVX2/FMA3).
 
 ## Does not apply
 - A cheap CPU stage: moving it only to remove a visible transfer does not pay.

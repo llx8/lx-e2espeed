@@ -6,6 +6,10 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: cards from the projects done before these rules
+- The kernel, research, and service records of the first two projects (Chinese, outside lx-work) had reached the playbook only in part. New cards: `fused-attention-kernel` (two kernel studies agree: P in registers, bank conflicts fixed by layout, no register caps, fewer instructions when issue-bound), `token-reuse-diffusion` (a paper reproduction: 2% to 5%, research only), `gpu-png-decode`, and `mps-multi-worker`. `quantized-attention-plugin` said FP8 PV where the shipped plugin uses FP16 PV; fixed. Triton specialization and NVJPG routing went into `gpu-preprocessing` and `gpu-jpeg-decode`.
+- The 2026-10-01 entries left this file for its 100-line limit; the last line says where they are.
+
 ## 2026-10-12: tool templates from four projects; the plugin template tested on a GPU
 - Four projects had each extended their copy of verify in the same directions. The template takes them back, each optional so an adapter without them behaves as before: `--reference` (a scratch reference for a trial run), `--save`, `--saved`, and `--against` (A/A, rebuilds, and natural differences against a saved run), `--out` JSON with both runs' sources, `VERIFY_SCENARIOS` (more inputs than the bench), `LEVEL_METRIC` (`rel_l2` beside the largest difference), `verify_call` (one call per input), `tolerate` (differences the accuracy standard allows), and the number of differing values of an EXACT array. Frozen references now carry their source; old ones without it still load.
 - run-image (a tool command inside a production image, with its own container cap and a MemAvailable watch) and engine-noise (the L1 bound from N engine rebuilds) were written in two projects and copied by later ones; now generic templates, with linked repos mounted in run-image. Tested on a fake project (29 checks) and run-image in a production image.
@@ -85,15 +89,4 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - An A/B read `clocks.sm` to see whether the lock held; a GPU running below its lock under the power cap cannot show that. The trigger is now a reboot or driver reload since the lock.
 - The working loop showed the baseline as a stage after onboarding; it is onboarding's last step. Step 5 no longer restates where the noise floor goes. Kept on purpose: the go-ahead and memory-cap rules in both CLAUDE.md and the user's global instructions (the rules must hold without the latter), and one-line reminders at the steps where they apply.
 
-## 2026-10-01: Rules synced field, small caps for light commands
-- Bringing an existing lx-work up to a changed skeleton had no recorded procedure, and which rules commit lx-work matched lived in free text in STATUS.md; the first two projects each did it twice by hand. STATUS.md now has `- Rules synced:`, which `setup.sh project` fills, and `rules/naming.md` gives the sync after a pull: apply the skeleton diff since that commit, merge rejected hunks by hand, update the field.
-- A memory guard blocked `setup.sh global` and the checker for running without a cap. The cap rule now says light commands take a small one.
-
-## 2026-10-01: hook output size, bench and verify fixes, one home per fact
-- Claude Code cut the SessionStart output (10.8 KB) to a 2 KB preview, so the entry rules never reached the session. The hook now prints the short, urgent lines first (paths, what to read if cut, phase and its rules doc, warnings), then STATUS.md, then CLAUDE.md; the checker caps CLAUDE.md at 6,000 bytes and STATUS.md at 3,000. The lx-work layout moved to `rules/naming.md`, the maintaining rules to `rules/writing.md`.
-- Bench: samples SM clock, temperature, and power during the run, since readings before and after miss throttling in between. The A/B sides are best (or the `--project` tree) and the candidate, and the A/A is `--ab best`: between experiments the project tree is best, not baseline. P99 needs 100 samples; below that the bench reports the maximum.
-- Verify: the self-test also changes an EXACT array, skips scenarios that already fail, and fails when no scenario had a value to change; a project with only EXACT outputs proved nothing before.
-- The profiling skill's benchmark and e2e scripts are gone: they duplicated the project bench without its rules (A/B, fresh processes, noise floor).
-- Clock: locked at all times; the user allows a reset in a special case, with their okay, instead of never.
-- One home per fact: the noise floor in `adapter.NOISE_MS` and STATUS.md (PROJECT.md dropped its line); the bench time budget is a step 3 item and a PROJECT.md field; knowledge files dropped their Read at lines, which the INDEX.md column holds; night/INDEX.md archives like exp/INDEX.md; night.md no longer repeats the kill rule from benchmarking.md; the cloud push rule lives only in wrap-up step 5.
-- Onboarding step 2 fills the private terms provisionally as names come up, so the checker protects the rules repo before step 3 confirms them.
+Older entries (2026-10-01 and before): `git show 0b96d84:CHANGELOG.md`.

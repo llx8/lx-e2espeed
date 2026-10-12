@@ -13,6 +13,7 @@ Loading, decoding, tokenization, CPU-side preprocessing.
 - [gpu-preprocessing](data/gpu-preprocessing.md): CPU preprocessing dominates → 5-7x, L0 | ✓3 ✗0
 - [exact-resize-on-gpu](data/exact-resize-on-gpu.md): CPU mask resize → 5x, L0 | ✓1 ✗0
 - [gpu-jpeg-decode](data/gpu-jpeg-decode.md): JPEG decode dominates → -6 to -16 ms | ✓3 ✗0
+- [gpu-png-decode](data/gpu-png-decode.md): PNG mask decode dominates → -4.8 ms, up to -78 ms, L0 | ✓1 ✗0
 - [numpy-temporaries](data/numpy-temporaries.md): full-array temporaries, copies → up to -50 ms | ✓2 ✗0
 - [mask-cleanup-integer](data/mask-cleanup-integer.md): float thresholds, per-label loops → cleanup 3x, L0 | ✓1 ✗0
 - [pack-model-input](data/pack-model-input.md): input built by cvtColor/transpose/concat → -35%, L0 | ✓1 ✗0
@@ -35,6 +36,8 @@ Operator fusion, torch.compile, kernel selection, custom kernels.
 - [plugin-v3-version](compute/plugin-v3-version.md): reformats around a built-in plugin → -14.8% | ✓1 ✗0
 - [deformable-attention-plugin](compute/deformable-attention-plugin.md): deformable attention glue kernels → -4.5%, +270 MiB | ✓1 ✗0
 - [quantized-attention-plugin](compute/quantized-attention-plugin.md): long D=16 attention on sm_120 → 2.9x, max 5 levels | ✓1 ✗0
+- [fused-attention-kernel](compute/fused-attention-kernel.md): custom attention kernel dominates → 1.45x to 2.86x per shape | ✓2 ✗0
+- [token-reuse-diffusion](compute/token-reuse-diffusion.md): image tokens dominate DiT steps → 2-5% at PSNR 27 dB; research only | ✓0 ✗1
 - [torch-compile](compute/torch-compile.md): eager stages, no mature backend → ~1% | ✓0 ✗1
 
 ## memory
@@ -44,6 +47,7 @@ Allocator behavior, fragmentation, buffer reuse.
 ## serving
 Batching, concurrency, scheduling, pipelining.
 - [mps-grid-barrier](serving/mps-grid-barrier.md): MPS workers hang → fixed | ✓2 ✗0
+- [mps-multi-worker](serving/mps-multi-worker.md): throughput flat as workers grow → 3 workers 2.6-3.1x, L0 | ✓1 ✗0
 - [dynamic-batch-profiles](serving/dynamic-batch-profiles.md): one engine call per item → P99 -39%, L1 | ✓1 ✗0
 
 ## env
