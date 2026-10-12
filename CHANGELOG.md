@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: skill gpu-inference-image-service, and local/site.md
+- The user: the later projects are much alike, so make the common part reusable and leave only the differences to them. Three image services, each pinning a separate algorithm repo, went through the same changes, onboarding answers, and delivery order. The new skill holds that sequence with its measured ranges, the user's usual answers to propose in onboarding, the decisions that differed between projects (to ask, not to copy), the cleanup and delivery order, and the pitfalls. Company names and reference code cannot enter the rules, so they go to `local/site.md`, ignored by git, each line pointing to the project record it came from; onboarding step 2 reads it, wrap-up step 3 adds to it, and the workspace does not count it as another project. experiment.md and onboarding step 3 route to the skill.
+
 ## 2026-10-12: cards from three image-service projects
 - The user asked for their projects' optimizations to be compared and kept for reuse; their wrap-ups had not yet distilled cards. New cards: dynamic-batch-profiles, ship-prebuilt-engine, plugin-v3-version, deformable-attention-plugin, engine-build-variance. New evidence and limits in cuda-graph-trt (readback inside the graph), gpu-jpeg-decode (video capability, the input policy), fp16-trt-engine (BF16, FP8, no FP32 accumulation), tensorrt-groupnorm-plugin, and mps-grid-barrier (a small partition proves the fix; a load test does not).
 
@@ -91,9 +94,3 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - MAP.md drift: a pilot's time breakdown still showed the shares from before five delivered experiments, so it pointed at steps already solved. MAP.md now carries `- Measured on: baseline <commit> + exp up to NNN`; the checker holds the lx-work commit once a kept or delivered experiment past NNN changed a file MAP.md names, and checks that every `path:function` pointer still resolves. `exp.sh delivered` renames the stamp's commit, since the tree does not change.
 - `hooks/test_checks.py` breaks one thing per check in clean fixtures and expects the checker to fail; a check that never fires looks like one that passes. The pre-commit hook runs it.
 - Playbook counts: `✓N ✗M` in playbook/INDEX.md was maintained by hand and counted inconsistently (some cards counted pilot reruns, some did not). Evidence lines now start with ✓ or ✗ and the checker recounts them; gpu-preprocessing became ✓3 and numpy-temporaries ✓2.
-
-## 2026-09-25: cloud repo
-- The main copy has a cloud `origin`. The user decided: during a project, updates sync only locally (clone and main copy); the main copy is pushed at the end of the project, in wrap-up step 5, or when the user asks. lx-work never goes there.
-
-## 2026-09-25: no line limit for scripts
-- The user lifted the script limit: some scripts are long by nature, and splitting exp.sh would spread shared functions across files. Docs keep their limits, which keep them maintainable.

@@ -37,6 +37,8 @@ For each kept experiment, and each dropped one that taught something:
 - Scrub everything project-specific: project, company, model, and file names, paths, project code, business details. Describe the model generically, for example "decoder-only transformer, batch 1".
 - A failure only shows the technique did not fit this project. Record it in the card's "Does not apply" as the condition that made it fail (bottleneck, model type, shapes, hardware), and in Evidence as one more data point. Never delete a technique for failing once.
 
+Facts other projects of the company share (images, CI, the service framework, tested libraries, reference commits) get a line in `local/site.md` pointing to this project's record; it stays on this machine.
+
 ## 4. Review the rules
 Start from lx-work/FEEDBACK.md. Then ask: where did the work drift from these rules, what was missing, which docs were never read?
 Propose changes to the user. Apply the approved ones, log them in CHANGELOG.md, and delete the FEEDBACK.md entries they resolve.

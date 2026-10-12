@@ -25,6 +25,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 | diffusion transformer, VAE, LoRA | `gpu-inference-diffusion` |
 | an eager hotspot remains after the above | `gpu-inference-torch-compile`, only after explicit approval |
 | several workers share a GPU through MPS | `gpu-inference-mps-hang` |
+| an image service whose repo pins a separate algorithm repo | `gpu-inference-image-service` |
 
 - Avoid the classic anti-methods: changing things at random, looking only where the tools make it easy, and benchmarking without a question to answer.
 

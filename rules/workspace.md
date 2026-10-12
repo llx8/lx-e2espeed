@@ -14,6 +14,7 @@ A session started in a project's own root still works as before: the hook then i
 
 ## One project at a time
 - Read another project's lx-work or code only when the user asks, for example the project that pins the active one; say so in your reply.
+- `lx-e2espeed/local/site.md` and the records it names are facts shared by the company's projects: reading them is not reading another project.
 - Before switching, commit the active project's lx-work records, then start the next one as above. When compacting, keep which project is active and its root.
 - Write what you learn about a project, and the user's corrections, into its lx-work (knowledge/, DECISIONS.md, FEEDBACK.md), never into Claude's memory: the workspace's memory loads in every session here, whichever project it works on.
 - Only `setup.sh project`, run from a project's root, creates lx-work; never create one in the workspace itself.
