@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-12: repo maintenance after the audit
+- The probe for the Evidence count check hardcoded one card's counts and broke when the card gained evidence; it now reads them from the card. The dataflow skill's warp item said "integer arithmetic", which is true only of OpenCV 4.x; it names both majors now.
+
 ## 2026-10-12: onboarding in two steps
 - The user: five onboarding steps asked for five go-aheads; two will do, one to set up and read the project, one to discuss. Step 1 now also builds the harness from the templates with what the code answers and benches once, so the discussion has numbers to look at; step 2 ends with the baseline under the agreed conditions, since no experiment can be judged without it. setup.sh, the image-service skill, and the tool templates name the new steps.
 
@@ -76,16 +79,4 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - exp.sh copied the index for its snapshot with a fresh mtime, which defeats git's racy-file check: a file changed to the same size within the second it was staged read as unchanged, and `check` failed on a correct tree. A scratch test of the linked repos hit it. The copy keeps the mtime now.
 - Checker: change.<dir>.patch keeps the project's language like change.patch, and MAP.md's breakdown check reads it under `<dir>/`. The clean fixture holds one, and a probe covers the breakdown check.
 
-## 2026-10-09: algorithm repo merge and new pin at delivery, MPS on by default
-- The user, in a service project that pins its algorithm repo in a dependency file: at the end the algorithm's dev branch is merged back into the branch the work started from, or, when the algorithm repo has only its main branch, into a new develop created from it; the dependency file then pins that branch at its newest commit. Wrap-up step 1 says so, and onboarding step 3 points to it, so the layout is planned for it from the start.
-- The user: MPS is on by default in production. Onboarding step 3 now assumes it unless the user says otherwise, so MPS hazards are checked from the first experiment instead of found at delivery.
-
-## 2026-10-03: baseline versus baseline commit, three sets per result
-- "Baseline" named two things: the glossary's unmodified code at the baseline commit, and what results are compared with. A user chose production's previous environment as the speed to compare with, and the AI then reported the baseline commit's bench in this environment as the baseline. The glossary now separates the baseline (speed and reference outputs that every result compares with, the baseline commit's own unless the user chose another source) from the baseline commit (where experiments start); best is "before" in a report and the candidate "after". Rules, templates, skills, exp.sh, and the checker use the two names; "speed reference" is gone.
-- Formats: MAP.md reads `- Measured on: baseline commit <hash>`, NOTE.md `- Base: baseline commit <hash> + kept ...`. exp.sh still parses old Base lines; the checker requires the new MAP.md line, and a probe covers the old one. `exp.sh export baseline` became `export baseline-commit`.
-- The user wants three sets for every optimization result, baseline, before, and after, each with median, P90, P99, and memory. The bench reads the baseline's own bench files from the new `adapter.BASELINE` and prints them beside every run; an A/B prints the three sets per scenario and writes every round of both sides to `--out`, where before they lived only in scratch files the next A/B overwrote. The exp-note and STATUS.md templates have the rows.
-- Numbers from another session or environment are not a paired A/B: a change against the baseline is labeled descriptive, and a milestone or wrap-up benches both sides in one session, alternating three runs each.
-- Onboarding step 5 keeps the baseline's numbers in baseline/numbers/<source>/ and sets `BASELINE`; when its speed comes from another environment, it benches the same commit there three times. `exp.sh delivered` moves the baseline commit; the baseline stays, and only the user changes it.
-- Skills no longer say "baseline" for the eager path, an accuracy check, a warm memory level, or a reference kernel family.
-
-Older entries (2026-10-03 and before): `git show 2fd8224:CHANGELOG.md`.
+Older entries (2026-10-09 and before): `git show e7c36a8:CHANGELOG.md`.

@@ -18,7 +18,7 @@ description: "Move image pre/postprocessing to the GPU and cut CPU-GPU round tri
 9. Keep crop and paste image tensors on their current CUDA device; move only compact masks or metadata to CPU when connected-components or grouping logic requires it.
 10. Replace PIL resize in a GPU-resident hot path with the interpolation-map equivalent: use antialiased `torch.nn.functional.interpolate` for bicubic and vendor the bundled Triton Lanczos3 operator for Lanczos. Compare against the unchanged PIL reference on representative real sizes before delivery.
 11. When a TensorRT engine has static batch 1, expose that contract on its adapter, schedule exactly one tile per call, and do not mark its batch dimension dynamic. Fail fast on a mismatched tile batch.
-12. When the CPU reference warps with OpenCV, replicate its integer arithmetic bit for bit in one fused kernel that also writes the engine input, if that costs no more than a float version: the user chose the exact replica twice. See [references/opencv-warp-replica.md](references/opencv-warp-replica.md).
+12. When the CPU reference warps with OpenCV, replicate its arithmetic bit for bit (fixed point in 4.x, float32 in 5.x) in one fused kernel that also writes the engine input, if that costs no more than a float version: the user chose the exact replica twice. See [references/opencv-warp-replica.md](references/opencv-warp-replica.md).
 13. When the service decodes and the algorithm runs in another repo, widen the algorithm's input to take the CUDA tensor beside its NumPy input, so the image is never downloaded between them; the user prefers this faster path.
 
 Read [references/patterns.md](references/patterns.md) for maintained dataflow patterns.

@@ -147,6 +147,18 @@ def lines(n):
     return "".join(f"filler line {i}\n" for i in range(n))
 
 
+def evidence_counts(path):
+    """(worked, failed) over the Evidence lines of a card, counted as check_rules counts them."""
+    section = read(path).split("\n## Evidence\n", 1)[-1].split("\n## ", 1)[0]
+    verdicts = [line[2] for line in section.splitlines() if line.startswith(("- ✓ ", "- ✗ "))]
+    return verdicts.count("✓"), verdicts.count("✗")
+
+
+# The count probe appends one failure to this card, so its expectation follows the card's current counts.
+COUNT_CARD = RULES / "playbook" / "env" / "trt-plugin-build-hygiene.md"
+WORKED, FAILED = evidence_counts(COUNT_CARD)
+
+
 # (name, fixture, change to make, text the checker must print)
 PROBES = [
     # check_docs.py: names, language, frontmatter, limits
@@ -241,8 +253,8 @@ PROBES = [
      "env/ghost.md does not exist"),
     ("Evidence line without a verdict", "rules", lambda r: append(r / "playbook" / "env" / "trt-plugin-build-hygiene.md", "- 2026-09: unmarked\n"),
      "Evidence line must start with"),
-    ("index count differs from Evidence", "rules", lambda r: append(r / "playbook" / "env" / "trt-plugin-build-hygiene.md", "- ✗ 2026-09: failed\n"),
-     "trt-plugin-build-hygiene.md says ✓2 ✗0, but its Evidence has ✓2 ✗1"),
+    ("index count differs from Evidence", "rules", lambda r: append(r / "playbook" / "env" / COUNT_CARD.name, "- ✗ 2026-09: failed\n"),
+     f"{COUNT_CARD.name} says ✓{WORKED} ✗{FAILED}, but its Evidence has ✓{WORKED} ✗{FAILED + 1}"),
     # check_rules.py: repetition and private terms
     ("line repeated across rules", "rules", lambda r: append(r / "rules" / "self-iteration.md", next(
         l for l in read(r / "rules" / "experiment.md").splitlines() if l.startswith("- ") and len(l) > 80) + "\n"),
