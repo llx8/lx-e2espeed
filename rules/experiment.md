@@ -33,6 +33,8 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - Give the user one to three options as a short table: change, evidence, expected gain (bounded by the step's share), expected difference level, risk, effort.
 - Default order, which evidence may change: measurement correctness; redundant work, CPU/GPU round trips, syncs, and repeated initialization; peak memory and large-input routing; mature backends such as TensorRT or an established diffusion backend; `torch.compile`, only after explicit approval; custom kernels, only for a measured hotspot with no adequate mature implementation.
 - Propose a technique only with evidence that it applies here, never because it is commonly listed.
+- Propose only work on the path production runs (PROJECT.md, Deployment; knowledge/deployment.md). When the user says production calls the code another way, re-check the MAP.md path first: a step the bench times but production skips is no gain, so say so instead of proposing it.
+- "Nothing left to propose" is a measured claim: re-profile best and close each lead in BACKLOG.md with a measurement, not an estimate, before making it. One run stopped early with about 40 us a call unexplained.
 - When the path forks on a user judgment, such as whether a difference level is acceptable, measure the options on each side of the fork so the user decides with numbers. Repeat at each fork until no option is left: a method tree.
 - The user picks one, or none.
 
@@ -56,7 +58,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - A gain inside the noise floor is not a gain. A small gain that adds a lot of complexity may not be worth keeping; deleting code at equal speed is a win.
 - Fill in Result and Conclusion in NOTE.md, and the numbers, difference level, and reason in exp/INDEX.md. Record the A/B's numbers everywhere (the three sets in NOTE.md, the median and its changes in exp/INDEX.md); the bench of the landed code only confirms them. A dropped experiment keeps its record and says what was learned; knowing what failed saves time later. If the user rules out a whole direction, record it in DECISIONS.md with the reason, so it is not proposed again in this project.
 - If the kept patch changed a file MAP.md points to, re-run the stage timing on best and update the breakdown, the hot spots, and `- Measured on:` in MAP.md. The checker holds the lx-work commit until then: shares are relative, so every landed gain moves all of them.
-- Update STATUS.md and BACKLOG.md, and commit lx-work: one commit per experiment, kept or dropped.
+- Update STATUS.md and BACKLOG.md, and make the experiment's closing lx-work commit, kept or dropped. Its records are also committed as they are written (plan, candidates, results), with "In progress" in STATUS.md current: records left uncommitted for hours are lost to a crash, and the next session cannot see them.
 - If the done-when condition in PROJECT.md is met, tell the user and suggest wrapping up.
 
 ## When the project changes underneath

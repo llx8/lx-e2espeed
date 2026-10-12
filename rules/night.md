@@ -24,7 +24,7 @@ It is the one autonomous mode, and it is safe because nothing lands: every trial
 Timebox each trial (default 90 minutes). Past it, drop the trial with what was learned, and queue the rest as a day task.
 
 ## All night
-- Never end your turn to ask: write the question in the trial's "Needs the user" column, or under "Waiting for the user" in STATUS.md when it concerns no single trial, and go on with the next method. Stop only when the queue is empty and a fresh look (profile, playbook, skills) adds nothing, at the end time, or when the environment breaks (the same infrastructure error twice).
+- Never end your turn to ask: write the question in the trial's "Needs the user" column, or under "Waiting for the user" in STATUS.md when it concerns no single trial, and go on with the next method. Stop only when the queue is empty, a fresh look (profile, playbook, skills) adds nothing, and every lead is closed by a measurement, not an estimate; at the end time; or when the environment breaks (the same infrastructure error twice).
 - Trials do not build on each other: each starts from the base, so each patch applies alone. A method that only makes sense on top of another is queued as a day task.
 - The GPU runs nothing else, and clocks are locked as in rules/benchmarking.md.
 - Nobody can reboot a frozen machine at night: every run stays under the memory cap in CLAUDE.md and is killed when MemAvailable in /proc/meminfo falls below 20% of RAM. Rerun a crashed run only once the crash is understood.

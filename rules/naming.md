@@ -46,6 +46,6 @@ When templates/work-skeleton changed after the `- Rules synced:` commit (the Ses
 - Set `- Rules synced:` to `git -C lx-e2espeed rev-parse --short HEAD` and commit lx-work: `docs: align lx-work with rules <commit>: <what changed>`.
 
 ## Commit messages
-- lx-work, one commit per experiment, kept or dropped: `exp-003: cuda graph for decode (kept, latency -18%)`, `exp-004: pinned host memory (dropped, inside noise)`. Night trials: `night-004: cuda graph for decode (parked, -18%)`. Other commits: `baseline: ...`, `tools: ...`, `docs: ...`.
+- lx-work, the closing commit of each experiment, kept or dropped: `exp-003: cuda graph for decode (kept, latency -18%)`, `exp-004: pinned host memory (dropped, inside noise)`; commits while it runs: `exp-003: plan (running)`. Night trials: `night-004: cuda graph for decode (parked, -18%)`. Other commits: `baseline: ...`, `tools: ...`, `docs: ...`.
 - lx-e2espeed: `rules: ...`, `card(host): add cuda-graph`, `templates: ...`, `hooks: ...`.
 - Commits delivered to the project follow the project's own conventions.

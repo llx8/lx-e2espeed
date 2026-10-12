@@ -8,7 +8,8 @@
   post-edit      After an edit inside lx-e2espeed/ or lx-work/, or a shell command in or naming
                  one of them, run the rules' checker on it.
                  Problems go to stderr with exit code 2, which Claude Code shows to Claude.
-  prompt         On every prompt in such a project, print the reply naming rule as a reminder.
+  prompt         On every prompt in such a project, print the reply naming rule, the reply language, and
+                 answering only what was asked, as a reminder.
   stop           When Claude ends its turn there, flag the turn's reply text if it names things by
                  number (circled numbers, experiment numbers), with exit code 2 so Claude corrects it;
                  never twice in a row (stop_hook_active).
@@ -45,6 +46,10 @@ CODE = re.compile(r"```.*?```|`[^`\n]*`|\]\([^)\n]*\)", re.S)
 REPLY_RULE = ("lx-e2espeed reply rule (CLAUDE.md, Hard rules): name every version, optimization, step, and scenario "
               "by what it is or changes, in plain words, tables included; never a bare or circled number or an "
               "experiment ID in its place.")
+# Replies drifted into English after compactions, pulled by the English rules and files, and grew past the question
+# (FEEDBACK.md of several projects, 2026-10-09 to 2026-10-11); the prompt reminder carries both.
+PROMPT_RULE = ("Reply in the language the user writes in, not in the rules' English, and answer only what the prompt "
+               "asks (rules/reporting.md).")
 TRANSCRIPT_TAIL = 4 << 20  # bytes of the transcript read first for the current turn (turn_text)
 STAMP = Path.home() / ".claude" / "hooks" / "lx_installed"  # written by setup.sh global
 # Every project shares one rules directory, outside the projects; setup.sh global writes its path here.
@@ -123,7 +128,7 @@ def turn_text(data):
 
 def prompt(data):
     if in_project(data):
-        print(REPLY_RULE)
+        print(REPLY_RULE + " " + PROMPT_RULE)
     return 0
 
 

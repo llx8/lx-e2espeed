@@ -299,6 +299,12 @@ def reply_check_failures(tmp):
                 got = dispatch.stop({**data, "transcript_path": str(transcript)})
             if got != want:
                 failures.append(f"reply check: stop() returned {got}, expected {want}, for {data}")
+        for cwd, want in ((project, True), (tmp, False)):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                dispatch.prompt({"cwd": str(cwd)})
+            if ("language the user writes in" in out.getvalue()) != want:
+                failures.append(f"reply check: the prompt reminder {'is missing' if want else 'shows'} in {cwd}")
     finally:
         dispatch.LOCATION = saved
     return failures

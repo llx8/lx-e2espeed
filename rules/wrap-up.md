@@ -15,6 +15,7 @@ Track the steps with this checklist in your reply:
 - Read the whole diff once more for code that no longer earns its place. A simplification is one more experiment, so the record stays complete.
 - Run the handoff checks of the `gpu-inference-delivery` skill that the Deployment section of PROJECT.md calls for.
 - The kept changes sit uncommitted in the project's working tree. Show the user the diff and the final numbers, and offer a fresh-context review (for example `/code-review`).
+- Before anything is called ready to push, update every doc the change made stale, in the project and in each delivered repo (a sibling's readme included): "update the docs" means all of them.
 - The user commits and pushes under the company's rules. Each kept patch can become its own commit, with the change and its measured gain in the message, in the project's commit style.
 - When a service repo pins a separate algorithm repo in a dependency file (repo, branch, commit), the delivery is not done until the algorithm's dev branch is merged and the service pins the merge. Otherwise production keeps building the old algorithm code, or code from a dev branch. The user's rule (2026-10-09); merges, new branches, and pushes still follow the company's rules, each with the user's go-ahead.
   - Merge target: the branch the dev branch was created from, whatever its name. If the algorithm repo has only its main branch (master or main, no develop), first create develop from the main branch and merge into develop; the main branch stays as it was.
