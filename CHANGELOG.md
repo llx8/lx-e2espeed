@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-13: the skills go back to their 2026-10-03 state
+- The user (2026-10-13): reusable code is not to be made into skills; it goes to a toolbox repo beside these rules (lx-toolbox, whose content the user names), and what the skills gained on 2026-10-12 goes, text and code, while the skills from before stay as they were. Removed: `gpu-inference-image-service`, `gpu-inference-trt-plugins`, the dataflow warp replica (op, test, reference), and the 2026-10-12 additions to the cnn-tensorrt, dataflow, delivery, and mps-hang skills; the two experiment.md rows, one onboarding.md clause, and three card sentences that pointed at them. The knowledge stays in the cards and rules written the same day (`playbook/serving/mps-grid-barrier.md`, `playbook/data/gpu-jpeg-decode.md`, `rules/onboarding.md`); the removed files are in git at 80b06bb for the toolbox to take from. `vendor/skills/UPSTREAM.md` keeps its 2026-10-12 comparison note: a record, not skill content.
+
 ## 2026-10-12: repo maintenance after the audit
 - The probe for the Evidence count check hardcoded one card's counts and broke when the card gained evidence; it now reads them from the card. The dataflow skill's warp item said "integer arithmetic", which is true only of OpenCV 4.x; it names both majors now.
 - `hardware/l20.md`, since the user's projects must run on both the RTX 5090 and the L20 (the user, 2026-10-12); onboarding reads the production GPU's doc. CLAUDE.md was 2 bytes under the limit the SessionStart hook can inject: the memory-cap bullet is shorter and the lx-work file list is gone (`rules/naming.md` has it).

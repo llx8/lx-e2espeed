@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 Around each deformable attention call, the engine runs the sampling-offset and attention-weight linears, the softmax, and the sampling locations as separate kernels before the sampling plugin.
 
 ## Technique
-Replace the middle of the module, between value_proj and output_proj, with one plugin: both linears as one cuBLAS GEMM over FP16 weights concatenated offsets first, then softmax, locations, and sampling in one kernel. The `gpu-inference-trt-plugins` skill has the library, the export wrapper, and the checks.
+Replace the middle of the module, between value_proj and output_proj, with one plugin: both linears as one cuBLAS GEMM over FP16 weights concatenated offsets first, then softmax, locations, and sampling in one kernel. The tested library and its export wrapper are in the plugin repo that `lx-e2espeed/local/site.md` names.
 
 ## Effect
 -0.43 ms (-4.5%) end to end on top of the IPluginV3 built-in; outputs within the FP16 rebuild spread.
