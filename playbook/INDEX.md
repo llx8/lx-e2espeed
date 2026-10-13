@@ -48,6 +48,7 @@ Allocator behavior, fragmentation, buffer reuse.
 ## serving
 Batching, concurrency, scheduling, pipelining.
 - [mps-grid-barrier](serving/mps-grid-barrier.md): MPS workers hang → fixed | ✓2 ✗0
+- [mps-hang-forensics](serving/mps-hang-forensics.md): workers hung under MPS, no debugger attaches → root cause from one GPU coredump | ✓1 ✗0
 - [mps-multi-worker](serving/mps-multi-worker.md): throughput flat as workers grow → 3 workers 2.6-3.1x, L0 | ✓1 ✗0
 - [dynamic-batch-profiles](serving/dynamic-batch-profiles.md): one engine call per item → P99 -39%, L1 | ✓1 ✗0
 
