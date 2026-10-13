@@ -58,9 +58,10 @@ On demand:
 - `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
 - `rules/benchmarking.md`: before an A/B, judging a difference level, or changing a bench or verify tool.
 - `rules/reporting.md`: before reporting results or explaining work.
+- `rules/delivery.md`: the handoff checks and the facts to state, at wrap-up steps 1 and 2.
 - `rules/naming.md`: the lx-work layout, its skeleton sync, and naming anything.
 - `rules/writing.md`: writing any doc in either lx repo, or changing lx-e2espeed.
 - `playbook/INDEX.md`: looking for ideas after profiling; open only the matching cards.
-- Skills (ours in `skills/`, NVIDIA's in `vendor/skills/`): `rules/experiment.md` says which to load; these rules win; output goes to `lx-work/local/`.
+- Skills (NVIDIA's, in `vendor/skills/`): `rules/experiment.md` says which to load; these rules win; output goes to `lx-work/local/`.
 - `templates/`: lx-work docs, notes, cards, and the generic tools.
 - `lx-work/knowledge/INDEX.md`: before reading project code to learn its purpose, callers, contract, or deployment.

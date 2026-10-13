@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 TensorRT turns ONNX GroupNormalization or InstanceNormalization into slow Myelin kernels (`__myl_Gnor*`, `__myl_Inor*`, `*MeanMean*`); under multi-process MPS the service can deadlock.
 
 ## Technique
-Replace the normalization nodes with a plugin that reduces within a block, with explicit channel, epsilon, dtype, and layout contracts; include the plugin identity in the engine cache key. First look for a tested compiled library (this machine's are listed in `lx-e2espeed/local/site.md`); the `gpu-inference-cnn-tensorrt` skill bundles ONNX rewrites and a Triton-backed plugin; `gpu-inference-mps-hang` explains the deadlock.
+Replace the normalization nodes with a plugin that reduces within a block, with explicit channel, epsilon, dtype, and layout contracts; include the plugin identity in the engine cache key. First look for a tested compiled library (this machine's are listed in `lx-e2espeed/local/site.md`); [mps-grid-barrier](serving/mps-grid-barrier.md) explains the deadlock.
 
 ## Effect
 Removes the MPS deadlock; latency from unchanged (+0.07 ms, inside noise) to one embedder 9.4 -> 5.1 ms with no FP32 lock needed for precision.

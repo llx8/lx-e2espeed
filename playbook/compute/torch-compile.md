@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 Eager model stages dominate and TensorRT or another mature backend is not available for them.
 
 ## Technique
-Compile the smallest repeated hotspot with a fixed shape policy, measured in fresh processes. Follow the approval gate in the `gpu-inference-torch-compile` skill.
+Compile the smallest repeated hotspot with a fixed shape policy, measured in fresh processes. It needs the user's explicit approval first (CLAUDE.md, Hard rules).
 
 ## Effect
 One case: -1.3% end to end, within the stage noise of that time.

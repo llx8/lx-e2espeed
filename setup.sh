@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Set up lx-e2espeed.
-#   setup.sh global   once per machine, and after hooks/dispatch.py, skills/, or vendor/skills/ change:
+#   setup.sh global   once per machine, and after hooks/dispatch.py or vendor/skills/ change:
 #                     install the Claude Code hooks and skills into ~/.claude, and record this directory
 #                     as the rules every project uses; run it by the path the projects should use
 #   setup.sh project  once per project, from inside the project repo: exclude lx-work, create it, register the project
@@ -49,11 +49,11 @@ PY
   mkdir -p "$HOME/.claude/skills"
   for dst in "$HOME/.claude/skills"/*/; do
     name="$(basename "$dst")"
-    if [ -f "$dst.lx-e2espeed" ] && [ ! -d "$here/skills/$name" ] && [ ! -d "$here/vendor/skills/$name" ]; then
+    if [ -f "$dst.lx-e2espeed" ] && [ ! -d "$here/vendor/skills/$name" ]; then
       rm -rf -- "$dst"
     fi
   done
-  for src in "$here"/skills/*/ "$here"/vendor/skills/*/; do
+  for src in "$here"/vendor/skills/*/; do
     name="$(basename "$src")"
     dst="$HOME/.claude/skills/$name"
     if [ -e "$dst" ] && [ ! -f "$dst/.lx-e2espeed" ]; then
@@ -67,7 +67,7 @@ PY
   done
   # The SessionStart hook compares this with the rules directory, so an outdated install is noticed.
   python3 "$here/hooks/dispatch.py" stamp "$here" > "$HOME/.claude/hooks/lx_installed"
-  echo "Installed ~/.claude/hooks/lx_dispatch.py for the rules in $here, registered its hooks, and installed the skills in skills/ and vendor/skills/."
+  echo "Installed ~/.claude/hooks/lx_dispatch.py for the rules in $here, registered its hooks, and installed the skills in vendor/skills/."
   echo "Backup of the previous settings: ~/.claude/settings.json.bak"
 }
 

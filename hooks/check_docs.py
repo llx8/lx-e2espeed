@@ -10,7 +10,7 @@ import re
 import sys
 from pathlib import Path
 
-from check_rules import (check_duplicates, check_entry, check_playbook, check_private, check_skill_doc,
+from check_rules import (check_duplicates, check_entry, check_playbook, check_private,
                          private_terms)
 from check_work import check_work_layout
 
@@ -104,10 +104,7 @@ def check_name(path, rel, kind, rep):
             rep.error(rel + "/", "directory names are lowercase kebab-case (snake_case for Python packages)")
         return
     stem, suffix = path.stem, path.suffix
-    if kind == "rules" and rel.startswith("skills/"):
-        # Skills bundle code with its own conventions (C++ sources, CMakeLists.txt).
-        ok = FIXED.fullmatch(stem) or KEBAB.fullmatch(stem) or SNAKE.fullmatch(stem) or name == "CMakeLists.txt"
-    elif suffix == ".py":
+    if suffix == ".py":
         ok = SNAKE.fullmatch(stem)
     elif suffix == ".md":
         ok = FIXED.fullmatch(stem) or KEBAB.fullmatch(stem)
@@ -143,9 +140,6 @@ def check_file(path, rel, kind, rep, prose, texts):
     if suffix != ".md":
         return
     fields, body = split_frontmatter(lines)
-    if kind == "rules" and rel.startswith("skills/"):
-        check_skill_doc(rel, lines, fields, rep)
-        return
     if fields is None:
         rep.error(rel, "missing frontmatter with tier and read_when")
     else:

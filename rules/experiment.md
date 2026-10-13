@@ -15,16 +15,12 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 
 | Evidence | Skill |
 |---|---|
-| no trustworthy measurement yet, noisy numbers, cold start mixed into latency | `gpu-inference-profiling`, `perf-workload-profiling` |
+| no trustworthy measurement yet, noisy numbers, cold start mixed into latency | `perf-workload-profiling` |
 | timeline or single-kernel analysis | `perf-nsight-systems`, `perf-nsight-compute-analysis` |
-| `.cpu()`, `.numpy()`, PIL/OpenCV round trips, syncs, repeated resize or cast, empty work | `gpu-inference-dataflow`, `perf-torch-sync-free` |
-| OOM, high peak, large inputs, many tiles | `gpu-inference-memory` |
-| a CNN, restoration, or segmentation stage dominates with stable shapes | `gpu-inference-cnn-tensorrt` |
+| `.cpu()`, `.numpy()`, PIL/OpenCV round trips, syncs, repeated resize or cast, empty work | `perf-torch-sync-free` |
 | an eager path bound by kernel launches | `perf-torch-cuda-graphs` |
-| diffusion transformer, VAE, LoRA | `gpu-inference-diffusion` |
-| an eager hotspot remains after the above | `gpu-inference-torch-compile`, only after explicit approval |
-| several workers share a GPU through MPS | `gpu-inference-mps-hang` |
 
+- No skill covers memory, TensorRT, diffusion, torch.compile, or MPS (the user retired our own skills, 2026-10-13): start from the matching section of `playbook/INDEX.md`. When several workers share a GPU through MPS, `playbook/serving/mps-grid-barrier.md` applies from the first experiment.
 - Avoid the classic anti-methods: changing things at random, looking only where the tools make it easy, and benchmarking without a question to answer.
 
 ## 2. Propose

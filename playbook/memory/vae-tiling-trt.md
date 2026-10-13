@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 A TensorRT VAE with smaller static tiles fits memory but changes the image; or an OOM appears after the switch.
 
 ## Technique
-Keep the loaded VAE's tile size, overlap, traversal, and true short edge tiles; use a B1 engine with bounded dynamic height and width instead of zero-padding tiles to a static shape; route GroupNorm through a plugin. See the `gpu-inference-memory` and `gpu-inference-cnn-tensorrt` skills.
+Keep the loaded VAE's tile size, overlap, traversal, and true short edge tiles; use a B1 engine with bounded dynamic height and width instead of zero-padding tiles to a static shape; route GroupNorm through a plugin.
 
 ## Effect
 Reconstruction error mean 5.02/255 (broken static 512 tiles) -> 0.138/255.

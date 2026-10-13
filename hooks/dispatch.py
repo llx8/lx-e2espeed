@@ -212,7 +212,7 @@ def stop(data):
 def install_stamp(rules):
     """Hash of what setup.sh global installs from the rules directory: this hook and every skill."""
     digest = hashlib.sha256()
-    skills = [p for d in (rules / "skills", rules / "vendor" / "skills") for p in d.rglob("*")]
+    skills = list((rules / "vendor" / "skills").rglob("*"))
     files = [rules / "hooks" / "dispatch.py",
              *sorted(p for p in skills if p.is_file() and "__pycache__" not in p.parts)]
     for path in files:

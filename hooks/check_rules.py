@@ -7,7 +7,6 @@ import re
 from pathlib import Path
 
 MAP_REF = re.compile(r"`((?:rules|hardware|playbook|templates|hooks|vendor|skills)/[^`]*)`")
-SKILL_NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 ROUTED_DOC = re.compile(r"lx-e2espeed/(rules/[a-z0-9-]+\.md)")
 CARD_LINK = re.compile(r"\]\(([a-z0-9-]+/[a-z0-9-]+\.md)\)")
 # An index line's counts restate the card's Evidence, so they are recomputed from it on every check.
@@ -20,8 +19,6 @@ CARD_SECTIONS = ("## Symptom", "## Technique", "## Effect", "## Side effects",
 # CLAUDE.md is injected every session; losing one of these sections silently changes every session.
 ENTRY_SECTIONS = ("## Layout", "## Session start", "## Hard rules", "## Defaults", "## Working loop", "## Doc map")
 DUP_MIN = 60    # repeated lines at least this long count as duplication
-# Agent Skills limits: the description is what every session loads, SKILL.md what each use loads.
-SKILL_DESC_MAX, SKILL_MD_MAX, SKILL_REF_MAX = 1024, 500, 300
 TERM_MIN = 3    # shorter private terms match too many ordinary words
 
 
@@ -41,39 +38,15 @@ def check_entry(root, rep):
     for ref in MAP_REF.findall(entry):
         if not (root / ref).exists():
             rep.error("CLAUDE.md", f"`{ref}` does not exist")
-    for skill in sorted(p for p in (root / "skills").glob("*") if p.is_dir()):
+    for skill in sorted(p for p in (root / "vendor" / "skills").glob("*") if p.is_dir()):
         if not (skill / "SKILL.md").is_file():
-            rep.error(f"skills/{skill.name}/", "missing SKILL.md")
+            rep.error(f"vendor/skills/{skill.name}/", "missing SKILL.md")
         if not any(f"`{skill.name}`" in p.read_text(encoding="utf-8") for p in (root / "rules").glob("*.md")):
-            rep.error(f"skills/{skill.name}/", "no rules doc says when to load it")
+            rep.error(f"vendor/skills/{skill.name}/", "no rules doc says when to load it")
     dispatch = root / "hooks" / "dispatch.py"
     for ref in ROUTED_DOC.findall(dispatch.read_text(encoding="utf-8")):
         if not (root / ref).is_file():
             rep.error("hooks/dispatch.py", f"routes a phase to {ref}, which does not exist")
-
-
-def check_skill_doc(rel, lines, fields, rep):
-    """Skills follow the Agent Skills format instead of the doc tiers: SKILL.md carries name and description."""
-    parts = rel.split("/")
-    if parts[-1] == "SKILL.md":
-        if fields is None:
-            rep.error(rel, "needs frontmatter with name and description")
-        else:
-            if fields.get("name") != parts[1] or not SKILL_NAME.fullmatch(parts[1]):
-                rep.error(rel, "frontmatter name must equal its kebab-case directory name")
-            description = fields.get("description", "")
-            if not description or description.startswith((">", "|")):
-                rep.error(rel, "description must be one non-empty line")
-            elif ": " in description and not description.startswith(('"', "'")):
-                rep.error(rel, "quote the description: an unquoted ': ' breaks the YAML frontmatter")
-            elif len(description) > SKILL_DESC_MAX:
-                rep.error(rel, f"description is {len(description)} characters, limit {SKILL_DESC_MAX}")
-        if len(lines) > SKILL_MD_MAX:
-            rep.error(rel, f"{len(lines)} lines, limit {SKILL_MD_MAX}; move detail into references/")
-    elif len(lines) > SKILL_REF_MAX:
-        rep.error(rel, f"{len(lines)} lines, limit {SKILL_REF_MAX}; split it")
-    if len(lines) > 100 and "## Contents" not in lines[:30]:
-        rep.error(rel, "over 100 lines without a '## Contents' list near the top")
 
 
 def check_playbook(root, rep):

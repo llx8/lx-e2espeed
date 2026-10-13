@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 Service-side JPEG decode dominates the request (over 75% of the service chain in one service, 6.6 of 16.4 ms in another), followed by an upload of the decoded image.
 
 ## Technique
-Decode with nvImageCodec (NVJPG hardware) straight into a resident CUDA tensor, keep one codec instance, and let the algorithm accept that tensor directly. Give the container the video driver capability (`NVIDIA_DRIVER_CAPABILITIES=compute,utility,video`): without it the decoder cannot be created. Create the decoder at Init and fail there when it cannot be. Encode from the CUDA tensor and synchronize only before reading the bytes. See the `gpu-inference-dataflow` skill.
+Decode with nvImageCodec (NVJPG hardware) straight into a resident CUDA tensor, keep one codec instance, and let the algorithm accept that tensor directly. Give the container the video driver capability (`NVIDIA_DRIVER_CAPABILITIES=compute,utility,video`): without it the decoder cannot be created. Create the decoder at Init and fail there when it cannot be. Encode from the CUDA tensor and synchronize only before reading the bytes.
 
 ## Effect
 Service end to end 5.9 to 16 ms faster per request; with GPU preprocessing after it, 11.35 -> 1.93 ms in a small-crop service.

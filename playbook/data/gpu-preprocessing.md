@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 The time breakdown shows CPU preprocessing (mask cleanup, connected components, crop, warp, normalize) larger than the model itself; the GPU idles while the CPU works.
 
 ## Technique
-Upload the input once and run the preprocessing chain on the GPU: PyTorch or Kornia operators first, Triton kernels where the exact semantics (for example connected-component cleanup or a warp) have no mature operator. Keep the result on the GPU and hand it to the engine directly. See the `gpu-inference-dataflow` skill.
+Upload the input once and run the preprocessing chain on the GPU: PyTorch or Kornia operators first, Triton kernels where the exact semantics (for example connected-component cleanup or a warp) have no mature operator. Keep the result on the GPU and hand it to the engine directly.
 
 ## Effect
 Preprocessing-heavy paths: 5x to 7x on the preprocessing share; lossless when the kernels replicate the reference exactly.

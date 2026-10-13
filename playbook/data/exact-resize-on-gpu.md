@@ -11,7 +11,7 @@ read_when: profiling shows the symptom below
 A CPU `cv2.resize` or PIL resize of a full-size mask sits on the hot path, followed by an upload of the large result.
 
 ## Technique
-Upload the small input and resize on the GPU with a kernel that replicates the CPU library's coordinate mapping, weights, and rounding bit for bit (Triton). Check the replica against the CPU output on the real sizes. The `gpu-inference-dataflow` skill maps CPU interpolation modes to PyTorch ones.
+Upload the small input and resize on the GPU with a kernel that replicates the CPU library's coordinate mapping, weights, and rounding bit for bit (Triton). Check the replica against the CPU output on the real sizes. Closest PyTorch modes, none bit-exact without that check: PIL NEAREST is `nearest-exact`, OpenCV INTER_NEAREST is `nearest`, PIL BILINEAR and BICUBIC are `bilinear` and `bicubic` with `align_corners=False, antialias=True`, OpenCV INTER_LINEAR and INTER_CUBIC the same without antialias, INTER_AREA is `area` for downscale only; OpenCV INTER_LANCZOS4 is a wider filter than Lanczos3.
 
 ## Effect
 Resize stage 5x; lossless.

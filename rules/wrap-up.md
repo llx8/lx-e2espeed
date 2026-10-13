@@ -13,7 +13,7 @@ Track the steps with this checklist in your reply:
 - Run `lx-e2espeed/exp.sh check`: the project tree must equal the baseline commit plus the kept patches. Then run verify and bench, and record the numbers in STATUS.md.
 - The final change against the baseline is a conclusion: bench best and the baseline in one session, alternating three runs each, the baseline in its own environment (`rules/benchmarking.md`, Inputs). Report it beside the descriptive changes recorded during the project.
 - Read the whole diff once more for code that no longer earns its place. A simplification is one more experiment, so the record stays complete.
-- Run the handoff checks of the `gpu-inference-delivery` skill that the Deployment section of PROJECT.md calls for.
+- Run the handoff checks in `rules/delivery.md` that the Deployment section of PROJECT.md calls for.
 - The kept changes sit uncommitted in the project's working tree. Show the user the diff and the final numbers, and offer a fresh-context review (for example `/code-review`).
 - Before anything is called ready to push, update every doc the change made stale, in the project and in each delivered repo (a sibling's readme included): "update the docs" means all of them.
 - The user commits and pushes under the company's rules. Each kept patch can become its own commit, with the change and its measured gain in the message, in the project's commit style.
@@ -25,7 +25,7 @@ Track the steps with this checklist in your reply:
 
 ## 2. Close the record
 - List known risks, ideas not tried, and parked trials the user did not adopt under "Next" in STATUS.md, so a session that reopens the project starts from them.
-- Tell the user the outcome in your reply, with the facts the `gpu-inference-delivery` skill lists for a delivery, each kept change with its gain and difference level, and the risks. STATUS.md, exp/INDEX.md, and DECISIONS.md are the full record; write no separate report into lx-work.
+- Tell the user the outcome in your reply, with the facts `rules/delivery.md` lists for a delivery, each kept change with its gain and difference level, and the risks. STATUS.md, exp/INDEX.md, and DECISIONS.md are the full record; write no separate report into lx-work.
 - State gains honestly: gains from different rows or dates do not add up, a comparison across dates is descriptive rather than a paired A/B, and a hardware or driver change is not a software gain.
 
 ## 3. Distill cards
