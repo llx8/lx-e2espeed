@@ -40,7 +40,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 ## 3. Plan
 - Run `lx-e2espeed/exp.sh new <1 to 4 words>`. It checks that the project tree equals the baseline commit plus the kept patches, and each linked repo (PROJECT.md, `- Linked repos:`) its commit there plus the kept patches, takes the next number, creates the directory with NOTE.md, and adds a running row to exp/INDEX.md.
 - Write Evidence, Hypothesis, and Plan in NOTE.md: the functions to change, the contracts in PROJECT.md it touches and their downstream impact, how verify covers it, and the expected gain.
-- Show the plan to the user and build nothing until they approve it. For a change that fits in one sentence and touches no contract, that sentence is the plan.
+- Show the plan to the user and build nothing until they approve it. For a change that fits in one sentence and touches no contract, that sentence is the plan. In a standard pass the catalog is the approved plan (`rules/standard-pass.md`).
 - Refactor first when landing would otherwise bend the code: the change would be the third kept patch on the same function, or it needs a structure the code lacks (a stage boundary, a home for a table or a kernel). The refactor is its own experiment, with verify and a bench that shows equal speed, so the next change lands as a replacement instead of another layer. Judge this when a plan calls for it, not after every experiment: a refactor between kept patches costs its own verify and bench, and a question asked every time gets skipped.
 
 ## 4. Build and compare candidates

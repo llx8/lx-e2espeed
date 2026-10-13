@@ -5,7 +5,7 @@ read_when: the user starts a self-iteration run, and the first session after one
 # Self-iteration run
 
 The user starts a self-iteration run and then leaves or watches; it runs by day or by night (the user renamed it from "night run" on 2026-10-11, same procedure). You try methods alone, one trial per method in lx-work/trials/NNN-name/, until no idea is left; then you report them, and the user picks what lands.
-It is the one autonomous mode, and it is safe because nothing lands: every trial ends with its change saved as a patch and reversed.
+It is one of the two autonomous modes (the other, the standard pass in `rules/standard-pass.md`, lands identical-output gains), and it is safe because nothing lands: every trial ends with its change saved as a patch and reversed.
 
 ## Before it starts
 - Phase optimizing, no running experiment, `exp.sh check` passes, verify and bench pass, and the noise floor is current. This tree, best (the baseline commit plus the kept patches), is the base of every trial in the run.
