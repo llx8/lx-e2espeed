@@ -11,7 +11,8 @@ read_when: profiling shows the symptom below
 TensorRT runs the normalizations as Myelin InstanceNorm kernels with reshapes around them, and the affine and activation that follow do not fuse into them.
 
 ## Technique
-Rewrite only the exact exporter pattern: a Reshape whose shape initializer is [0, G, -1] feeding an InstanceNormalization with scale all 1 and bias all 0, consumed once. Drop that Reshape, replace the InstanceNormalization with ONNX GroupNormalization(num_groups=G, epsilon as exported) on the 4-D input, and keep the second Reshape and every downstream affine and SiLU so TensorRT fuses them. Assert the replacement count against the network's GroupNorm count. A few dozen lines of onnx.helper; the project that did it keeps the tool.
+Rewrite only the exact exporter pattern: a Reshape whose shape initializer is [0, G, -1] feeding an InstanceNormalization with scale all 1 and bias all 0, consumed once. Drop that Reshape, replace the InstanceNormalization with ONNX GroupNormalization(num_groups=G, epsilon as exported) on the 4-D input, and keep the second Reshape and every downstream affine and SiLU so TensorRT fuses them.
+Assert the replacement count against the network's GroupNorm count. A few dozen lines of onnx.helper; the project that did it keeps the tool.
 
 ## Effect
 One network of an image model: 422 -> 357 ms (-15%), FP16 engine; outputs against the production FP16 engine MAE 0.08 levels, max 4, PSNR 58.9 dB.

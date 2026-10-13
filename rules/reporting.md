@@ -30,7 +30,8 @@ The user decides from your replies, not from the files. Most corrections in the 
 - Speed and output quality in separate tables, holding only the options being decided.
 - Every cell holds a number or says where it was measured; no empty or dash cells.
 - Show a quality gap as counts per error band, with a hard input split out, not as one median.
-- A weekly report: a few short prose paragraphs in the user's language, no bullets, numbered lists, tables, or sections; in order the task, the project (input, processing, output), the model, the optimizations, the results with only the headline numbers, the open problem; one or two sentences each for the project and the model. No space between Chinese text and numbers, units, or English terms (the user, 2026-10-10: one paragraph "only split into paragraphs, never into points", then "too long, keep it a summary").
+- A weekly report: a few short prose paragraphs in the user's language, no bullets, numbered lists, tables, or sections; in order the task, the project (input, processing, output), the model, the optimizations, the results with only the headline numbers, the open problem; one or two sentences each for the project and the model.
+  No space between Chinese text and numbers, units, or English terms (the user, 2026-10-10: one paragraph "only split into paragraphs, never into points", then "too long, keep it a summary").
 
 ## While the user watches
 During a long run the user is watching, send a short status line at each step and before each long wait; silence reads as a stall. A self-iteration run the user is away from reports at its end instead (`rules/self-iteration.md`).

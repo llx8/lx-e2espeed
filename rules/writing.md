@@ -29,7 +29,8 @@ Every doc starts with frontmatter (checked):
 | any other doc | 150 |
 | exp/ and trials/ ARCHIVE.md | none: grep it, never read it whole |
 
-Bytes, too: CLAUDE.md at most 6,000 and STATUS.md at most 3,000. The SessionStart hook injects both, and Claude Code cuts hook output above about 10 KB to a 2 KB preview (seen 2026-10-01 at 10.8 KB); move detail into on-demand docs.
+Bytes, too (checked): CLAUDE.md at most 6,000 and STATUS.md at most 3,000, because the SessionStart hook injects both, and Claude Code cuts hook output above about 10 KB to a 2 KB preview (seen 2026-10-01 at 10.8 KB); every other lx-e2espeed doc at most 12,000, except CHANGELOG.md; and one line of prose outside code fences at most 500 bytes.
+The line limit alone let bullets grow past 1 KB (45 lines over 400 bytes on 2026-10-13): a bullet at the line limit becomes sub-bullets, or its detail moves to a card or a tool's doc.
 
 At the limit, split or cut. Raise a limit only with the user, here and in the checker together.
 Scripts have no line limit: a script is split by purpose, never by length.
@@ -61,7 +62,8 @@ Scripts have no line limit: a script is split by purpose, never by length.
 
 ## Glossary
 - end to end: the timed path agreed in PROJECT.md.
-- baseline: what every result is compared with, a speed and outputs (the reference outputs), set during onboarding. By default both come from the unmodified code at the baseline commit; the user may choose another source for either, recorded in DECISIONS.md: for example the framework model at full precision when the project's own outputs are known to be wrong, or production's speed in its previous environment. "Baseline" in reports, STATUS.md, and every "vs baseline" column means this; `BASELINE` in the adapter names its bench files.
+- baseline: what every result is compared with, a speed and outputs (the reference outputs), set during onboarding. By default both come from the unmodified code at the baseline commit; the user may choose another source for either, recorded in DECISIONS.md: for example the framework model at full precision when the project's own outputs are known to be wrong, or production's speed in its previous environment.
+  "Baseline" in reports, STATUS.md, and every "vs baseline" column means this; `BASELINE` in the adapter names its bench files.
 - baseline commit: the project commit every experiment starts from (PROJECT.md, `- Baseline commit:`); exp.sh rebuilds the project tree from it. Its own bench is the first best, and the baseline speed only when the user chose no other source. Delivering kept patches or moving to newer company code changes the baseline commit, never the baseline.
 - best: the baseline commit plus all kept patches, which is the project tree between experiments. In a report it is "before", the A/B's best side.
 - candidate: code in an experiment's candidate/ directory that runs beside the project code; landing applies the chosen variant to the project code. In a report it is "after".

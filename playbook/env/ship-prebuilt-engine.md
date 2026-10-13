@@ -11,7 +11,8 @@ read_when: profiling shows the symptom below
 Cold start builds the engine (minutes, gigabytes of RAM) or imports the model code and weights only to load an engine; or CI builds the engine on a runner whose GPU is not production's.
 
 ## Technique
-Build the engine offline once per production compute capability with a build script that refuses to overwrite, name it by compute capability (`<name>_sm120.plan`), and commit it with Git LFS in the repo that loads it, with its plugin library. Production loads only that file: no model code, weights, or build at start. A missing file, an LFS pointer, or a plan from another GPU or TensorRT fails at Init and names the fix. CI builds no engine; `.dockerignore` keeps weights and ONNX out of the image, never the engine.
+Build the engine offline once per production compute capability with a build script that refuses to overwrite, name it by compute capability (`<name>_sm120.plan`), and commit it with Git LFS in the repo that loads it, with its plugin library. Production loads only that file: no model code, weights, or build at start. A missing file, an LFS pointer, or a plan from another GPU or TensorRT fails at Init and names the fix.
+CI builds no engine; `.dockerignore` keeps weights and ONNX out of the image, never the engine.
 
 ## Effect
 Cold start roughly halved and process memory -450 MiB; the image 1.22 -> 0.30 GB once weights and ONNX stay out; containers stop building at start (84 to 89 s and 8.6 GiB each).

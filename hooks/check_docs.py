@@ -29,6 +29,8 @@ DOC_MAX = 150
 TOC_OVER = 100  # docs longer than this need a "## Contents" list near the top
 # The SessionStart hook injects both into every session; Claude Code cuts hook output above about 10 KB.
 BYTE_LIMITS = {("rules", "CLAUDE.md"): 6000, ("work", "STATUS.md"): 3000}
+RULES_DOC_BYTES = 12000  # any other lx-e2espeed doc but CHANGELOG.md: the line limit alone let bullets grow past 1 KB (2026-10-13)
+LINE_BYTES = 500  # one line of prose outside code fences in an lx-e2espeed doc; CHANGELOG.md and ARCHIVE.md are exempt
 
 
 class Report:
@@ -67,7 +69,11 @@ def line_limit(rel, kind):
 def byte_limit(rel, kind):
     if kind == "rules" and rel.startswith("templates/work-skeleton/"):
         return byte_limit(rel[len("templates/work-skeleton/"):], "work")
-    return BYTE_LIMITS.get((kind, rel))
+    if (kind, rel) in BYTE_LIMITS:
+        return BYTE_LIMITS[(kind, rel)]
+    if kind == "rules" and rel != "CHANGELOG.md" and rel.rsplit("/", 1)[-1] not in UNLIMITED_DOCS:
+        return RULES_DOC_BYTES
+    return None
 
 
 def split_frontmatter(lines):
@@ -149,7 +155,15 @@ def check_file(path, rel, kind, rep, prose, texts):
             rep.error(rel, "read_when is empty")
     size, size_limit = path.stat().st_size, byte_limit(rel, kind)
     if size_limit and size > size_limit:
-        rep.error(rel, f"{size} bytes, limit {size_limit}; the SessionStart hook injects it, and longer hook output is cut")
+        why = "split or cut it" if size_limit == RULES_DOC_BYTES else "the SessionStart hook injects it, and longer hook output is cut"
+        rep.error(rel, f"{size} bytes, limit {size_limit}; {why}")
+    if kind == "rules" and rel != "CHANGELOG.md" and path.name not in UNLIMITED_DOCS:
+        fenced = False
+        for n, line in enumerate(lines[body:], body + 1):
+            if line.lstrip().startswith("```"):
+                fenced = not fenced
+            elif not fenced and len(line.encode("utf-8")) > LINE_BYTES:
+                rep.error(f"{rel}:{n}", f"{len(line.encode())} bytes on one line, limit {LINE_BYTES}; split the bullet or move the detail")
     limit = line_limit(rel, kind)
     if limit is None:
         return
