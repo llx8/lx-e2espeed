@@ -12,9 +12,11 @@
                  Problems go to stderr with exit code 2, which Claude Code shows to Claude.
   prompt         On every prompt in such a project or the workspace, print the reply naming rule, the
                  reply language, and answering only what was asked, as a reminder.
-  stop           When Claude ends its turn there, flag the turn's reply text if it names things by
-                 number (circled numbers, experiment numbers), with exit code 2 so Claude corrects it;
-                 never twice in a row (stop_hook_active).
+  stop           When Claude ends its turn there: while STATUS.md marks an autonomous run for this session
+                 (a Run line with its id), refuse the end of the turn with exit code 2, so the run goes on;
+                 otherwise flag the turn's reply text if it names things by number (circled numbers,
+                 experiment numbers), with exit code 2 so Claude corrects it, never twice in a row
+                 (stop_hook_active).
 
 It only reads files and runs the project's own checker. Unexpected errors exit 0,
 so the hook never blocks unrelated work.
@@ -58,6 +60,13 @@ PROMPT_RULE = ("Reply in the language the user writes in, not in the rules' Engl
                "asks (rules/reporting.md).")
 TRANSCRIPT_TAIL = 4 << 20  # bytes of the transcript read first for the current turn (turn_text)
 STAMP = Path.home() / ".claude" / "hooks" / "lx_installed"  # written by setup.sh global
+# An autonomous run (rules/standard-pass.md, rules/self-iteration.md) marks itself in STATUS.md under "## In progress"
+# with a Run line carrying the session id the SessionStart hook printed. While it names the current session, the Stop
+# hook refuses the end of the turn, so a run cannot stop early (the user, 2026-10-13); the run's ending steps replace
+# it. Another session's line never holds this one, and a line left by a dead session holds nobody.
+RUN_LINE = re.compile(r"^- Run: (standard pass|self-iteration run), session ([0-9A-Za-z-]{8,})\b", re.M)
+RUN_DOCS = {"standard pass": "rules/standard-pass.md", "self-iteration run": "rules/self-iteration.md"}
+RUN_REFUSALS_MAX = 20  # refusals in a row while STATUS.md stays unchanged; past it the turn may end, so a stuck run cannot loop forever
 # Every project shares one rules directory, outside the projects; setup.sh global writes its path here.
 LOCATION = Path.home() / ".claude" / "hooks" / "lx_rules"
 
@@ -198,8 +207,57 @@ def prompt(data):
     return 0
 
 
+def run_of_session(data):
+    """(kind, STATUS.md path) of the autonomous run whose Run line names this session: in a project its own STATUS.md,
+    in the workspace every registered project's."""
+    session = data.get("session_id")
+    if not session:
+        return None
+    cwd, rules = Path(data.get("cwd") or "."), rules_dir()
+    root = project_root(cwd)
+    roots = [root] if (root / WORK).is_dir() else [r for _, r in workspace_projects(cwd, rules)]
+    for root in roots:
+        status = root / WORK / "STATUS.md"
+        try:
+            text = status.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for kind, sid in RUN_LINE.findall(text):
+            if sid == session:
+                return kind, status
+    return None
+
+
+def run_refusals(status, session):
+    """How many turns in a row the Stop hook refused for this run while STATUS.md stayed unchanged, counted in
+    lx-work/local/, which lx-work ignores."""
+    marker = status.parent / "local" / f"stop-refusals-{session}"
+    stamp, count = str(status.stat().st_mtime_ns), 0
+    try:
+        old_stamp, old_count = marker.read_text(encoding="utf-8").split()
+        if old_stamp == stamp:
+            count = int(old_count)
+    except (OSError, ValueError):
+        pass
+    marker.parent.mkdir(exist_ok=True)
+    marker.write_text(f"{stamp} {count + 1}\n", encoding="utf-8")
+    return count + 1
+
+
 def stop(data):
-    if data.get("stop_hook_active") or not in_project(data):
+    if not in_project(data):
+        return 0
+    run = run_of_session(data)
+    if run:
+        kind, status = run
+        refusals = run_refusals(status, data["session_id"])
+        if refusals <= RUN_REFUSALS_MAX:
+            sys.stderr.write(f"{status} marks this session's {kind} as in progress, so the turn does not end (refusal "
+                             f"{refusals} of {RUN_REFUSALS_MAX} while STATUS.md is unchanged). Go on with the next item; the "
+                             f"run ends only by the ending steps of {RUN_DOCS[kind]}, which replace that Run line.\n")
+            return 2
+        print(f"STATUS.md unchanged over {RUN_REFUSALS_MAX} refused stops: the turn may end; the {kind} is still marked.")
+    if data.get("stop_hook_active"):
         return 0
     found = number_labels(turn_text(data))
     if not found:
@@ -241,7 +299,21 @@ def stamp_note(rules):
               "propose `lx-e2espeed/setup.sh global`.")
 
 
-def workspace_start(cwd, rules, projects):
+def session_line(session):
+    return f"Session id: {session}, for the Run line of an autonomous run (STATUS.md, In progress)." if session else ""
+
+
+def run_notes(text, session):
+    for kind, sid in RUN_LINE.findall(text):
+        if sid == session:
+            yield (f"Your {kind} is in progress: go on with it ({RUN_DOCS[kind]}). The Stop hook holds the turn until "
+                   "its ending steps replace the Run line.")
+        else:
+            yield (f"A {kind} of session {sid[:8]} is marked in progress. Only if the user says to resume it, put this "
+                   "session's id on its Run line first; otherwise leave the line alone.")
+
+
+def workspace_start(cwd, rules, projects, session=None):
     """The workspace overview: one line per project and the workspace rules, nothing read from inside a project
     beyond its STATUS.md, so the session reads a project only once the user names it."""
     print(f"This is the lx workspace {cwd}: the projects below use {RULES}, the rules directory {rules}; every "
@@ -249,6 +321,8 @@ def workspace_start(cwd, rules, projects):
           f"names, as {WORKSPACE_DOC} below says.\n\nProjects, from each {WORK}/STATUS.md:")
     for rel, root in projects:
         print(project_line(rel, root, rules))
+    if session:
+        print(session_line(session))
     stamp_note(rules)
     print("\n" + (rules / WORKSPACE_DOC).read_text(encoding="utf-8"))
     return 0
@@ -261,7 +335,7 @@ def session_start(data):
     if rules is not None and not work.is_dir():
         projects = workspace_projects(cwd, rules)
         if projects:
-            return workspace_start(cwd, rules, projects)
+            return workspace_start(cwd, rules, projects, data.get("session_id"))
     if rules is None or not work.is_dir():
         return 0  # a project starts using the rules with setup.sh project, which creates lx-work/
     # Shortest and most urgent first: past about 10 KB, Claude Code shows only the first 2 KB.
@@ -274,10 +348,14 @@ def session_start(data):
         match = PHASE.search(text)
         phase = match.group(1) if match else "unknown"
         print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
+        if data.get("session_id"):
+            print(session_line(data["session_id"]))
+        for note in run_notes(text, data.get("session_id")):
+            print(note)
         for name in running_notes(work):
             print(f"{name} is still running, and its change is in the project tree, so nothing else can start "
-                  "until it ends. During a self-iteration run, go on with it (rules/self-iteration.md); otherwise tell the user and "
-                  "propose how to end it (its NOTE.md has the plan).")
+                  "until it ends. During a self-iteration run or a standard pass, go on with it (its rules doc); "
+                  "otherwise tell the user and propose how to end it (its NOTE.md has the plan).")
         behind = skeleton_behind(rules, text)
         if behind:
             print(behind)

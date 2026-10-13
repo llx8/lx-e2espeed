@@ -10,7 +10,8 @@ It is safe for the same reason as a self-iteration run (`rules/self-iteration.md
 ## Contract with the user
 - The pass does not stop. Never end your turn for a question, a progress report, or a plan. The user, 2026-10-13: it must not run for a few minutes and then stop.
   - A question goes under "Waiting for the user" in STATUS.md, or in the trial's "Needs the user" column; take the default below and go on.
-  - Progress goes into STATUS.md ("In progress: standard pass (rules/standard-pass.md), item <n> of <N>") and lx-work commits; when the user watches, add the short status lines of `rules/reporting.md`, without waiting for an answer.
+  - Progress goes into STATUS.md and lx-work commits: under "In progress", the line `- Run: standard pass, session <id>, item <n> of <N>`, with the id the SessionStart hook printed. When the user watches, add the short status lines of `rules/reporting.md`, without waiting for an answer.
+  - While that line names this session, the Stop hook refuses the end of the turn (at most 20 times in a row while STATUS.md is unchanged), so the pass cannot stop early. The ending steps replace the line; a session that resumes the pass puts its own id there first.
   - It ends when every item is kept, parked, or skipped with a measured reason; at the end time the user gave; or when the environment breaks (the same infrastructure error twice). A permission prompt nobody is there to answer is the one other stop: check before the first command that the session runs the harness without them. The next session resumes from STATUS.md and the queue.
 - Starting the pass also covers what onboarding would ask about: `setup.sh project`, `git init` of a project that is no repo (nothing is pushed), excluding weights, and linking a sibling repo the project reads code from.
 - Decisions that are the user's are listed once, in the first status line, and defaulted at once. Each default goes into PROJECT.md and DECISIONS.md as `<value> (pass default, not discussed)`; an answer that arrives mid-pass applies from the next item.
@@ -45,6 +46,6 @@ Every item runs as `rules/experiment.md` steps 3 to 5 (`exp.sh new`) or as a tri
 Last: the structure pass of `rules/wrap-up.md` over the kept chain, landed as one more experiment when it finds something; and when the production GPU is not this machine, the kept chain and every parked rung benched there, three runs each, in the image production runs. An item that loses its gain there is reported as such, and the user decides.
 
 ## Ending and the report
-End as a self-iteration run ends: `exp.sh check` passes, "In progress" is none, "Waiting for the user" says `standard pass <date>: N kept, M parked, K skipped; report it (rules/standard-pass.md)`, lx-work committed.
+End as a self-iteration run ends: `exp.sh check` passes, "In progress" is none (the Run line replaced), "Waiting for the user" says `standard pass <date>: N kept, M parked, K skipped; report it (rules/standard-pass.md)`, lx-work committed.
 The report is one reply, laid out as `rules/self-iteration.md` describes, plus: the kept chain as one table in order with each item's gain and level; the ladder as rungs with cumulative numbers; one line per skipped item with its measurement; the defaults taken; the environment item's numbers; the production-GPU confirmation.
 The user then adopts parked items (`exp.sh adopt`), changes defaults, or says the project is done; from there the ordinary loop applies.

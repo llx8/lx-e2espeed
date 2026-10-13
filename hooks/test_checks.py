@@ -10,6 +10,7 @@ Exits 1 if a fixture fails or a probe goes undetected.
 """
 import contextlib
 import io
+import os
 import json
 import re
 import shutil
@@ -326,6 +327,59 @@ def reply_check_failures(tmp):
     return failures
 
 
+def run_hold_failures(tmp):
+    """The Stop hook refuses the end of the turn while STATUS.md's Run line names this session, in a project and in
+    the workspace, even on a repeated stop; not for another session or without one; at most RUN_REFUSALS_MAX times
+    while STATUS.md is unchanged, and again once it changed. The SessionStart hook prints the session id and the run."""
+    failures = []
+    rules, location, project, space = tmp / "hold-rules", tmp / "hold_rules", tmp / "hold-project", tmp / "hold-space"
+    write(rules / "CLAUDE.md", "# rules\n")
+    write(rules / "hooks" / "dispatch.py", "")
+    (rules / "vendor" / "skills").mkdir(parents=True)
+    write(location, f"{rules}\n")
+    status = "# Status\n- Phase: optimizing\n\n## In progress\n- Run: standard pass, session aaaaaaaa-1111, item 2 of 9\n\n## Waiting for the user\n"
+    write(project / "lx-work" / "STATUS.md", status)
+    space.mkdir()
+    (space / dispatch.RULES).symlink_to(rules)
+    write(space / "proj" / "lx-work" / "STATUS.md", status)
+    write(rules / "local" / "projects", f"{space / 'proj'}\n")
+    transcript = tmp / "hold-transcript.jsonl"
+    transcript.write_text(json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": "done"}]}}) + "\n")
+    saved, dispatch.LOCATION = dispatch.LOCATION, location
+    try:
+        def stop(**data):
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+                code = dispatch.stop({"transcript_path": str(transcript), **data})
+            return code, err.getvalue()
+        for name, data, want in (("own run in a project", {"cwd": str(project), "session_id": "aaaaaaaa-1111"}, 2),
+                                 ("own run, repeated stop", {"cwd": str(project), "session_id": "aaaaaaaa-1111", "stop_hook_active": True}, 2),
+                                 ("another session's run", {"cwd": str(project), "session_id": "bbbbbbbb-2222"}, 0),
+                                 ("no session id", {"cwd": str(project)}, 0),
+                                 ("own run from the workspace", {"cwd": str(space), "session_id": "aaaaaaaa-1111"}, 2)):
+            code, err = stop(**data)
+            if code != want or (want == 2) != ("does not end" in err):
+                failures.append(f"run hold: {name}: stop() returned {code}, expected {want}; stderr {err[:80]!r}")
+        path = project / "lx-work" / "STATUS.md"
+        os.utime(path, ns=(path.stat().st_mtime_ns + 10**9,) * 2)  # a fresh count
+        codes = [stop(cwd=str(project), session_id="aaaaaaaa-1111")[0] for _ in range(dispatch.RUN_REFUSALS_MAX + 1)]
+        if codes[-2:] != [2, 0]:
+            failures.append(f"run hold: after {dispatch.RUN_REFUSALS_MAX} refusals on an unchanged STATUS.md the turn must end; got {codes[-3:]}")
+        path.write_text(status.replace("item 2", "item 3"))
+        os.utime(path, ns=(path.stat().st_mtime_ns + 10**9,) * 2)
+        if stop(cwd=str(project), session_id="aaaaaaaa-1111")[0] != 2:
+            failures.append("run hold: a changed STATUS.md must reset the refusal count")
+        for session, want in (("aaaaaaaa-1111", "Your standard pass is in progress"), ("bbbbbbbb-2222", "of session aaaaaaaa is marked")):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                dispatch.session_start({"cwd": str(project), "session_id": session})
+            if f"Session id: {session}" not in out.getvalue() or want not in out.getvalue():
+                failures.append(f"run hold: session start for {session} lacks the id or '{want}'")
+    finally:
+        dispatch.LOCATION = saved
+    return failures
+
+
 def skeleton_check_failures(tmp):
     """The SessionStart note on lx-work's skeleton: quiet while templates/work-skeleton is unchanged since the
     '- Rules synced:' commit, and given once it changed or that commit is unknown."""
@@ -434,11 +488,12 @@ def main():
         failures += reply_check_failures(tmp)
         failures += skeleton_check_failures(tmp)
         failures += workspace_check_failures(tmp)
+        failures += run_hold_failures(tmp)
     for failure in failures:
         print(f"FAIL {failure}")
     print(f"{len(PROBES)} of {len(PROBES)} probes caught; both clean fixtures pass; the reply check passes its "
-          f"{len(REPLY_CASES)} cases, the skeleton check its 4, and the workspace check its 14." if not failures
-          else f"{len(failures)} probe, reply, skeleton, or workspace check failure(s).")
+          f"{len(REPLY_CASES)} cases, the skeleton check its 4, the workspace check its 14, and the run hold its 9."
+          if not failures else f"{len(failures)} probe, reply, skeleton, workspace, or run hold check failure(s).")
     return 1 if failures else 0
 
 

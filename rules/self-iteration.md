@@ -11,7 +11,7 @@ It is one of the two autonomous modes (the other, the standard pass in `rules/st
 - Phase optimizing, no running experiment, `exp.sh check` passes, verify and bench pass, and the noise floor is current. This tree, best (the baseline commit plus the kept patches), is the base of every trial in the run.
 - Agree on the end time (default: when the user is back) and the scope. Default scope: any method inside the hard rules in CLAUDE.md. Numeric precision and `torch.compile`, which need approval otherwise, may be tried because nothing lands; flag them for the user. Nothing is installed or downloaded, and nothing outside the project tree and lx-work changes: a method that needs a dependency is queued as blocked.
 - A permission prompt stops a run the user is away from: confirm with the user that the session runs without them.
-- Write the queue in trials/INDEX.md: every method with evidence that it applies here, from a fresh profile, MAP.md, BACKLOG.md, the playbook, and the skill routing table in rules/experiment.md, ordered by expected gain (bounded by its step's share). Leave out directions DECISIONS.md rules out for this project. Put the run under "In progress" in STATUS.md, and commit lx-work.
+- Write the queue in trials/INDEX.md: every method with evidence that it applies here, from a fresh profile, MAP.md, BACKLOG.md, the playbook, and the skill routing table in rules/experiment.md, ordered by expected gain (bounded by its step's share). Leave out directions DECISIONS.md rules out for this project. Put the run under "In progress" in STATUS.md as `- Run: self-iteration run, session <id>` (the id the SessionStart hook printed), and commit lx-work.
 
 ## Each trial
 1. `exp.sh try <1 to 4 words>` checks the tree and creates trials/NNN-name/ with NOTE.md and a running row.
@@ -26,13 +26,14 @@ Timebox each trial (default 90 minutes). Past it, drop the trial with what was l
 ## During the run
 - Never end your turn to ask: write the question in the trial's "Needs the user" column, or under "Waiting for the user" in STATUS.md when it concerns no single trial, and go on with the next method. Stop only when the queue is empty, a fresh look (profile, playbook, skills) adds nothing, and every lead is closed by a measurement, not an estimate; at the end time; or when the environment breaks (the same infrastructure error twice).
 - When the user watches, send the short status lines of rules/reporting.md; the run still never waits for an answer.
+- While the Run line names this session, the Stop hook refuses the end of the turn (at most 20 times in a row while STATUS.md is unchanged), so the run cannot stop early. The ending steps replace the line; a session that resumes the run puts its own id there first.
 - Trials do not build on each other: each starts from the base, so each patch applies alone. A method that only makes sense on top of another is queued as a day task.
 - The GPU runs nothing else, and clocks are locked as in rules/benchmarking.md.
 - Nobody may be there to reboot a frozen machine: every run stays under the memory cap in CLAUDE.md and is killed when MemAvailable in /proc/meminfo falls below 20% of RAM. Rerun a crashed run only once the crash is understood.
 - Rules, cards, references, and tolerances stay untouched. A problem with the rules goes to FEEDBACK.md for the next rules review.
 
 ## Ending the run
-`exp.sh check` passes: the tree is at the base. In STATUS.md, "In progress" is none, and "Waiting for the user" says `self-iteration run <date>: N parked, M dropped, K queued; report them (rules/self-iteration.md)`. Commit lx-work.
+`exp.sh check` passes: the tree is at the base. In STATUS.md, "In progress" is none (the Run line replaced), and "Waiting for the user" says `self-iteration run <date>: N parked, M dropped, K queued; report them (rules/self-iteration.md)`. Commit lx-work.
 
 ## The report
 - In your reply when the run ends, or in the first session after it, not in a file. One table of parked trials, best first: the method, the A/B per scenario against the base, the difference level, verify, what it touches and its risk, and what the user must decide. Then one line each for dropped trials and for methods still queued, with the reason, the run's entries under "Waiting for the user", and the FEEDBACK.md lines the run added.

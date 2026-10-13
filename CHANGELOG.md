@@ -6,6 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 
+## 2026-10-13: the Stop hook holds an autonomous run
+- A run marks itself in STATUS.md with `- Run: <standard pass|self-iteration run>, session <id>`, the id printed by the SessionStart hook; while it names the session, dispatch.py refuses the end of the turn (exit 2), at most 20 times while STATUS.md is unchanged. Nine test cases. Why: the user asked whether the pass was guaranteed to run to the end; the rule alone could not promise that, and this makes it mechanical. Another session's line never holds this one, so open sessions are unaffected until they start a run.
+
 ## 2026-10-13: byte and line caps, so the line limits mean something
 - Measured after the standard-pass entry, when the user asked whether the repo was getting bloated: rules/ 87.7 KB in 11 docs, 45 lines over 400 bytes, the longest 1,069. Not bloated by lines, but long bullets had made the line limits meaningless.
 - writing.md and check_docs.py: every lx-e2espeed doc but CHANGELOG.md is capped at 12,000 bytes (CLAUDE.md keeps 6,000), and one line of prose outside code fences at 500 bytes; two probes in test_checks.py. 12,000 rather than the 10,000 proposed to the user, because experiment.md, onboarding.md, and benchmarking.md sit at 11.1 to 11.9 KB after the moves below, and cutting them to 10 KB would drop rules, not words.
