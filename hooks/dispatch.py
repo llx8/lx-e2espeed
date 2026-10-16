@@ -38,6 +38,10 @@ PHASE_DOCS = {
     "wrap-up": "Read lx-e2espeed/rules/wrap-up.md now.",
     "done": "The project is done; ask the user what comes next.",
 }
+# An onboarding the user chose to discuss is not a new project: a hand-over there does not start the standard pass.
+DISCUSSED_DOC = ("Read lx-e2espeed/rules/onboarding.md now: this onboarding is discussed, so a hand-over does not start "
+                 "the standard pass.")
+MODE = re.compile(r"^- Mode: discussed\b", re.M)
 PHASE = re.compile(r"^- Phase: (\S+)", re.M)
 SYNCED = re.compile(r"^- Rules synced: ([0-9a-f]{7,40})\s*$", re.M)
 WORKSPACE_DOC = "rules/workspace.md"
@@ -140,6 +144,23 @@ def running_notes(work):
             if re.search(r"^- Status: running$", note.read_text(encoding="utf-8"), re.M)]
 
 
+def discussed(work, text):
+    """Whether an onboarding is the discussed one: STATUS.md says so, or DECISIONS.md holds a decision made with the
+    user (the standard pass marks its own defaults "pass default"), so a project from before the Mode line counts."""
+    if MODE.search(text):
+        return True
+    decisions = work / "DECISIONS.md"
+    text = decisions.read_text(encoding="utf-8") if decisions.is_file() else ""
+    return any("pass default" not in block for block in re.split(r"^## D-", text, flags=re.M)[1:])
+
+
+def phase_doc(work, text, phase):
+    """The phase line's advice: which rules doc to read first."""
+    if phase == "onboarding" and discussed(work, text):
+        return DISCUSSED_DOC
+    return PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md.")
+
+
 def project_line(rel, root, rules):
     """One overview line for a workspace project, from its STATUS.md: phase and its rules doc, the first Next item,
     how many items wait for the user, and what needs attention before work starts."""
@@ -148,8 +169,11 @@ def project_line(rel, root, rules):
     text = status.read_text(encoding="utf-8") if status.is_file() else ""
     match = PHASE.search(text)
     phase = match.group(1) if match else "unknown"
-    doc = re.search(r"rules/[\w-]+\.md", PHASE_DOCS.get(phase, ""))
-    parts = [f"- {rel.as_posix()}: phase {phase}" + (f" ({doc.group(0)})" if doc else "")]
+    advice = phase_doc(work, text, phase)
+    docs = ", or ".join(re.findall(r"rules/[\w-]+\.md", advice))
+    label = f"{phase}, discussed" if advice == DISCUSSED_DOC else phase
+    hint = " on a hand-over" if phase == "onboarding" and advice != DISCUSSED_DOC else ""
+    parts = [f"- {rel.as_posix()}: phase {label}" + (f" ({docs}{hint})" if docs else "")]
     nxt, waiting = section_items(text, "Next"), section_items(text, "Waiting for the user")
     if nxt:
         parts.append(f"next: {shorten(nxt[0].rstrip('.'))}")
@@ -348,7 +372,7 @@ def session_start(data):
     if text is not None:
         match = PHASE.search(text)
         phase = match.group(1) if match else "unknown"
-        print(f"Current phase: {phase}. " + PHASE_DOCS.get(phase, "Fix the Phase line in lx-work/STATUS.md."))
+        print(f"Current phase: {phase}. " + phase_doc(work, text, phase))
         if data.get("session_id"):
             print(session_line(data["session_id"]))
         for note in run_notes(text, data.get("session_id")):

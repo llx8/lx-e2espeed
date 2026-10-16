@@ -5,29 +5,30 @@ read_when: every session in a project that has lx-work/ (the SessionStart hook i
 # lx-e2espeed
 
 Rules for making a trained model faster end to end, together with the user.
-A collaboration: you and the user discuss, and the user decides, outside the runs below. Answer a question in words, only what it asks; reading to answer it is fine.
+A collaboration: you and the user discuss, and the user decides, except in the runs below. Answer a question in words, only what it asks; reading to answer it is fine.
 Act only after the user explicitly says to: changing any file, running anything beyond read-only inspection, or installing. A go-ahead covers exactly what was agreed; anything more needs its own. If unsure whether the user asks or tells you to act, ask.
 Exceptions: lx-work records and their commits, written as they happen, listed at the end of your reply (PROJECT.md and DECISIONS.md hold only what the user agreed, or a pass's marked defaults); and the runs the user starts, a hand-over included (`rules/self-iteration.md`, `rules/standard-pass.md`).
-With this repo as the working directory, you maintain these rules: see `rules/writing.md`.
+In this repo, you maintain these rules (`rules/writing.md`).
 
 ## Layout
 - `<project>/`: the user's company repo; experiments change only its tree and its linked repos', through `exp.sh`.
 - `lx-e2espeed/`: these rules and the playbook, one repo for all projects.
-- `<project>/lx-work/`: all about this project, its own git repo, laid out as `rules/naming.md` shows.
+- `<project>/lx-work/`: this project's records, its own git repo (`rules/naming.md`).
 - Workspace: the directory above the projects holding `lx-e2espeed/`; see `rules/workspace.md`.
 
 ## Session start
 No hook output before this file means the hooks are not installed: propose `lx-e2espeed/setup.sh global`.
 1. Read the rules doc the hook names for the current phase, and `git -C lx-work log --oneline -5`.
-2. A new project (no lx-work, or phase onboarding) handed over to optimize, in any words, starts the standard pass at once: read `rules/standard-pass.md`, ask nothing first (missed 10-12 and 10-16). Only "look/discuss first" or "just read" means the discussed onboarding.
+2. A new project handed over to optimize, in any words, starts the standard pass at once: read `rules/standard-pass.md`, ask nothing first. New: no lx-work, or onboarding the hook calls not discussed.
+   "Look/discuss first" or "just read" means the discussed onboarding: add `- Mode: discussed` to STATUS.
    Otherwise tell the user in a few lines where things stand and what "Next" in STATUS.md proposes; start once they say so.
 
 ## Hard rules
 - Do not change model weights or architecture. Outputs must meet the accuracy standard in `lx-work/PROJECT.md`. Only research trials may differ, where PROJECT.md allows (`rules/self-iteration.md`).
 - Do not edit reference outputs, tolerances, or verify criteria to make a change pass. Only the user changes them, recorded in `lx-work/DECISIONS.md`.
-- Report results with the bench and verify tools' own summary lines, never a paraphrase or a number-free claim. In replies and tables, name each version, step, scenario, and level by what it is or does, never by a number or experiment ID.
+- Report results with the bench and verify tools' own summary lines, never a paraphrase. In replies and tables, name each version, step, scenario, and level by what it is or does, never by a number or experiment ID.
 - One landed change per experiment, so every gain or regression has one cause.
-- Changing numeric precision, enabling `torch.compile`, and adding a dependency each need the user's explicit approval. A production image's package at its version is alignment (`rules/onboarding.md`).
+- Changing numeric precision, enabling `torch.compile`, and adding a dependency each need the user's explicit approval. Environment alignment is not one (`rules/onboarding.md`).
 - Production code fails fast: never add a silent fallback to a slower path. Keep the reference path as an explicit offline configuration.
 - Nothing about the project leaves lx-work: cards and rule changes stay abstract, checked before they are committed.
 - Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repos; leave sibling repos unchanged unless the user says so.
@@ -64,4 +65,4 @@ On demand:
 - `playbook/INDEX.md`: looking for ideas after profiling; open only matching cards.
 - Skills (NVIDIA's, `vendor/skills/`): `rules/experiment.md` says which to load; these rules win; output to `lx-work/local/`.
 - `templates/`: lx-work docs, cards, and the generic tools.
-- `lx-work/knowledge/INDEX.md`: before reading project code to learn what it is for.
+- `lx-work/knowledge/INDEX.md`: before reading project code to learn its purpose, callers, contract, or deployment.

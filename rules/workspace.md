@@ -9,7 +9,7 @@ A session started in a project's own root still works as before: the hook then i
 
 ## Start
 - Tell the user in a few lines where each project stands, from the hook's lines, and ask which one to work on unless they already named it. Read nothing inside a project before that.
-- A project, new or listed in phase onboarding, that the user hands over to optimize, in any words, starts the standard pass at once (`rules/standard-pass.md`): run `setup.sh project` in its root if it has no lx-work, then go on without a confirmation question.
+- A project, new or listed in phase onboarding but not as discussed, that the user hands over to optimize, in any words, starts the standard pass at once (`rules/standard-pass.md`): run `setup.sh project` in its root if it has no lx-work, then go on without a confirmation question.
 - Once the user names one, `cd` into its root and work from there: every `lx-work/` path in the rules, and `exp.sh`, mean that project. Read `lx-e2espeed/CLAUDE.md` in full if this session has not yet, then follow its Session start for that project: its STATUS.md, the rules doc of its phase (the hook's line names it), and `git -C lx-work log --oneline -5`.
 - A project's own CLAUDE.md, if it has one, loads once you read its files: follow it as in a session started there.
 

@@ -421,7 +421,15 @@ def workspace_check_failures(tmp):
         write(root / "lx-work" / "STATUS.md", f"- Phase: {phase}\n\n## Next\n- next for {root.name}\n\n"
                                               "## Waiting for the user\n- one\n- two\n")
     write(active / "lx-work" / "PROJECT.md", "secret-of-alpha\n")
-    write(rules / "local" / "projects", "".join(f"{p}\n" for p in (active, other, outside)))
+    # Onboarding: discussed by its Mode line, discussed by a decision with the user, and new (only a pass default).
+    marked, decided, new = space / "p3" / "delta", space / "p4" / "eps", space / "p5" / "zeta"
+    for root in (marked, decided, new):
+        subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
+        mode = "- Mode: discussed (the user's choice)\n" if root == marked else ""
+        write(root / "lx-work" / "STATUS.md", f"- Phase: onboarding\n{mode}")
+    write(decided / "lx-work" / "DECISIONS.md", "# Decisions\n\n## D-001: environment\n- Decision: lx_main\n")
+    write(new / "lx-work" / "DECISIONS.md", "# Decisions\n\n## D-001: GPU\n- Decision: L20 (pass default, not discussed)\n")
+    write(rules / "local" / "projects", "".join(f"{p}\n" for p in (active, other, outside, marked, decided, new)))
     failures = []
 
     def run(mode, data):
@@ -434,7 +442,10 @@ def workspace_check_failures(tmp):
     try:
         _, out, _ = run("session_start", {"cwd": str(space)})
         want = ["- p1/alpha: phase optimizing (rules/experiment.md); next: next for alpha; 2 item(s) waiting",
-                "- p2/beta: phase wrap-up (rules/wrap-up.md)", "# Working from the workspace"]
+                "- p2/beta: phase wrap-up (rules/wrap-up.md)", "# Working from the workspace",
+                "- p3/delta: phase onboarding, discussed (rules/onboarding.md).",
+                "- p4/eps: phase onboarding, discussed (rules/onboarding.md).",
+                "- p5/zeta: phase onboarding (rules/onboarding.md, or rules/standard-pass.md on a hand-over)."]
         failures += [f"workspace: session start lacks {w!r}" for w in want if w not in out]
         failures += [f"workspace: session start shows {w!r}" for w in ("ws-outside", "secret-of-alpha", "# lx-e2espeed")
                      if w in out]
@@ -492,7 +503,7 @@ def main():
     for failure in failures:
         print(f"FAIL {failure}")
     print(f"{len(PROBES)} of {len(PROBES)} probes caught; both clean fixtures pass; the reply check passes its "
-          f"{len(REPLY_CASES)} cases, the skeleton check its 4, the workspace check its 14, and the run hold its 9."
+          f"{len(REPLY_CASES)} cases, the skeleton check its 4, the workspace check its 17, and the run hold its 9."
           if not failures else f"{len(failures)} probe, reply, skeleton, workspace, or run hold check failure(s).")
     return 1 if failures else 0
 

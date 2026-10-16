@@ -6,8 +6,8 @@ read_when: first sessions in a new project (STATUS.md phase is onboarding)
 
 Goal: agree with the user on what "faster" means here, then measure the unmodified project precisely.
 The user's review matters most in this phase: a misunderstanding here misdirects every later experiment.
-Which mode: a new project handed over to optimize, in any words, runs the standard pass (`rules/standard-pass.md`): step 1 below, then its defaults instead of step 2, with no confirmation question. A hand-over naming reference projects ports their changes too (the environment move, then their optimizations) as pass items.
-The discussion below is only for "look first", "discuss first", or "only read".
+Which mode: CLAUDE.md, Session start. A hand-over runs `rules/standard-pass.md`: step 1 below, then its defaults instead of step 2; one naming reference projects ports their changes too (environment move, then optimizations) as pass items.
+The Mode line keeps a later "go on" in a discussed onboarding from starting the pass.
 
 Discussed onboarding: two steps, each started once the user says so. Copy this line into your reply and tick it off as you go:
 
@@ -15,7 +15,7 @@ Discussed onboarding: two steps, each started once the user says so. Copy this l
 
 ## 1. Set up and read
 Setup:
-- If the project is not a git repo, ask the user. With their okay, run `git init` and commit the code as delivered; exp.sh needs a baseline commit, and nothing is pushed.
+- If the project is not a git repo, ask the user (a hand-over already covers it). With their okay, run `git init` and commit the code as delivered; exp.sh needs a baseline commit, and nothing is pushed.
 - `lx-e2espeed/setup.sh project`, run from the project root on a hand-over or the user's word, starts the rules there: it excludes lx-work/ from the repo, creates it from `templates/work-skeleton/` as a git repo, and registers the project for the checker's private terms and the workspace list. Until lx-work/ exists the SessionStart hook injects nothing.
 - The rest of lx-work follows the layout in `rules/naming.md`.
 
@@ -55,7 +55,7 @@ Record the agreed parameters in PROJECT.md, each decision with its reason in DEC
 - Target hardware: where the model runs in production. If that is not this machine, gains here may not transfer; say so and agree how to confirm them.
 - Constraints: code that must not change, allowed dependencies, techniques the user rules out (for example pinned memory), and the private terms filled in provisionally in step 1: confirm them, and add any the user names.
 - Environment: which Python environment the tools run in, by default the local one `local/site.md` names. Read the `hardware/` doc of the production GPU (`hardware/rtx-5090.md`, `hardware/l20.md`) and note what matters.
-  A package the project's code imports and the production image has is added without asking, at the image's version with the constraints `local/site.md` gives: that aligns the environment. If pip would change an installed package's version, leave it to the user, since every project shares that environment. Any other package is a new dependency.
+  A package the project's code imports, or its own CI or init scripts install, is added without asking: that aligns the environment. Pin it to the target image's version (`local/site.md`), else resolve it under that image's constraints. If pip would change an installed package's version, leave it to the user, since every project shares that environment. Any other package is a new dependency.
 
 Once the user has confirmed, the baseline follows under the agreed conditions; it ends the step and the phase.
 - Put the agreed difference levels and time budget into the adapter. The project tree must be clean: `git status --porcelain` prints nothing. Ask the user to commit or stash their own changes; untracked environment files such as weights go into `.git/info/exclude` with their okay.

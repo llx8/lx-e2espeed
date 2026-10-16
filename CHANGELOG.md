@@ -5,6 +5,10 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-16: the hand-over, narrowed and widened where it misfired
+- A review of 3583e72 found that "phase onboarding" also caught an onboarding the user chose to discuss and paused with items waiting for them; "go on with it" there would have started the pass. Now a `- Mode: discussed` line in STATUS.md, or a decision with the user in DECISIONS.md (pass defaults are marked as such), makes it discussed; dispatch.py's `discussed()` labels it in the workspace overview and the phase advice, three new workspace cases.
+- Alignment also covers packages the project's own CI or init scripts install (the missed one was installed only by the CI's init script), pinned to the target image, the one the pass moves to.
+- onboarding.md: a hand-over covers `git init`. CLAUDE.md: the knowledge index trigger back to purpose, callers, contract, or deployment; other lines shortened for the byte limit.
 ## 2026-10-16: a hand-over starts the standard pass
 - The user handed over a new project with "optimize it following the steps"; the session ran the discussed onboarding and stopped to ask about the environment and an install, which the site facts already answered, then asked once more before starting. Second miss of this kind (2026-10-12: "do it like project X"), fixed then by one special case for one wording.
 - CLAUDE.md Session start, onboarding.md, workspace.md, standard-pass.md, setup.sh's closing lines, and the onboarding hint of dispatch.py: a new project (no lx-work, or phase onboarding) handed over to optimize, in any words, starts the pass at once; only "look/discuss first" or "only read" means the discussed onboarding. The reference-project special case folded in.
