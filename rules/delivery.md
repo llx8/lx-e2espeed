@@ -13,6 +13,7 @@ Run the checks after code, accuracy, performance, and maximum-input validation p
 3. Self-contained. Delivered code imports nothing from `lx-work/`, `lx-e2espeed/`, sibling repositories, `/tmp`, or build directories; section 3 has the scans.
 4. The build path contains the change. An optimization that exists only in a local working tree, a symlinked copy, or an uncommitted export patch is not delivered. Check dependency locks, export scripts, and CI steps that rebuild engines, and name what must be committed or re-locked.
 5. Engines are not built in the request path. Check that engine, plugin, dtype, shape, and path mismatches fail fast at startup.
+6. Production defaults stay. What production's image sets up by default (the MPS daemon in its CMD, driver capabilities) is in the delivered image; a gap there blocks the handoff, never a backlog note.
 
 ## When the deployment calls for it
 - Weight path contract: when production loads the algorithm repo as a subdirectory (for example from a service wrapper), every weight is referenced relative to the repo root and joined in code; test by starting the entry point from another directory. Section 1.
@@ -50,6 +51,7 @@ The store path cannot be inferred from the repo. Ask the user and record the ans
 
 ## Facts to state at delivery
 The baseline (what results compare with) and where it came from; environment, commands, inputs, warmup, and repetitions; end-to-end latency (cold start and warm P50/P90/P99) and peak memory in three sets: the baseline, before (the code the delivery starts from), and after (the delivered code); each affected stage's latency and share of the original total;
-the complete accuracy command, input matrix, metrics, tolerances, and result; the pre/post tensor contract and which semantics were verified unchanged; files and runtime artifacts changed; assumptions, unsupported shapes, cold-start cost, and the rollback path; what was not measured or validated; the remaining bottleneck and the next evidence-backed candidate.
+the complete accuracy command, input matrix, metrics, tolerances, and result, with production and the optimized version each against the reference (the fixed engine only attributes a change to the optimization or the environment move);
+the pre/post tensor contract and which semantics were verified unchanged; files and runtime artifacts changed; assumptions, unsupported shapes, cold-start cost, and the rollback path; what was not measured or validated; the remaining bottleneck and the next evidence-backed candidate.
 Never infer a speedup from code shape alone.
 When the checks above ran, the summary also lists their results: the weight path inventory, the store path, pre- and post-sync differences with digest checks, the symlink scan, the cross-repo reference scan, the submodule, gitlink, nested `.git`, and runtime-download scans, the committed runtime libraries with their compatibility facts, and anything not finished or not reachable.

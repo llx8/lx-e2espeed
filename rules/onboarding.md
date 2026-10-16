@@ -6,6 +6,7 @@ read_when: first sessions in a new project (STATUS.md phase is onboarding)
 
 Goal: agree with the user on what "faster" means here, then measure the unmodified project precisely.
 The user's review matters most in this phase: a misunderstanding here misdirects every later experiment.
+An instruction that names reference projects and mentions optimizing means porting their changes too (the environment move, then their optimizations), not onboarding alone; ask once if unsure.
 
 Two steps, each started once the user says so. Copy this line into your reply and tick it off as you go:
 

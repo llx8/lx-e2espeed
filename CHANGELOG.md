@@ -5,6 +5,12 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-16: rules review of five image-service projects
+- reporting.md: report what is wrong or risky, not what is fine; the user's project names and image names; ask when a request is already done or contradicts the records; check an item against the records before calling it open; a decision stands when a later number moves; plain words for technical terms; FP32 means the framework default, one variant; the agreed baseline stays fixed across machines.
+- delivery.md: production defaults (the MPS daemon in the image's CMD) are part of the delivered image; delivery quality shows production and the optimized version each against the reference.
+- onboarding.md: an instruction naming reference projects and optimizing means porting their changes too.
+- Why: corrections in the wrap-up of five projects (their FEEDBACK.md, 2026-10-12 to 2026-10-16), four of them repeated across four projects; the user handed the wrap-up over ("you do it, commit it all", 2026-10-16).
+
 
 ## 2026-10-13: the Stop hook holds an autonomous run
 - A run marks itself in STATUS.md with `- Run: <standard pass|self-iteration run>, session <id>`, the id printed by the SessionStart hook; while it names the session, dispatch.py refuses the end of the turn (exit 2), at most 20 times while STATUS.md is unchanged. Nine test cases. Why: the user asked whether the pass was guaranteed to run to the end; the rule alone could not promise that, and this makes it mechanical. Another session's line never holds this one, so open sessions are unaffected until they start a run.
@@ -91,8 +97,4 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - experiment.md: propose only work on the path production runs; "nothing left to propose" needs a re-profile and every lead closed by a measurement (night.md too); records are committed as they are written, not only at the end (naming.md). Wrap-up step 1: every doc the change made stale is updated before a push. Onboarding step 4: a tool grows past its question only after telling the user.
 - Left out: a model-specific MPS criterion (one model's evidence), and editing the user's own text lightly (not about this work).
 
-## 2026-10-12: one shared rules directory instead of a clone per project
-- Each project had its own clone, synced through a main copy at wrap-up. Clones drifted: one held an unsynced rules commit with a wrong `origin`, and the commit was lost when that project's directory was deleted. The user decided: one lx-e2espeed for every project, reached by a single symlink beside the projects; a project has only lx-work; no branches. writing.md: before editing, `git status` must be clean (another session may be midway); commit at once, staging files by name; never rewrite history. Wrap-up step 5 only pushes, at the end of the project as before.
-- dispatch.py finds a project by lx-work/ and the rules at the path `setup.sh global` records in `~/.claude/hooks/lx_rules`, and prints that path first. With no pull left to start the skeleton sync, it notes when templates/work-skeleton changed after `- Rules synced:`. exp.sh takes the project from the git repo it runs in, not from its own location. `setup.sh project` excludes only lx-work, sets lx-work's hooks path to an absolute one, and registers the project in `local/projects` (ignored). check_rules.py reads the private terms of every registered project: they used to come from the lx-work beside the clone, which no longer exists. Probes cover the registry and the skeleton note.
-
-Older entries (2026-10-11 and before): `git show e5521f1:CHANGELOG.md`.
+Older entries: `git show 48f36d7:CHANGELOG.md` (from 2026-10-12, one shared rules directory) and `git show e5521f1:CHANGELOG.md` (2026-10-11 and before).
