@@ -27,3 +27,4 @@ Marking an intermediate tensor as an output can block its fusion and change the 
 
 ## Evidence
 Method from the retired engine skill, absorbed into the rules on 2026-10-13 (lx-e2espeed 937dc71); the boundaries listed are the ones the FP16, plugin, and tiling projects of this playbook hit. No project has recorded a run of the whole procedure yet.
+- ✓ 2026-10: segmentation transformer, FP16 engine on sm_120 only, NaN on 19 of 6000 inputs: traced to the attention normalization, its 16 layers pinned to FP32 on that GPU: NaN gone, L1 (as a rebuild), +4 MiB.

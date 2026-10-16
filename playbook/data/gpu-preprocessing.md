@@ -30,3 +30,4 @@ Use a fixed block with a loop over columns (cold Init 57.5 -> 9.9 s), clone unal
 - ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, full-resolution 4480x6720 input: one RoI 110.6 -> 19.5 ms end to end, L0 (byte-identical in 9 scenarios).
 - ✓ 2026-09: two-network image color-transfer model at 1536x1536 with D=16 attention, RTX 5090, TensorRT 10.16: preprocessing 134 -> 19 ms with GPU (Kornia) preprocessing, within the model's accepted difference.
 - ✓ 2026-09, pilot rerun of the same model: only the full-resolution normalize and uint8 conversion moved to the GPU, same float32 operations: -24 ms (-2.6%), L0.
+- ✓ 2026-10: two-model mask service, the mask work after the segmentation engine (per-segment counts, resize, cleanup) moved to the GPU, byte-identical: -21.70 ms (-45.2%), +168 MiB GPU memory.

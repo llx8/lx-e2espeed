@@ -25,3 +25,5 @@ A native dependency (the nvCOMP wheel, the decoder built per CUDA major). Above 
 
 ## Evidence
 - ✓ 2026-09: image service with PNG fallback masks, RTX 5090, CUDA 13, TensorRT 10.16: 8.96 -> 4.13 ms, 59 requests byte-identical.
+- ✓ 2026-10: image background-type CNN classifier service, 8-bit PNG requests, RTX 5090: -3.72 ms (-58.8%) on the PNG scenario, L0.
+- ✓ 2026-10: two-model mask service, PNG masks in each request, RTX 5090: -5.18 ms (-19.8%), L0.

@@ -25,3 +25,4 @@ Output slots for the maximum item count must stay allocated.
 
 ## Evidence
 - ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3, two RoIs: -0.53 ms (FP32 engine) and -0.58 ms (FP16), L0.
+- ✓ 2026-10: heatmap line-segmentation CNN service, 20 sampled columns: one gather and one max with one readback instead of 20: -0.76 ms (-21.5%), L0.
