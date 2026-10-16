@@ -108,7 +108,8 @@ setup_project() {
   # Also for an lx-work made before the rules moved out of the projects, whose hooks path was relative.
   git -C lx-work config core.hooksPath "$here/hooks/git"
   echo "Done: $root uses the rules in $here. The SessionStart hook injects them from the next session on; in this"
-  echo "one, read $here/CLAUDE.md and lx-work/STATUS.md, then go on with onboarding step 1 (read the project)."
+  echo "one, read $here/CLAUDE.md and lx-work/STATUS.md. A project handed over to optimize runs the standard pass"
+  echo "($here/rules/standard-pass.md) without a confirmation question; otherwise go on with onboarding step 1."
 }
 
 case "${1:-}" in

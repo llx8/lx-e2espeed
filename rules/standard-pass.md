@@ -4,7 +4,8 @@ read_when: the user starts a standard pass on a project, during one, and the fir
 ---
 # Standard pass
 
-The user hands over a project, says to run the standard pass, and leaves or watches. You onboard it, measure it, work through the catalog below without the user's picks, and report once at the end. The user asked for it on 2026-10-13: the routine part of every project should run without a discussion, and the promising changes that alter outputs should reach them finished, with numbers.
+The user hands over a new project to optimize, in any words, or says to run the standard pass, and leaves or watches. Begin at once: no confirmation question, no plan to approve; the user corrected that twice (2026-10-12, 2026-10-16).
+You onboard it, measure it, work through the catalog below without the user's picks, and report once at the end. The user asked for it on 2026-10-13: the routine part of every project should run without a discussion, and the promising changes that alter outputs should reach them finished, with numbers.
 It is safe for the same reason as a self-iteration run (`rules/self-iteration.md`): a change lands only when its outputs are identical and its gain is measured; everything else is parked for the user. Starting the pass is the user's approval of this catalog, and of nothing beyond it.
 
 ## Contract with the user
@@ -20,7 +21,7 @@ It is safe for the same reason as a self-iteration run (`rules/self-iteration.md
   - MPS and workers: MPS on, one worker, as `rules/onboarding.md` assumes. End time: none.
 - Lands without asking (`exp.sh keep`): an item whose outputs are L0 against the frozen references, whose gain is beyond the noise floor (or less code at equal speed), and which changes no contract in PROJECT.md. L1 lands too when the project already runs that model as a built engine at that precision and the engine-noise tool measured the spread.
 - Everything else with a gain is parked (`exp.sh park`) with its level and what the user must decide. Numeric precision and `torch.compile` may be tried this way because they do not land, as in a self-iteration run.
-- Stays the user's, by parking or skipping, never by stopping: anything outside the catalog, a contract change, a dependency the target image lacks (installing is allowed only for the project's own imports, pinned to the image's versions as `local/site.md` says), a change to the baseline or the references, and any difference beyond L0.
+- Stays the user's, by parking or skipping, never by stopping: anything outside the catalog, a contract change, a dependency beyond the alignment `rules/onboarding.md` allows (Environment), a change to the baseline or the references, and any difference beyond L0.
 - Every other rule holds: the memory cap and the MemAvailable kill, one landed change per experiment, the refactor-first and land-a-replacement rules in `rules/experiment.md` (a refactor lands by the same criteria), and nothing outside the project tree, its linked repos, and lx-work changes. Rules, cards, and tolerances stay untouched; a problem with them goes to FEEDBACK.md.
 
 ## Step 1: onboarding without the discussion

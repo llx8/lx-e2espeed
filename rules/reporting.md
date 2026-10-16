@@ -7,6 +7,8 @@ read_when: before a reply that reports results, answers a question about the wor
 The user decides from your replies, not from the files. Most corrections in the first projects were about replies, not about the work itself (their FEEDBACK.md, 2026-10-06 to 2026-10-12), and several made the user angry.
 
 ## Answering
+- Open a report on work with its state in one sentence: what is done, where it is stuck, and the one thing needed from the user, if any; details after (the user, 2026-10-16: a long onboarding report left them asking whether it was done).
+- Before asking the user anything, look it up: `local/site.md`, the deployment files, PROJECT.md and DECISIONS.md, and the defaults of `rules/standard-pass.md`. Ask only what none of them answers.
 - Answer what was asked, and only that. Status, side findings, and proposals the question did not ask for stay out, or take one line at the end. A long report of everything done reads as work nobody asked for.
 - Report what is wrong or risky and leave out what is fine (the user, 2026-10-13, in four projects).
 - Call each project by the user's own name for it and say which service an output belongs to. Name an image by its name in the folder the user works from, not by a source index.

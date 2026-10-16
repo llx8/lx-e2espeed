@@ -32,7 +32,8 @@ RULES, WORK = "lx-e2espeed", "lx-work"
 LX_NAMES = (RULES, WORK)
 # Which rules doc to read first in each STATUS.md phase, so routing does not depend on recall.
 PHASE_DOCS = {
-    "onboarding": "Read lx-e2espeed/rules/onboarding.md now.",
+    "onboarding": ("Read lx-e2espeed/rules/onboarding.md now, or rules/standard-pass.md when the user hands the project "
+                   "over to optimize (CLAUDE.md, Session start)."),
     "optimizing": "Read lx-e2espeed/rules/experiment.md before the next experiment.",
     "wrap-up": "Read lx-e2espeed/rules/wrap-up.md now.",
     "done": "The project is done; ask the user what comes next.",
