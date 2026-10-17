@@ -91,7 +91,9 @@ snapshot() {  # $1 repo: tree id of its working tree; the repo's own index is ne
     # -p keeps the index's mtime, which git's racy-file check compares with: with a fresh mtime, a file changed
     # to the same size in the second it was staged would be read from the stale index entry.
     if [ -f "$index" ]; then command cp -fp "$index" "$snap"; fi
-    GIT_INDEX_FILE="$snap" git add -A .
+    # Python bytecode is a cache, never a change: a linked repo without a .gitignore once put 14 .pyc files into a
+    # kept patch after a run that imported its code.
+    GIT_INDEX_FILE="$snap" git add -A -- . ':(exclude,glob)**/__pycache__/**' ':(exclude,glob)**/*.pyc'
     GIT_INDEX_FILE="$snap" git write-tree
   )
 }

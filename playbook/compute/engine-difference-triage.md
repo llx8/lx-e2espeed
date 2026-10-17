@@ -26,5 +26,7 @@ Marking an intermediate tensor as an output can block its fusion and change the 
 - A difference inside the engine-noise spread (L1) is rebuild variance, not a defect: card `engine-build-variance`.
 
 ## Evidence
-Method from the retired engine skill, absorbed into the rules on 2026-10-13 (lx-e2espeed 937dc71); the boundaries listed are the ones the FP16, plugin, and tiling projects of this playbook hit. No project has recorded a run of the whole procedure yet.
+Method from the retired engine skill, absorbed into the rules on 2026-10-13 (lx-e2espeed 937dc71); the boundaries listed are the ones the FP16, plugin, and tiling projects of this playbook hit. The precision boundary has one full run, below; no project has run the export and tiling boundaries yet.
 - ✓ 2026-10: segmentation transformer, FP16 engine on sm_120 only, NaN on 19 of 6000 inputs: traced to the attention normalization, its 16 layers pinned to FP32 on that GPU: NaN gone, L1 (as a rebuild), +4 MiB.
+- ✓ 2026-10: camera-calibration CNN-transformer, production FP16 engine up to 370 px off the FP32 network on its own scenarios. Random NMF bases fixed at export: FP32 engine within 0.1 px of eager. Bisected by module, then each normalization: two backbone LayerNorms, exported as ReduceMean/Sub/Pow, square (x - mean) of up to 1475 past FP16's 65504, zeroing 8 to 83% of tokens.
+  The four backbone LayerNorms (36 layers, matched by name, shape, constant, and cast layers skipped since a pinned cast fails the build) pinned to FP32 with obey-precision: 370 to 10 px, 100 random images median 25 to 3.9 px, inside the FP32 seed spread, engine +0.01 to +0.15 ms over three builds per side; end to end moved by whole solver iterations, one step fewer on L20 PNG (-5 ms).

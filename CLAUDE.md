@@ -40,7 +40,7 @@ No hook output before this file means the hooks are not installed: propose `lx-e
 - Send long output to `lx-work/local/logs/` and read the summary.
 - When the user corrects how you work, record it in `lx-work/FEEDBACK.md`.
 - Change lx files with Edit, Write, or shell commands naming the lx directory, so the checker runs.
-- When compacting, keep the project, its experiment, latest numbers, and pending decisions.
+- When compacting, keep the project, its experiment, numbers, and pending decisions.
 
 ## Working loop
 onboarding or a standard pass → repeat (profile → propose → user picks → plan → approve → candidates → verify → bench → user picks → land or drop → commit) → wrap-up. A self-iteration run only parks trials; a pass lands identical outputs, parks the rest.
@@ -50,19 +50,20 @@ Read only what the step needs. Always: this file and `lx-work/STATUS.md`.
 
 Once, when entering the named phase:
 - `rules/onboarding.md`: first sessions in a new project.
-- `hardware/rtx-5090.md` or `hardware/l20.md`: during onboarding, for the production GPU.
+- `hardware/rtx-5090.md` or `hardware/l20.md`: onboarding, the production GPU.
 - `rules/wrap-up.md`: when the user says the project or a milestone is done.
-- `rules/self-iteration.md`: when the user starts one, and the session after it.
-- `rules/standard-pass.md`: at a hand-over or start, during a pass, and the session after it.
+- `rules/self-iteration.md`: when the user starts one, and the session after.
+- `rules/standard-pass.md`: at a hand-over or start, during a pass, and the session after.
 
 On demand:
 - `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
 - `rules/benchmarking.md`: before an A/B, a difference level, or changing a bench or verify tool.
+- `rules/quality.md`: the references, grading outputs, an engine's precision.
 - `rules/reporting.md`: before reporting results or explaining work.
-- `rules/delivery.md`: at wrap-up steps 1 and 2.
+- `rules/delivery.md`: wrap-up steps 1 and 2.
 - `rules/naming.md`: the lx-work layout, its skeleton sync, and naming anything.
 - `rules/writing.md`: writing any doc in either lx repo, or changing lx-e2espeed.
 - `playbook/INDEX.md`: looking for ideas after profiling; open only matching cards.
-- Skills (NVIDIA's, `vendor/skills/`): `rules/experiment.md` says which to load; these rules win; output to `lx-work/local/`.
-- `templates/`: lx-work docs, cards, and the generic tools.
+- Skills (`vendor/skills/`): `rules/experiment.md` says which; these rules win; output to `lx-work/local/`.
+- `templates/`: lx-work docs, cards, generic tools.
 - `lx-work/knowledge/INDEX.md`: before reading project code to learn its purpose, callers, contract, or deployment.

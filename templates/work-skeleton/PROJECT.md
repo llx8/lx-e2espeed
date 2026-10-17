@@ -22,7 +22,7 @@ Facts agreed with the user during onboarding; what the code and the user showed 
 - Bench time budget: <how long one bench run may take; WARMUP and REPEAT in adapter/pipeline.py fit it>
 
 ## Accuracy standard
-<Source of the reference outputs, the baseline's outputs (the baseline commit's own by default), comparison method, and inputs covered.>
+<Identity reference (the baseline commit's own outputs by default), the quality baseline (the network in FP32, its seeds and spread), the quality metric and its thresholds, and inputs covered (rules/quality.md).>
 - Metrics and pass criterion: <for images, for example max error and PSNR thresholds>
 - Difference levels: <L0 identical; L1 up to ...; L2 up to ...; L3 beyond; or none, when the user judges every result that is not L0>
 - Accepted level: <the highest level the user accepts, or none>

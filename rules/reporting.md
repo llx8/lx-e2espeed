@@ -26,11 +26,21 @@ The user decides from your replies, not from the files. Most corrections in the 
 
 ## Results
 - Lead with the verdict in one plain sentence, then the numbers.
+- A difference inside the noise floor is "unchanged", never faster or slower, in words and tables alike (the user, 2026-10-17, on a "0.02 ms faster" engine).
 - Keep the agreed baseline fixed: give a step's numbers on the baseline's machine, or say they are another machine's and why they differ.
 - Report the scenario the user named as the one that matters; other scenarios on request. An agreed report layout or scenario choice is a `- Reports:` line under Metric in PROJECT.md, read before any report.
 - Keep an agreed report layout until the user changes it: its rows, columns, groups, and the side it compares with. Unless agreed otherwise, rows are cumulative steps from the baseline, each with its median saving; never compare with the current tree instead (the user, 2026-10-12).
 - When latency depends on the input size per request (objects per image, sequence length), split the scenario into size groups if the user asks, each with median, P90, and P99, then give the whole scenario.
 - One point per table: no cells packed with slashes, and an input that dominates a column is shown apart.
+
+## Project report
+The end of a pass or a milestone, and the first answer to "how does it run". The user asked these one by one after a pass report that listed only items (2026-10-17); give them unasked, each short.
+- Input and output: what the service receives (formats, sizes) and returns, and what the caller does with it.
+- The path, one row per stage on each side (service, algorithm): what it does, where it runs and on which data, in production and in best. Decoding names its decoder (hardware, GPU, CPU library); the model names itself in a sentence (architecture, task), its engine, and precision.
+- Speed: production's end to end and per stage, each input format apart (JPEG, PNG), then the same for best.
+- Changes: one row per operation in order, what it was and what it became, before and after in ms, the saving, and its quality against the quality baseline.
+- Quality: what the metric measures in plain words, what it is measured against (`rules/quality.md`), and production's own distance, with the seed spread beside it.
+- Then what is wrong or risky, and the user's open decisions.
 
 ## Summaries for others
 - Credit colleagues inside the text where their work is used (a plugin library and the gain it brought), never in a separate block.

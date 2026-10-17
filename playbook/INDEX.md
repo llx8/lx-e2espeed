@@ -44,7 +44,7 @@ Operator fusion, torch.compile, kernel selection, custom kernels.
 - [fused-attention-kernel](compute/fused-attention-kernel.md): custom attention kernel dominates → 1.45x to 2.86x per shape | ✓2 ✗0
 - [token-reuse-diffusion](compute/token-reuse-diffusion.md): image tokens dominate DiT steps → 2-5% at PSNR 27 dB; research only | ✓0 ✗1
 - [torch-compile](compute/torch-compile.md): eager stages, no mature backend → ~1% | ✓0 ✗1
-- [engine-difference-triage](compute/engine-difference-triage.md): engine output off beyond the agreed level → one node or subgraph isolated | ✓1 ✗0
+- [engine-difference-triage](compute/engine-difference-triage.md): engine output off beyond the agreed level → one node or subgraph isolated | ✓2 ✗0
 - [native-groupnorm-rewrite](compute/native-groupnorm-rewrite.md): InstanceNorm export pattern blocks fusion → -15%, FP16 noise | ✓1 ✗0
 
 ## memory
