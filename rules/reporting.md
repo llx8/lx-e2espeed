@@ -22,6 +22,8 @@ The user decides from your replies, not from the files. Most corrections in the 
 - FP32 means the framework's default (TensorRT without the FP16 flag, TF32 on; PyTorch's defaults): test that one variant unless the user names another.
 - When saying where steps run (CPU or GPU), say which data each step reads and writes: a CPU step on metadata otherwise reads as the data going back to the CPU.
 - About the next phase, say what you will propose and that the user picks.
+- Every conclusion comes from an experiment run for it, with enough data to carry it: that a change affects quality or not, is faster or not, that a layer is sensitive. Never from reasoning, an older number read another way, or an expectation; until it is measured, say it is not measured (the user, 2026-10-18, after a revert called harmless to quality measured worse on the production GPU).
+- Never predict an experiment's outcome in place of running it: when the user orders an experiment, start it, and give no verdict on how it will turn out (the same day, after an ordered precision ladder was answered with "FP16 will likely fail" and not started).
 - When a report lacks a number, measure it with the existing tools on the current tree before reporting, never offer an estimate or ask whether to measure (the user, 2026-10-11: "measure what is missing first"). A request for the report covers that measurement; changing code, or a run beyond the bench time budget in PROJECT.md, still needs the go-ahead.
 
 ## Results

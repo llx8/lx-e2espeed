@@ -5,6 +5,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-18: conclusions only from experiments
+- rules/reporting.md, Answering: every conclusion (quality affected or not, faster or not, a layer sensitive) comes from an experiment with enough data, never from reasoning or an older number reread; an ordered experiment is started, not predicted.
+  Why: the user, after a change was called harmless to quality from an older measurement and then measured worse on the production GPU, and after an ordered precision ladder was answered with a prediction instead of being run.
 ## 2026-10-18: a branch lx-dev before any change
 - rules/naming.md, Branch: create `lx-dev` in the project repo and every linked repo before any change, record it in PROJECT.md (Working branch), merge back only when the work is done; onboarding.md points there, wrap-up.md merges `lx-dev`.
   Why: the user, after the kept chain was committed on the checked-out production branches; the commits had to be moved to `lx-dev` and those branches reset to origin.
@@ -93,7 +96,4 @@ Newest first. One entry per change to rules, templates, hooks, or the playbook s
 - The research stage (the user, 2026-10-10, and on 2026-10-12: try it, and what conflicts may change, but only in one named project): a self-iteration run of research trials that change the method itself (a paper's formula, modified, or one's own), only where PROJECT.md has a `- Research stage:` line in the user's words. There the hard rules on weights, architecture, and the accuracy standard give way as that line says; quality is judged by the metric it names beside speed; adoption needs the user's acceptance, recorded in DECISIONS.md. CLAUDE.md's hard rule points to it (CLAUDE.md trimmed elsewhere to stay under 6,000 bytes).
 - The user confirmed that every project always runs on the latest rules (the shared directory), so nothing pins a project to a rules commit.
 
-## 2026-10-12: two image-service defaults set by the user
-- Asked about the two points the projects had answered differently, the user decided: every service image starts the MPS daemon by default, and inputs NVJPG does not take fail fast, never going to the original decoder. image-service, dataflow (and jpeg-codec.md), mps-hang, delivery, the gpu-jpeg-decode card, and onboarding step 3 state them as defaults instead of questions.
-
-Older entries: `git show b80bc70:CHANGELOG.md` (the 2026-10-12 image-service skills entry), `git show 8349fc9:CHANGELOG.md` (the 2026-10-12 image-service skill entry), `git show 7ad8226:CHANGELOG.md` (the 2026-10-12 image-service cards, plugin skill, and private terms entries), `git show 9d63afd:CHANGELOG.md` (the 2026-10-12 workspace and reporting entries), `git show 48f36d7:CHANGELOG.md` (from 2026-10-12, one shared rules directory) and `git show e5521f1:CHANGELOG.md` (2026-10-11 and before).
+Older entries: `git show e6b8713:CHANGELOG.md` (the 2026-10-12 image-service defaults entry), `git show b80bc70:CHANGELOG.md` (the 2026-10-12 image-service skills entry), `git show 8349fc9:CHANGELOG.md` (the 2026-10-12 image-service skill entry), `git show 7ad8226:CHANGELOG.md` (the 2026-10-12 image-service cards, plugin skill, and private terms entries), `git show 9d63afd:CHANGELOG.md` (the 2026-10-12 workspace and reporting entries), `git show 48f36d7:CHANGELOG.md` (from 2026-10-12, one shared rules directory) and `git show e5521f1:CHANGELOG.md` (2026-10-11 and before).
