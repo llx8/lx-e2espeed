@@ -49,3 +49,8 @@ When templates/work-skeleton changed after the `- Rules synced:` commit (the Ses
 - lx-work, the closing commit of each experiment, kept or dropped: `exp-003: cuda graph for decode (kept, latency -18%)`, `exp-004: pinned host memory (dropped, inside noise)`; commits while it runs: `exp-003: plan (running)`. Trials: `trial-004: cuda graph for decode (parked, -18%)`. Other commits: `baseline: ...`, `tools: ...`, `docs: ...`.
 - lx-e2espeed: `rules: ...`, `card(host): add cuda-graph`, `templates: ...`, `hooks: ...`.
 - Commits delivered to the project follow the project's own conventions.
+
+## Branch
+- Before any change to a project repo or a linked repo, create `lx-dev` from its checked-out branch and switch to it: experiments, their commits, and the baseline commit all live there. The user's standing request (2026-10-18), so a hand-over covers it; an existing `lx-dev`, or the user's own uncommitted changes, go to the user first.
+- Record `- Working branch:` in PROJECT.md: `lx-dev`, and the branch and commit each repo's `lx-dev` came from.
+- `lx-dev` merges back into the branch it came from only when the work is done, with the user's go-ahead (`rules/wrap-up.md`); a dependency file then pins the merge, not `lx-dev`.

@@ -15,8 +15,9 @@ Discussed onboarding: two steps, each started once the user says so. Copy this l
 
 ## 1. Set up and read
 Setup:
-- If the project is not a git repo, ask the user (a hand-over already covers it). With their okay, run `git init` and commit the code as delivered; exp.sh needs a baseline commit, and nothing is pushed.
-- `lx-e2espeed/setup.sh project`, run from the project root on a hand-over or the user's word, starts the rules there: it excludes lx-work/ from the repo, creates it from `templates/work-skeleton/` as a git repo, and registers the project for the checker's private terms and the workspace list. Until lx-work/ exists the SessionStart hook injects nothing.
+- Not a git repo: ask the user (a hand-over covers it), `git init` and commit the code as delivered; exp.sh needs a baseline commit; nothing is pushed.
+- First create `lx-dev` in each repo (`rules/naming.md`).
+- `lx-e2espeed/setup.sh project`, run from the project root on a hand-over or the user's word, starts the rules: it excludes lx-work/ from the repo, creates it from `templates/work-skeleton/` as a git repo, and registers the project for the checker's private terms and the workspace list. Until lx-work/ exists the SessionStart hook injects nothing.
 - The rest of lx-work follows the layout in `rules/naming.md`.
 
 Read the project:
