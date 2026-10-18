@@ -46,12 +46,11 @@ Stage times, production against the optimized version and each operation's effec
 - Inputs whose paths differ only in decoding share the table; the other decoder takes one row under it.
 
 ## Project report
-The end of a pass or a milestone, and the first answer to "how does it run". The user asked these one by one after a pass report that listed only items (2026-10-17); give them unasked, each short.
-- Input and output: what the service receives (formats, sizes) and returns, and what the caller does with it.
-- The path, one row per stage on each side (service, algorithm): what it does, where it runs and on which data, in production and in best. Decoding names its decoder (hardware, GPU, CPU library); the model names itself in a sentence (architecture, task), its engine, and precision.
-- Speed, changes, and quality: the stage table (Stage times above) for the main scenario.
-- Quality in words under it: what the metric measures and what it is measured against (`rules/quality.md`).
-- Then what is wrong or risky, and the user's open decisions.
+The end of a pass or a milestone, the first answer to "how does it run", and whenever the user asks for a report on a project (the user, 2026-10-18: use this table to report a project). The stage table (Stage times above) is the report:
+- One or two lines above it: what the service receives and returns, and the model in a sentence (architecture, task, engine, precision).
+- The stage table for the main scenario, both versions measured now; its rows are the path, and the decode row names its decoder.
+- Its two or three lines underneath, including what the quality metric measures and what it is measured against (`rules/quality.md`).
+- Then what is wrong or risky, and the user's open decisions, short.
 
 ## Summaries for others
 - Credit colleagues inside the text where their work is used (a plugin library and the gain it brought), never in a separate block.
