@@ -35,7 +35,8 @@ The user decides from your replies, not from the files. Most corrections in the 
 
 ## Stage times
 Every stage breakdown, in a report or on request, takes the user's layout (2026-10-18, after a table sorted by time whose "inference" row was an unmeasured remainder):
-- Five layers in path order: service pre-processing, algorithm pre-processing, inference, algorithm post-processing, service post-processing. Each layer's total, then one row per operation under it saying what it does.
+- Five layers in path order: service pre-processing, algorithm pre-processing, inference, algorithm post-processing, service post-processing.
+- One table, four columns: layer, layer time (share of the total), operation (what it does), time. The layer and its time only on the layer's first row, its other operations below with those cells empty; a bold last row with the stage-mode total and the normal end-to-end median. Not indented rows, not one table per layer (the user approved this form after both, 2026-10-18).
 - Every row is measured (`rules/benchmarking.md`, Time breakdown), none is a remainder; give the stage-mode total and the normal end-to-end median beside it.
 - Measure the current tree; never show an older version's stages, even marked stale.
 - Inputs whose paths differ only in decoding share one table; give the other decoder's row apart.
