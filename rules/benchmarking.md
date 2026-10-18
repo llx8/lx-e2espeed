@@ -30,6 +30,7 @@ Measure it on the baseline commit during onboarding, again after gains that chan
 Give the bench a stage mode that times each step of the MAP.md path, synchronizing at every step boundary.
 Use it only for the breakdown: the extra syncs change the end-to-end number, so headline numbers always come from the normal mode.
 Wrap callables with timers rather than editing project code. Steps written inline cannot be wrapped: split that remainder with a function-level CPU profiler (cProfile, py-spy) and say which numbers came from which.
+Leave no remainder: wrap the engine call and each layer's entry function too. A wrapped function counts only its own lines (the bench subtracts the stages nested in it), so the stages add up to the total and "other" is the adapter's call alone. A native object whose method refuses a wrapper gets the bench's pass-through proxy. Name stages `<layer>.<operation>` after the layers in `rules/reporting.md`, Stage times.
 
 ## GPU state
 - Record SM clock, temperature, and power during the run: `nvidia-smi --query-gpu=clocks.sm,temperature.gpu,power.draw --format=csv -lms 500`.

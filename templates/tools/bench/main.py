@@ -30,19 +30,39 @@ import adapter.pipeline as adapter  # noqa: E402
 
 class Timed:
     """Callable proxy that adds its wall time to totals[stage], synchronizing the GPU around it when the
-    adapter says the stage runs asynchronous GPU work; other attributes pass through."""
+    adapter says the stage runs asynchronous GPU work; other attributes pass through. A stage called inside
+    another counts only in itself: the enclosing stage gets its own time, so the stages add up to the total."""
+
+    active = []  # one [time of nested stages] per Timed call in progress, innermost last
 
     def __init__(self, inner, totals, stage):
         self._inner, self._totals, self._stage = inner, totals, stage
 
     def __call__(self, *args, **kwargs):
         adapter.sync()
+        nested = [0.0]
+        Timed.active.append(nested)
         t0 = time.perf_counter()
         try:
             return self._inner(*args, **kwargs)
         finally:
             adapter.sync()
-            self._totals[self._stage] += time.perf_counter() - t0
+            elapsed = time.perf_counter() - t0
+            Timed.active.pop()
+            self._totals[self._stage] += elapsed - nested[0]
+            if Timed.active:
+                Timed.active[-1][0] += elapsed
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+
+class Front:
+    """Stands in for a native object whose methods cannot be replaced; the wrapped method is set on it and every
+    other attribute passes through."""
+
+    def __init__(self, inner):
+        self._inner = inner
 
     def __getattr__(self, name):
         return getattr(self._inner, name)
@@ -53,10 +73,20 @@ def wrap_stages(pipeline):
     for stage, paths in adapter.STAGES.items():
         for path in paths:
             *parents, attr = path.split(".")
-            owner = pipeline
+            chain = [pipeline]
             for part in parents:
-                owner = getattr(owner, part)
-            setattr(owner, attr, Timed(getattr(owner, attr), totals, stage))
+                chain.append(getattr(chain[-1], part))
+            owner = chain[-1]
+            timed = Timed(getattr(owner, attr), totals, stage)
+            try:
+                setattr(owner, attr, timed)
+            except AttributeError:
+                if len(chain) < 2:
+                    raise
+                if not isinstance(owner, Front):
+                    owner = Front(owner)
+                    setattr(chain[-2], parents[-1], owner)
+                setattr(owner, attr, timed)
     return totals
 
 

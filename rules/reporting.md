@@ -33,6 +33,13 @@ The user decides from your replies, not from the files. Most corrections in the 
 - When latency depends on the input size per request (objects per image, sequence length), split the scenario into size groups if the user asks, each with median, P90, and P99, then give the whole scenario.
 - One point per table: no cells packed with slashes, and an input that dominates a column is shown apart.
 
+## Stage times
+Every stage breakdown, in a report or on request, takes the user's layout (2026-10-18, after a table sorted by time whose "inference" row was an unmeasured remainder):
+- Five layers in path order: service pre-processing, algorithm pre-processing, inference, algorithm post-processing, service post-processing. Each layer's total, then one row per operation under it saying what it does.
+- Every row is measured (`rules/benchmarking.md`, Time breakdown), none is a remainder; give the stage-mode total and the normal end-to-end median beside it.
+- Measure the current tree; never show an older version's stages, even marked stale.
+- Inputs whose paths differ only in decoding share one table; give the other decoder's row apart.
+
 ## Project report
 The end of a pass or a milestone, and the first answer to "how does it run". The user asked these one by one after a pass report that listed only items (2026-10-17); give them unasked, each short.
 - Input and output: what the service receives (formats, sizes) and returns, and what the caller does with it.
