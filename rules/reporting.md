@@ -34,20 +34,23 @@ The user decides from your replies, not from the files. Most corrections in the 
 - One point per table: no cells packed with slashes, and an input that dominates a column is shown apart.
 
 ## Stage times
-Every stage breakdown, in a report or on request, takes the user's layout (2026-10-18, after a table sorted by time whose "inference" row was an unmeasured remainder):
-- Five layers in path order: service pre-processing, algorithm pre-processing, inference, algorithm post-processing, service post-processing.
-- One table, four columns: layer, layer time (share of the total), operation (what it does), time. The layer and its time only on the layer's first row, its other operations below with those cells empty; a bold last row with the stage-mode total and the normal end-to-end median. Not indented rows, not one table per layer (the user approved this form after both, 2026-10-18).
-- Every row is measured (`rules/benchmarking.md`, Time breakdown), none is a remainder; give the stage-mode total and the normal end-to-end median beside it.
-- Measure the current tree; never show an older version's stages, even marked stale.
-- Inputs whose paths differ only in decoding share one table; give the other decoder's row apart.
+Stage times, production against the optimized version and each operation's effect on the outputs, go in one table: the user's final form (2026-10-18). It replaced, in turn, a table sorted by time with an unmeasured "inference" remainder, indented rows, one table per layer, a seven-column table the terminal broke into a list, words like "slightly" or "better", and numbers from another version, machine, or image.
+- Six columns: layer with its time "production → optimized"; operation, a few words; production time; what was optimized, short phrases joined by semicolons, or "none"; optimized time; result change.
+- Result change: the distance to the quality baseline (`rules/quality.md`) at P50 over the image set, "before → after px", on a row whose change moves outputs; otherwise "0 px (unchanged code)" or "0 px (bitwise identical)". Numbers only, never "slight", "better", or "faster": the user judges.
+- Rows: the five layers in path order, service pre-processing, algorithm pre-processing, inference, algorithm post-processing, service post-processing; a layer's name and time only on its first row.
+- Then a bold total row with the normal end-to-end median only, and bold quality rows P50, P90, P99 of the distance to the quality baseline, whose last cell is the quality baseline's own seed spread at that percentile. The "what was optimized" cell stays empty on those rows.
+- Keep it narrow: the terminal turns a table that does not fit into key-value blocks. Short cells, six columns at most; two or three lines under the table say the GPU, images, what px measures, the reference seed, and which rows were measured now or come from earlier bitwise checks.
+- Measure both versions now, on one GPU, each in its own deployment image and settings (driver capabilities, decoder, engine built there), stage mode timing every operation (`rules/benchmarking.md`, Time breakdown). Never show numbers from an older version, another machine, or another environment, even marked.
+- A row's result change comes from an intermediate state that changes only that row (production with only the decoder change, the optimized tree with one change reverted), against a reference seed other than any fixed random draw in the optimized model. A row bundling changes gives their sum.
+- The image set: at least 100 production-like images; with 100, P99 is about one image's value, so say so before drawing on it.
+- Inputs whose paths differ only in decoding share the table; the other decoder takes one row under it.
 
 ## Project report
 The end of a pass or a milestone, and the first answer to "how does it run". The user asked these one by one after a pass report that listed only items (2026-10-17); give them unasked, each short.
 - Input and output: what the service receives (formats, sizes) and returns, and what the caller does with it.
 - The path, one row per stage on each side (service, algorithm): what it does, where it runs and on which data, in production and in best. Decoding names its decoder (hardware, GPU, CPU library); the model names itself in a sentence (architecture, task), its engine, and precision.
-- Speed: production's end to end and per stage, each input format apart (JPEG, PNG), then the same for best.
-- Changes: one row per operation in order, what it was and what it became, before and after in ms, the saving, and its quality against the quality baseline.
-- Quality: what the metric measures in plain words, what it is measured against (`rules/quality.md`), and production's own distance, with the seed spread beside it.
+- Speed, changes, and quality: the stage table (Stage times above) for the main scenario.
+- Quality in words under it: what the metric measures and what it is measured against (`rules/quality.md`).
 - Then what is wrong or risky, and the user's open decisions.
 
 ## Summaries for others
