@@ -5,6 +5,7 @@ docs made from templates must keep the template's headings and fields, and MAP.m
 describe the project code it points to.
 """
 import re
+import subprocess
 
 PHASES = {"onboarding", "optimizing", "wrap-up", "done"}
 # Experiments land (kept, later delivered in the user's commits) or not; trials of a self-iteration run are parked
@@ -30,6 +31,9 @@ PATH_TOKEN = re.compile(r"`([\w./-]+\.[A-Za-z]\w*)")  # a backticked file path, 
 MEASURED_ON = re.compile(r"baseline commit ([0-9a-f]{7,40})(?: \+ exp up to (\d{3}))?")
 PATCH_FILE = re.compile(r"^diff --git a/(\S+) b/(\S+)$", re.M)
 LINKED_PATCH = re.compile(r"change\.([A-Za-z0-9_][A-Za-z0-9_.-]*)\.patch")  # exp.sh: the change to linked repo <dir>/
+DOCKERFILE = re.compile(r"(?:.*\.)?Dockerfile(?:\.[\w.-]+)?")
+MPS_START = "nvidia-cuda-mps-control"
+SCRIPT = re.compile(r"[\w./-]+\.(?:sh|py)\b")  # a script an ENTRYPOINT or CMD line runs
 
 
 def field(text, name):
@@ -90,6 +94,8 @@ def check_work_layout(root, rep, rules_root):
                                 rules_root / "templates" / "exp-note.md")
     check_tools(root, rep)
     check_map(root, rep, phase, field(project, "Baseline commit") or "", running)
+    if phase in PHASES - {"onboarding"}:
+        check_mps(root.parent, rep, field(project, "Without MPS") or "")
 
 
 def check_experiments(root, rep, status_updated, note_template):
@@ -153,6 +159,48 @@ def check_tools(root, rep):
             rep.error(f"tools/{folder.name}/", "missing entry file main.*")
         if f"{folder.name}/" not in listed:
             rep.error(f"tools/{folder.name}/", "not listed in tools/INDEX.md")
+
+
+def tracked(top):
+    """Files git tracks in top (the project repo or a linked one); only those are delivered."""
+    try:
+        out = subprocess.run(["git", "-C", str(top), "ls-files", "-z"], capture_output=True, timeout=30).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    return [top / rel for rel in out.decode("utf-8", "replace").split("\0") if rel and "lx-work" not in rel.split("/")]
+
+
+def uncommented(path):
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+
+
+def check_mps(project, rep, exempt):
+    """Every Dockerfile of the project and its linked repos starts the MPS daemon, itself or in a script its
+    ENTRYPOINT or CMD runs (rules/onboarding.md, Setup). Delivered images without it were found by load tests
+    several times (the user, 2026-10-20). PROJECT.md's '- Without MPS:' names the ones the user exempted."""
+    files = tracked(project)
+    for top in sorted(p for p in project.iterdir() if p.is_symlink() and p.is_dir()):
+        files += tracked(top)
+    by_name = {}
+    for path in files:
+        by_name.setdefault(path.name, []).append(path)
+    for path in files:
+        if not DOCKERFILE.fullmatch(path.name):
+            continue
+        rel = str(path.relative_to(project))
+        if rel in exempt:
+            continue
+        text = uncommented(path)
+        starts = [m for line in text.splitlines() if line.lstrip().upper().startswith(("ENTRYPOINT", "CMD"))
+                  for m in SCRIPT.findall(line)]
+        scripts = [p for s in starts for p in by_name.get(s.rsplit("/", 1)[-1], [])]
+        if MPS_START not in text and not any(MPS_START in uncommented(p) for p in scripts):
+            rep.error(rel, f"does not start the MPS daemon ({MPS_START} -d before the service, on by default); "
+                           "add it as its own experiment (exp.sh) once any running one ends: rules/onboarding.md, Setup")
 
 
 def defines(code, name, python):

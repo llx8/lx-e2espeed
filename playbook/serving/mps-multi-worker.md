@@ -12,7 +12,7 @@ Throughput grows far less than the worker count and P50 rises with it: without M
 
 ## Technique
 Start the MPS control daemon before the workers (on by default with a switch to turn it off) and give every worker the same `CUDA_MPS_PIPE_DIRECTORY`; check in the MPS control log that each worker's PID connects as a client.
-Every project's Dockerfile does this from its first change, whatever production's image does (the user, 2026-10-20). Start it in the entrypoint, not only in CMD, so a command that replaces CMD (`templates/tools/run-image/`) runs under it too; a Dockerfile that already starts it needs nothing.
+Every project's Dockerfile does this from its first change, whatever production's image does (the user, 2026-10-20: merged images without it were caught by operations' load tests several times). The checker fails a project whose tracked Dockerfile starts no daemon, itself or in a script its ENTRYPOINT or CMD runs; one the user exempts is named in PROJECT.md as `- Without MPS: <path> (<reason>)`.
 Before delivery, run the image's CMD in a container and check that an MPS server starts: one delivered image had no daemon line and its load test stayed flat from 2 workers. Keep the pipe directory path short: it is a Unix socket, and a path over 108 bytes makes the daemon exit at once. Compare every response with a single-process run without MPS.
 
 ## Effect

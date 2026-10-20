@@ -17,7 +17,7 @@ Discussed onboarding: two steps, each started once the user says so. Copy this l
 Setup:
 - Not a git repo: ask the user (a hand-over covers it), `git init` and commit the code as delivered; exp.sh needs a baseline commit; nothing is pushed.
 - First create `lx-dev` in each repo (`rules/naming.md`).
-- Turn MPS on in the project's Dockerfile (`playbook/serving/mps-multi-worker.md`), the first change (`exp.sh`, kept at any speed); all later work runs under MPS.
+- Turn MPS on in the project's Dockerfile (`playbook/serving/mps-multi-worker.md`), the first change (`exp.sh`, kept at any speed); after onboarding the checker fails a project without it.
 - `lx-e2espeed/setup.sh project`, run from the project root on a hand-over or the user's word, starts the rules: it excludes lx-work/ from the repo, creates it from `templates/work-skeleton/` as a git repo, and registers the project for the checker's private terms and the workspace list. Until lx-work/ exists the SessionStart hook injects nothing.
 - The rest of lx-work follows the layout in `rules/naming.md`.
 

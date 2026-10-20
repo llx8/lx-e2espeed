@@ -99,10 +99,22 @@ def build_rules(base):
     return root
 
 
+def track(project, rel, text):
+    """Write a project file and add it to the project's git index, as check_mps reads only tracked files."""
+    write(project / rel, text)
+    subprocess.run(["git", "-C", str(project), "add", rel], check=True, capture_output=True)
+
+
+DOCKERFILE = 'FROM runtime\nCOPY . /app\nCMD ["bash", "/app/start.sh"]\n'
+
+
 def build_work(base):
     project = base / PROJECT
     write(project / "app.py", APP)
     write(project / "lib" / "core.py", LIB)
+    subprocess.run(["git", "init", "-q", str(project)], check=True)
+    track(project, "Dockerfile", DOCKERFILE)  # MPS started in the script its CMD runs: passes
+    track(project, "start.sh", "nvidia-cuda-mps-control -d\nexec python app.py\n")
     work = project / "lx-work"
     shutil.copytree(RULES / "templates" / "work-skeleton", work)
     fill(work / "STATUS.md", {"Phase": "optimizing", "Updated": "2026-09-30"})
@@ -205,6 +217,11 @@ PROBES = [
      "only one experiment or trial runs at a time"),
     ("tool without main", "work", lambda w: (w / "tools" / "bench").mkdir(), "missing entry file main.*"),
     ("tool not listed", "work", lambda w: write(w / "tools" / "bench" / "main.py", ""), "not listed in tools/INDEX.md"),
+    ("Dockerfile without MPS", "work", lambda w: track(w.parent, "start.sh", "exec python app.py\n"),
+     "Dockerfile: does not start the MPS daemon"),
+    ("MPS only in a comment", "work", lambda w: track(w.parent, "deploy/Dockerfile",
+                                                      '# nvidia-cuda-mps-control -d\nFROM runtime\nCMD ["python", "app.py"]\n'),
+     "deploy/Dockerfile: does not start the MPS daemon"),
     # check_work.py: MAP.md
     ("pointer to a missing file", "work", lambda w: append(w / "MAP.md", "- `gone.py:run`\n"), "gone.py is not in the project"),
     ("pointer to a missing function", "work", lambda w: append(w / "MAP.md", "- `app.py:Pipe.fly`\n"), "does not define fly"),

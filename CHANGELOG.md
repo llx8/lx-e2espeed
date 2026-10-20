@@ -6,8 +6,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 ## 2026-10-20: MPS on in every project's Dockerfile from the start
-- rules/onboarding.md, Setup: right after `lx-dev`, turn MPS on in the project's Dockerfile, the first change (through `exp.sh`, kept at any speed), and work under MPS from then on; the Deployment bullet no longer just assumes production's MPS. Card `mps-multi-worker`: every project's Dockerfile starts the daemon, in the entrypoint so a command replacing CMD (run-image) runs under it too. delivery.md item 6 and standard-pass.md follow.
-  Why: the user (2026-10-20), so every project is measured the way production runs it; MPS lives in the image, so it is scoped to its container and touches no other process.
+- rules/onboarding.md, Setup: right after `lx-dev`, turn MPS on in the project's Dockerfile, the first change (through `exp.sh`, kept at any speed); the Deployment bullet no longer just assumes production's MPS. Card `mps-multi-worker`, delivery.md item 6, and standard-pass.md follow. Local runs need no MPS (the user).
+- hooks/check_work.py `check_mps`: after onboarding, every git-tracked Dockerfile of the project and its linked repos must start `nvidia-cuda-mps-control`, itself or in a script its ENTRYPOINT or CMD runs (comments do not count); PROJECT.md `- Without MPS:` names the user's exemptions. Two probes in test_checks.py; the clean fixture is now a git repo with a Dockerfile that passes.
+  Why: the user (2026-10-20): merged projects without MPS in the Dockerfile were caught by operations' load tests several times, although delivery.md item 6 asked for it; a written rule was not enough. On the first run it failed five projects in optimizing.
 ## 2026-10-18: conclusions only from experiments
 - rules/reporting.md, Answering: every conclusion (quality affected or not, faster or not, a layer sensitive) comes from an experiment with enough data, never from reasoning or an older number reread; an ordered experiment is started, not predicted.
   Why: the user, after a change was called harmless to quality from an older measurement and then measured worse on the production GPU, and after an ordered precision ladder was answered with a prediction instead of being run.
