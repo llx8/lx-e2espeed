@@ -17,6 +17,7 @@ Discussed onboarding: two steps, each started once the user says so. Copy this l
 Setup:
 - Not a git repo: ask the user (a hand-over covers it), `git init` and commit the code as delivered; exp.sh needs a baseline commit; nothing is pushed.
 - First create `lx-dev` in each repo (`rules/naming.md`).
+- Turn MPS on in the project's Dockerfile (`playbook/serving/mps-multi-worker.md`), the first change (`exp.sh`, kept at any speed); all later work runs under MPS.
 - `lx-e2espeed/setup.sh project`, run from the project root on a hand-over or the user's word, starts the rules: it excludes lx-work/ from the repo, creates it from `templates/work-skeleton/` as a git repo, and registers the project for the checker's private terms and the workspace list. Until lx-work/ exists the SessionStart hook injects nothing.
 - The rest of lx-work follows the layout in `rules/naming.md`.
 
@@ -51,7 +52,7 @@ Record the agreed parameters in PROJECT.md, each decision with its reason in DEC
 - Accuracy standard (`rules/quality.md`): the identity reference (the baseline commit's own outputs by default), the quality baseline (the network in FP32) and its metric, the thresholds of levels L0 to L3 or none, and the accepted level.
 - Contracts: the public interface downstream code relies on (argument order, return structure, channel order, sizes), the pre/post tensor contract (dtype, range, layout, color order, interpolation, rounding), and who consumes the output. Changing any of them needs the downstream impact stated first.
 - Deployment: how production runs the code (image or environment and versions, how it loads the repo and resolves weights, workers per GPU, MPS), the maximum input it accepts, and what a delivery must include (CI steps that rebuild engines, dependency locks, runtime libraries). Align the local environment with the production versions where possible.
-  MPS is on in the user's production (the image starts its daemon): assume it unless the user says otherwise, so the MPS hazard in `playbook/serving/mps-grid-barrier.md` applies from the first experiment. A service repo that pins a separate algorithm repo in a dependency file ends its delivery with a merge and a new pin (`rules/wrap-up.md`, step 1).
+  A service repo that pins a separate algorithm repo in a dependency file ends its delivery with a merge and a new pin (`rules/wrap-up.md`, step 1).
 - Done when: the target, a point of diminishing returns (for example three experiments in a row inside the noise floor), or a deadline.
 - Target hardware: where the model runs in production. If that is not this machine, gains here may not transfer; say so and agree how to confirm them.
 - Constraints: code that must not change, allowed dependencies, techniques the user rules out (for example pinned memory), and the private terms filled in provisionally in step 1: confirm them, and add any the user names.

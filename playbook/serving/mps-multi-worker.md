@@ -11,7 +11,8 @@ read_when: profiling shows the symptom below
 Throughput grows far less than the worker count and P50 rises with it: without MPS the workers' contexts take turns on the GPU (3 workers gave 1.4x to 2.0x of one).
 
 ## Technique
-Start the MPS control daemon before the workers (in the image's CMD, on by default with a switch to turn it off) and give every worker the same `CUDA_MPS_PIPE_DIRECTORY`; check in the MPS control log that each worker's PID connects as a client.
+Start the MPS control daemon before the workers (on by default with a switch to turn it off) and give every worker the same `CUDA_MPS_PIPE_DIRECTORY`; check in the MPS control log that each worker's PID connects as a client.
+Every project's Dockerfile does this from its first change, whatever production's image does (the user, 2026-10-20). Start it in the entrypoint, not only in CMD, so a command that replaces CMD (`templates/tools/run-image/`) runs under it too; a Dockerfile that already starts it needs nothing.
 Before delivery, run the image's CMD in a container and check that an MPS server starts: one delivered image had no daemon line and its load test stayed flat from 2 workers. Keep the pipe directory path short: it is a Unix socket, and a path over 108 bytes makes the daemon exit at once. Compare every response with a single-process run without MPS.
 
 ## Effect

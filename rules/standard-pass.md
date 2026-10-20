@@ -20,7 +20,7 @@ It is safe for the same reason as a self-iteration run: a change lands only when
   - Calibration data: none, so INT8 and FP8 are skipped. Scenarios and shapes: the repo's own test inputs or example requests, and the contract's maximum.
   - Extra inputs: when production-like data sits on this machine, candidates in `lx-work/local/inputs/` for the user to pick (Waiting), and a fixed random sample of about 100 for every change that moves outputs.
   - Quality metric: in the output's own units as the caller uses it (`rules/quality.md`), no thresholds until the user sets them.
-  - MPS and workers: MPS on, one worker, as `rules/onboarding.md` assumes. End time: none.
+  - MPS and workers: MPS on from the Dockerfile (`rules/onboarding.md`, Setup), one worker. End time: none.
 - Lands without asking (`exp.sh keep`): an item whose outputs are L0 against the frozen references, whose gain is beyond the noise floor (or less code at equal speed), and which changes no contract in PROJECT.md. L1 lands too when the project already runs that model as a built engine at that precision and the engine-noise tool measured the spread.
 - Everything else with a gain is parked (`exp.sh park`) with its level and what the user must decide. Numeric precision and `torch.compile` may be tried this way because they do not land, as in a self-iteration run.
 - Stays the user's, by parking or skipping, never by stopping: anything outside the catalog, a contract change, a dependency beyond the alignment `rules/onboarding.md` allows (Environment), a change to the baseline or the references, and any difference beyond L0.

@@ -13,7 +13,7 @@ Run the checks after code, accuracy, performance, and maximum-input validation p
 3. Self-contained. Delivered code imports nothing from `lx-work/`, `lx-e2espeed/`, sibling repositories, `/tmp`, or build directories; section 3 has the scans.
 4. The build path contains the change. An optimization that exists only in a local working tree, a symlinked copy, or an uncommitted export patch is not delivered. Check dependency locks, export scripts, and CI steps that rebuild engines, and name what must be committed or re-locked.
 5. Engines are not built in the request path. Check that engine, plugin, dtype, shape, and path mismatches fail fast at startup.
-6. Production defaults stay. What production's image sets up by default (the MPS daemon in its CMD, driver capabilities) is in the delivered image; a gap there blocks the handoff, never a backlog note.
+6. Production defaults stay. What production's image sets up by default (the MPS daemon, driver capabilities) is in the delivered image; a gap there blocks the handoff, never a backlog note. The delivered Dockerfile starts MPS whether or not production's did (`rules/onboarding.md`, Setup).
 
 ## When the deployment calls for it
 - Weight path contract: when production loads the algorithm repo as a subdirectory (for example from a service wrapper), every weight is referenced relative to the repo root and joined in code; test by starting the entry point from another directory. Section 1.
