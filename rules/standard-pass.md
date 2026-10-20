@@ -12,7 +12,7 @@ It is safe for the same reason as a self-iteration run: a change lands only when
 - The pass does not stop. Never end your turn for a question, a progress report, or a plan. The user, 2026-10-13: it must not run for a few minutes and then stop.
   - A question goes under "Waiting for the user" in STATUS.md, or in the trial's "Needs the user" column; take the default below and go on.
   - Progress goes into STATUS.md and lx-work commits: under "In progress", the line `- Run: standard pass, session <id>, item <n> of <N>`, with the id the SessionStart hook printed. When the user watches, add the short status lines of `rules/reporting.md`, without waiting for an answer.
-  - While that line names this session, the Stop hook refuses the end of the turn (at most 20 times in a row while STATUS.md is unchanged), so the pass cannot stop early. The ending steps replace the line; a session that resumes the pass puts its own id there first.
+  - While that line names this session, the Stop hook holds the turn as in a self-iteration run (`rules/self-iteration.md`, During the run).
   - It ends when every item is kept, parked, or skipped with a measured reason; at the end time the user gave; or when the environment breaks (the same infrastructure error twice). A permission prompt nobody is there to answer is the one other stop: check before the first command that the session runs the harness without them. The next session resumes from STATUS.md and the queue.
 - Starting the pass also covers what onboarding would ask about: `setup.sh project`, `git init` of a project that is no repo (nothing is pushed), excluding weights, and linking a sibling repo the project reads code from.
 - Decisions that are the user's are listed once, in the first status line, and defaulted at once. Each default goes into PROJECT.md and DECISIONS.md as `<value> (pass default, not discussed)`; an answer that arrives mid-pass applies from the next item.
@@ -20,7 +20,7 @@ It is safe for the same reason as a self-iteration run: a change lands only when
   - Calibration data: none, so INT8 and FP8 are skipped. Scenarios and shapes: the repo's own test inputs or example requests, and the contract's maximum.
   - Extra inputs: when production-like data sits on this machine, candidates in `lx-work/local/inputs/` for the user to pick (Waiting), and a fixed random sample of about 100 for every change that moves outputs.
   - Quality metric: in the output's own units as the caller uses it (`rules/quality.md`), no thresholds until the user sets them.
-  - MPS and workers: MPS on from the Dockerfile (`rules/onboarding.md`, Setup), one worker. End time: none.
+  - Workers: one. End time: none.
 - Lands without asking (`exp.sh keep`): an item whose outputs are L0 against the frozen references, whose gain is beyond the noise floor (or less code at equal speed), and which changes no contract in PROJECT.md. L1 lands too when the project already runs that model as a built engine at that precision and the engine-noise tool measured the spread.
 - Everything else with a gain is parked (`exp.sh park`) with its level and what the user must decide. Numeric precision and `torch.compile` may be tried this way because they do not land, as in a self-iteration run.
 - Stays the user's, by parking or skipping, never by stopping: anything outside the catalog, a contract change, a dependency beyond the alignment `rules/onboarding.md` allows (Environment), a change to the baseline or the references, and any difference beyond L0.

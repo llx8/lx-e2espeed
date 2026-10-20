@@ -38,7 +38,7 @@ Track the steps with this checklist in your reply:
 Cards go straight into lx-e2espeed, which every project shares, so the playbook you search is always the newest; edit and commit it as `rules/writing.md` says.
 For each kept experiment, and each dropped one that taught something:
 - Search playbook/INDEX.md for the same technique. If a card exists, update its effect range, conditions, and evidence instead of adding a card.
-- Each Evidence line is one data point, marked ✓ (worked) or ✗ (failed); a rerun of an earlier project counts as its own line. Update the index line's `✓N ✗M` to match; the checker recounts it.
+- Each Evidence line is one data point, marked ✓ (worked) or ✗ (failed); a rerun of an earlier project counts as its own line. Update the index line's `✓N ✗M` to match.
 - Otherwise create a card from `templates/card.md` in the category where the time was spent, and add its line to the index.
 - Scrub everything project-specific: project, company, model, and file names, paths, project code, business details. Describe the model generically, for example "decoder-only transformer, batch 1".
 - A failure only shows the technique did not fit this project. Record it in the card's "Does not apply" as the condition that made it fail (bottleneck, model type, shapes, hardware), and in Evidence as one more data point. Never delete a technique for failing once.

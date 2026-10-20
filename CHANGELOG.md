@@ -5,6 +5,8 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-20: prose the checker or another doc already holds, removed
+- MPS: dropped from delivery.md item 6, standard-pass defaults, and the mps-multi-worker card's policy and pre-delivery check (the checker and the load test hold them; onboarding Setup stays the one instruction); the `- Without MPS:` exemption moved into the checker's error message. standard-pass points to self-iteration for the Stop hook instead of restating it; wrap-up drops "the checker recounts it" (playbook/INDEX.md says so). The untracked skills/ leftover (two .pyc files) removed. Why: the user asked for a cleanup of what is said twice.
 ## 2026-10-20: load test before the merge
 - rules/wrap-up.md, Deliver: before any merge, build the delivered and the baseline images as CI does and load-test both on the RTX 5090 (free GPU) with new templates/tools/load-test/: concurrency levels 1, workers, 2x workers; throughput, P50/P99, errors, mismatches against concurrency 1; GPU utilization, memory, power, SM clock; container cores and RAM, busiest process and host core; MPS clients per worker. Pass criteria and the saturating side are in the rule; a failure blocks the merge.
   Why: the user, after operations' load tests kept finding what single-request benches miss (no MPS); L20 is shared, so 5090 only. The sampler was checked on cgroup v1 here with a CPU-bound container; the first full run is at the next wrap-up.

@@ -200,7 +200,8 @@ def check_mps(project, rep, exempt):
         scripts = [p for s in starts for p in by_name.get(s.rsplit("/", 1)[-1], [])]
         if MPS_START not in text and not any(MPS_START in uncommented(p) for p in scripts):
             rep.error(rel, f"does not start the MPS daemon ({MPS_START} -d before the service, on by default); "
-                           "add it as its own experiment (exp.sh) once any running one ends: rules/onboarding.md, Setup")
+                           "add it as its own experiment (exp.sh) once any running one ends: rules/onboarding.md, Setup; "
+                           "one the user exempts goes in PROJECT.md as '- Without MPS: <path> (<reason>)'")
 
 
 def defines(code, name, python):
