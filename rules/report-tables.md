@@ -19,8 +19,14 @@ Stage times, production against the optimized version with each operation's effe
 - Inputs whose paths differ only in decoding share the table; the other decoder takes one row under it.
 
 ## Project report
-At the end of a pass or a milestone, the first answer to "how does it run", and whenever the user asks for a report on a project. The stage table is the report:
-- One or two lines above it: what the service receives and returns, and the model in a sentence (architecture, task, engine, precision).
+At the end of a pass or a milestone, the first answer to "how does it run", and whenever the user asks for a report on a project. The user learns the project from it, so it opens with the brief, answered from MAP.md in this order (the user's order), a few short lines each, on the delivered version:
+1. What the service receives and what it returns.
+2. Service pre-processing, then algorithm pre-processing: the operations in order, with device, dtype, and shape.
+3. The model: its inputs and outputs (name, shape, dtype, meaning), its network structure, and its notable operations.
+4. The top kernels from Nsight Systems: the five largest by share of GPU time, each with its share and the operation it belongs to.
+5. Algorithm post-processing, then service post-processing, as in 2.
+
+Then:
 - The stage table for the main scenario, both versions measured now; the decode row names its decoder; its lines underneath say what the quality metric measures and against what.
 - Then what is wrong or risky, and the user's open decisions, short.
 

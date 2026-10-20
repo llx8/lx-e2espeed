@@ -55,7 +55,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 - Both warn about ignored files the experiment wrote (build outputs, caches): run.sh must rebuild them, and after a drop remove the ones it made, so they cannot change the next bench.
 - A gain inside the noise floor is not a gain; a small gain with much complexity may not be worth keeping; deleting code at equal speed is a win.
 - Fill Result and Conclusion in NOTE.md, and the numbers, level, and reason in exp/INDEX.md, from the A/B (the bench of the landed code only confirms them). A dropped experiment says what was learned. A direction the user rules out goes in DECISIONS.md with the reason.
-- If the kept patch changed a file MAP.md points to, re-run the stage timing on best and update the breakdown, hot spots, and `- Measured on:`; the checker holds the lx-work commit until then.
+- If the kept patch changed a file MAP.md points to, re-run the stage timing on best and update the breakdown, hot spots, top kernels, and `- Measured on:`; the checker holds the lx-work commit until then.
 - Update STATUS.md and BACKLOG.md and make the closing lx-work commit. Commit records as they are written, with "In progress" current: uncommitted records are lost to a crash.
 - If the done-when condition in PROJECT.md is met, suggest wrapping up.
 

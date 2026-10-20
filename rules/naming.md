@@ -28,7 +28,7 @@ Never use `new`, `final`, `old`, `v2`, `tmp2`, `test1`, or similar. Git keeps ve
     ├── DECISIONS.md   every decision with its date and reason
     ├── FEEDBACK.md    each correction the user made to how the work is done
     ├── BACKLOG.md     leads and known issues, each with evidence and where it went
-    ├── MAP.md         end-to-end path as path:function pointers, with each step's share of time
+    ├── MAP.md         contract, the five layers as pointers with time shares, model, top kernels
     ├── knowledge/     what reading and the user taught: callers, contract, deployment; INDEX.md lists the files
     ├── adapter/       onboarding: load the model, build inputs, run once end to end
     ├── tools/         one directory per tool with entry file main.*; tools/INDEX.md lists them
