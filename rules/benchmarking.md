@@ -24,7 +24,7 @@ An A/A run of the A/B mode (`bench --ab best`), at least three rounds: the large
 Measure it on the baseline commit at onboarding, again after a gain that changes latency by a large factor, and after any machine, driver, or environment change. A difference inside it is not a gain.
 
 ## Time breakdown
-The bench's stage mode times each step of the MAP.md path with a sync at every boundary; its extra syncs change the total, so headline numbers always come from the normal mode. Steps written inline are split with a CPU profiler (cProfile, py-spy), saying which numbers came from which. Stages are named `<layer>.<operation>` after the layers in `rules/report-tables.md`, Stage times.
+The bench's stage mode times each step of the MAP.md path with a sync at every boundary; its extra syncs change the total, so headline numbers always come from the normal mode. Steps written inline are split with a CPU profiler (cProfile, py-spy), saying which numbers came from which. Stages are named `<layer>.<operation>` after the layers in `rules/reporting.md`, Stage times.
 
 ## GPU state
 - Nothing else runs on the GPU while measuring; check `nvidia-smi` for other processes first, and before blaming an OOM on a change.

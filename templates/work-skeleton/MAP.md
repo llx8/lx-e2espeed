@@ -4,7 +4,7 @@ read_when: locating code on the end-to-end path, choosing where to look next, or
 ---
 # Code map
 
-Pointers only (`path:function`). Never paste code here; pasted code goes stale. The project brief (`rules/report-tables.md`) is answered from this file.
+Pointers only (`path:function`). Never paste code here; pasted code goes stale. The project brief (`rules/reporting.md`, Project report) is answered from this file.
 
 ## Service contract
 <What the service receives (request format, field, encoding, typical and maximum size) and returns (format, fields), in two lines; exact formats in knowledge/contract.md.>

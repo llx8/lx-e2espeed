@@ -18,8 +18,7 @@ One line per doc: when to read it. Read only what the step needs.
 - `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
 - `rules/benchmarking.md`: before an A/B or a noise-floor run, judging a difference level. Changing a measuring tool: `templates/tools/DESIGN.md`.
 - `rules/quality.md`: the references, grading outputs, an engine's precision.
-- `rules/reporting.md`: before reporting results, answering about the work, or explaining how something runs.
-- `rules/report-tables.md`: a project report, a stage-time table, a summary or weekly report for others.
+- `rules/reporting.md`: before reporting results or any table of numbers, a project report, a summary for others, answering about the work, or explaining how something runs.
 - `rules/delivery.md`: wrap-up steps 1 and 2, or whether something is ready to deliver.
 - `rules/naming.md`: the lx-work layout, its skeleton sync, and naming anything.
 - `rules/writing.md`: writing any doc in either lx repo, or changing lx-e2espeed.

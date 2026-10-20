@@ -49,7 +49,7 @@ onboarding or a standard pass → repeat (profile → propose → user picks →
 Read only what the step needs. Always: this file and `lx-work/STATUS.md`.
 
 - `rules/INDEX.md`: every rules and hardware doc, with when to read it. The hook names the phase's first doc.
-- `rules/reporting.md`: before reporting results or explaining work.
+- `rules/reporting.md`: before reporting results, any table of numbers, or explaining work; its table forms are fixed.
 - `playbook/INDEX.md`: what to try after profiling, ranked by past projects; open only matching cards.
 - Skills (`vendor/skills/`): `rules/experiment.md` says which; these rules win; output to `lx-work/local/`.
 - `templates/`: lx-work docs, cards, generic tools.
