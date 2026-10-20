@@ -23,10 +23,12 @@ Loading, decoding, tokenization, CPU-side preprocessing.
 ## host
 Python overhead, kernel launch overhead, unnecessary synchronization, CUDA Graphs.
 - [fused-preprocess-kernel](host/fused-preprocess-kernel.md): many small prep kernels → -0.3 ms/RoI, L0 | ✓1 ✗0
-- [one-wait-per-request](host/one-wait-per-request.md): many small synchronizes per request → -1.2 ms, cores freed under load | ✓1 ✗1
+- [one-wait-per-request](host/one-wait-per-request.md): many small synchronizes per request → -1.2 to -1.6 ms, cores freed under load | ✓2 ✗2
 - [engine-primary-context](host/engine-primary-context.md): engine in its own CUDA context → -0.25 ms, -428 MiB, L0 | ✓1 ✗0
 - [overlap-cpu-stages](host/overlap-cpu-stages.md): independent CPU stages back to back → -0.5 to -5 ms, L0 | ✓2 ✗0
-- [cuda-graph-trt](host/cuda-graph-trt.md): enqueue overhead → -0.07 to -1 ms, L0 | ✓8 ✗0
+- [cuda-graph-trt](host/cuda-graph-trt.md): enqueue overhead → -0.07 to -1 ms, L0; not with per-request shapes | ✓9 ✗1
+- [init-warm-up](host/init-warm-up.md): first request 1.5 s, warm 25 ms → first request a warm one + 2 ms, Init +1.7 s | ✓1 ✗0
+- [blocking-sync-wait](host/blocking-sync-wait.md): one spinning core per worker under load → CPU 599% to 114% at 6 workers, req/s equal, +0.08 ms single | ✓1 ✗0
 
 ## transfer
 Host-device copies, pinned memory, asynchronous copies, overlap.
@@ -46,6 +48,9 @@ Operator fusion, torch.compile, kernel selection, custom kernels.
 - [torch-compile](compute/torch-compile.md): eager stages, no mature backend → ~1% | ✓0 ✗1
 - [engine-difference-triage](compute/engine-difference-triage.md): engine output off beyond the agreed level → one node or subgraph isolated | ✓2 ✗0
 - [native-groupnorm-rewrite](compute/native-groupnorm-rewrite.md): InstanceNorm export pattern blocks fusion → -15%, FP16 noise | ✓1 ✗0
+- [engine-graph-rewrite](compute/engine-graph-rewrite.md): one op form on a slow TensorRT kernel → L20 engine -0.14 to -0.18 ms; 5090 gains reversed on the L20 | ✓1 ✗2
+- [iterative-solver-kernels](compute/iterative-solver-kernels.md): solver of thousands of tiny ops, GPU idle → solver 3.4 to 0.48 ms, request -32%, L1 | ✓4 ✗0
+- [tiny-batched-gemm-elementwise](compute/tiny-batched-gemm-elementwise.md): cuBLAS batched GEMMs in per-pixel math → -21% to -48% on the L20, L0-L1 | ✓2 ✗0
 
 ## memory
 Allocator behavior, fragmentation, buffer reuse.
@@ -55,7 +60,7 @@ Allocator behavior, fragmentation, buffer reuse.
 Batching, concurrency, scheduling, pipelining.
 - [mps-grid-barrier](serving/mps-grid-barrier.md): MPS workers hang → fixed | ✓2 ✗0
 - [mps-hang-forensics](serving/mps-hang-forensics.md): workers hung under MPS, no debugger attaches → root cause from one GPU coredump | ✓1 ✗0
-- [mps-multi-worker](serving/mps-multi-worker.md): throughput flat as workers grow → 3 workers 2.6-3.1x, 12 workers 3.5-7.2x, L0 | ✓6 ✗0
+- [mps-multi-worker](serving/mps-multi-worker.md): throughput flat as workers grow → 3 workers 2.6-3.1x, 12 workers 3.5-7.2x, L0 | ✓7 ✗0
 - [dynamic-batch-profiles](serving/dynamic-batch-profiles.md): one engine call per item → P99 -39%, L1 | ✓1 ✗0
 
 ## env
@@ -64,3 +69,4 @@ Driver and library versions, build flags, GPU settings.
 - [ship-prebuilt-engine](env/ship-prebuilt-engine.md): engine built at start or in CI → cold start about halved | ✓4 ✗0
 - [engine-build-variance](env/engine-build-variance.md): rebuilds differ in speed and outputs → identical or best of N | ✓3 ✗0
 - [trt-builder-level](env/trt-builder-level.md): prototype engine slower than production → -14% | ✓1 ✗0
+- [torch-export-onnx](env/torch-export-onnx.md): deprecated TorchScript exporter → speed equal, +390 MiB on the L20, L1 | ✓1 ✗1

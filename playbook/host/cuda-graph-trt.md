@@ -21,6 +21,7 @@ Static buffers and shapes; one graph per shape. The outputs live in the graph's 
 
 ## Does not apply
 - Engines with dynamic shapes per call; for a few batch sizes, capture one graph per size at Init (card `dynamic-batch-profiles`).
+- Input shapes that follow each request (61 aspect ratios in one service): the owner removed the per-shape graphs at +11.3 ms (L20) rather than capture on each new shape's first request (+37 ms) and keep a graph per shape.
 
 ## Evidence
 - ✓ 2026-09: image-to-guidance-map CNN service, B1 RoI 1024x1024, RTX 5090, TensorRT 11.3: FP32 engine one RoI -0.15 ms (2k) to -0.42 ms (two RoIs), L0; with an FP16 engine -0.13 to -0.31 ms.
@@ -31,3 +32,5 @@ Static buffers and shapes; one graph per shape. The outputs live in the graph's 
 - ✓ 2026-10: heatmap line-segmentation CNN service, the same GPU, normalize, engine, argmax, and readback in one graph: -0.37 ms (-14.6%), L0.
 - ✓ 2026-10: ViT image feature encoder service, FP16, the same GPU: -0.12 ms (-6.4%), L0.
 - ✓ 2026-10: two-model mask service, both engines in graphs: -0.78 ms (-4.2%), L0.
+- ✓ 2026-10: camera-calibration CNN-transformer service, FP16, RTX 5090, TensorRT 10.16, one graph per input shape: -0.65 ms (-2.5%), L0.
+- ✗ 2026-10: the same service, its engine and solver graphs per shape removed at the owner's request (shapes follow each request): L20 +11.3 ms, RTX 5090 +14.8 ms, L0; the solver later moved to Triton kernels (card `iterative-solver-kernels`).
