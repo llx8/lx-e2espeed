@@ -28,16 +28,22 @@ def check_entry(root, rep):
     for section in ENTRY_SECTIONS:
         if section not in lines:
             rep.error("CLAUDE.md", f"lost its '{section}' section")
+    # CLAUDE.md names the two maps; rules/INDEX.md names every rules and hardware doc, so docs can be added or
+    # split without growing the file injected every session.
+    rules_map = root / "rules" / "INDEX.md"
+    index = rules_map.read_text(encoding="utf-8") if rules_map.is_file() else ""
     for sub in ("rules", "hardware"):
         for path in sorted((root / sub).glob("*.md")):
             rel = f"{sub}/{path.name}"
-            if f"`{rel}`" not in entry:
-                rep.error(rel, "not listed in the CLAUDE.md doc map")
-    if "`playbook/INDEX.md`" not in entry:
-        rep.error("CLAUDE.md", "doc map must list `playbook/INDEX.md`")
-    for ref in MAP_REF.findall(entry):
-        if not (root / ref).exists():
-            rep.error("CLAUDE.md", f"`{ref}` does not exist")
+            if rel != "rules/INDEX.md" and f"`{rel}`" not in index:
+                rep.error(rel, "not listed in rules/INDEX.md")
+    for ref in ("rules/INDEX.md", "playbook/INDEX.md"):
+        if f"`{ref}`" not in entry:
+            rep.error("CLAUDE.md", f"doc map must list `{ref}`")
+    for name, text in (("CLAUDE.md", entry), ("rules/INDEX.md", index)):
+        for ref in MAP_REF.findall(text):
+            if not (root / ref).exists():
+                rep.error(name, f"`{ref}` does not exist")
     for skill in sorted(p for p in (root / "vendor" / "skills").glob("*") if p.is_dir()):
         if not (skill / "SKILL.md").is_file():
             rep.error(f"vendor/skills/{skill.name}/", "missing SKILL.md")

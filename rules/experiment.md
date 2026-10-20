@@ -24,7 +24,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 
 ## 2. Propose
 - Parked trials in `lx-work/trials/INDEX.md` are proposals already measured (`rules/self-iteration.md` says how to adopt one).
-- Read the matching category in `playbook/INDEX.md`, then only the matching cards, and `lx-work/BACKLOG.md`. A card's "Does not apply" lists past conditions: check whether they hold here; a technique that failed elsewhere is not skipped for that alone.
+- Read the matching category in `playbook/INDEX.md`, then only the matching cards, and `lx-work/BACKLOG.md`. Weigh each card by its record `✓N ✗M` (reached production or not) and its effect range; its "Does not apply" lists past conditions: check whether they hold here; a technique that failed elsewhere is not skipped for that alone.
 - Give the user one to three options as a short table: change, evidence, expected gain (bounded by the step's share), expected difference level, risk, effort. Only techniques with evidence that they apply here, only on the path production runs (PROJECT.md, Deployment): a step the bench times but production skips is no gain, so say so.
 - Default order, which evidence may change: measurement correctness; redundant work, round trips, syncs, repeated initialization; peak memory and large-input routing; mature backends such as TensorRT, or Nunchaku for a supported diffusion transformer with weights the user supplies already quantized; `torch.compile` only after explicit approval; custom kernels only for a measured hotspot with no adequate mature implementation.
 - Keep tensors on the GPU from the first boundary worth moving to the last: the model takes a CUDA tensor, pre- and postprocessing stay on the GPU (FP16 where the pre/post contract allows), only compact results come back. A cheap stage moves only when the transfer it removes is measured.
@@ -37,7 +37,7 @@ The user's review is worth most at the proposal and the plan: a wrong plan costs
 ## 3. Plan
 - `lx-e2espeed/exp.sh new <1 to 4 words>` checks that the project tree and each linked repo equal their commits plus the kept patches, takes the next number, creates the directory with NOTE.md, and adds a running row to exp/INDEX.md.
 - Write Evidence, Hypothesis, and Plan in NOTE.md: the functions to change, the contracts it touches and their downstream impact, how verify covers it, the expected gain.
-- Build nothing until the user approves the plan; a change that fits one sentence and touches no contract has that sentence as its plan. In a standard pass the catalog is the approved plan.
+- Build nothing until the user approves the plan; a change that fits one sentence and touches no contract has that sentence as its plan. In a standard pass its queue is the approved plan.
 - Refactor first when landing would bend the code: a third kept patch on one function, or a structure the code lacks (a stage boundary, a home for a table or a kernel). The refactor is its own experiment, verified, with a bench showing equal speed. Judge it when a plan calls for it, not after every experiment.
 
 ## 4. Build and compare candidates

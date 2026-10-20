@@ -39,8 +39,8 @@ PHASE_DOCS = {
     "done": "The project is done; ask the user what comes next.",
 }
 # An onboarding the user chose to discuss is not a new project: a hand-over there does not start the standard pass.
-DISCUSSED_DOC = ("Read lx-e2espeed/rules/onboarding.md now: this onboarding is discussed, so a hand-over does not start "
-                 "the standard pass.")
+DISCUSSED_DOC = ("Read lx-e2espeed/rules/onboarding.md now, and lx-e2espeed/rules/onboarding-discussion.md for its step 2: "
+                 "this onboarding is discussed, so a hand-over does not start the standard pass.")
 MODE = re.compile(r"^- Mode: discussed\b", re.M)
 PHASE = re.compile(r"^- Phase: (\S+)", re.M)
 SYNCED = re.compile(r"^- Rules synced: ([0-9a-f]{7,40})\s*$", re.M)
@@ -170,7 +170,7 @@ def project_line(rel, root, rules):
     match = PHASE.search(text)
     phase = match.group(1) if match else "unknown"
     advice = phase_doc(work, text, phase)
-    docs = ", or ".join(re.findall(r"rules/[\w-]+\.md", advice))
+    docs = (" and " if advice == DISCUSSED_DOC else ", or ").join(re.findall(r"rules/[\w-]+\.md", advice))
     label = f"{phase}, discussed" if advice == DISCUSSED_DOC else phase
     hint = " on a hand-over" if phase == "onboarding" and advice != DISCUSSED_DOC else ""
     parts = [f"- {rel.as_posix()}: phase {label}" + (f" ({docs}{hint})" if docs else "")]

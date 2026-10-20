@@ -37,7 +37,8 @@ At the limit, split or cut. Raise a limit only with the user, here and in the ch
 Scripts have no line limit: a script is split by purpose, never by length.
 
 ## Structure
-- References go one level deep: CLAUDE.md names every rules and hardware doc directly (checked). A doc may point to another, but must not depend on a chain of them.
+- References go one level deep past the maps: CLAUDE.md names `rules/INDEX.md` and `playbook/INDEX.md`, which name every rules, hardware, and card doc (checked). A doc may point to another, but must not depend on a chain of them.
+- A doc near its limit is split by when it is read, not by length: a part only some situations need becomes its own doc with its own read_when, listed in `rules/INDEX.md`. Splitting what is always read together saves nothing and adds a hop.
 - A doc over 100 lines starts with a `## Contents` list (checked).
 - A doc made from a template keeps the template's `##` headings and `- Field:` lines, and CLAUDE.md keeps its sections (checked). Losing one breaks the next reader or script.
 - Indexes and logs hold one line per entry, and files that grow during a project stay bounded. exp/INDEX.md moves old dropped rows, and trials/INDEX.md old dropped or adopted rows, to `ARCHIVE.md` next to it; FEEDBACK.md deletes entries once they became rule changes; DECISIONS.md deletes superseded entries and CHANGELOG.md its oldest entries when they near their limit. Git history keeps everything removed.

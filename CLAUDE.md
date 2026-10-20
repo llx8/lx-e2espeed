@@ -48,17 +48,9 @@ onboarding or a standard pass → repeat (profile → propose → user picks →
 ## Doc map
 Read only what the step needs. Always: this file and `lx-work/STATUS.md`.
 
-Once, when entering the phase: `rules/onboarding.md` (a new project), `rules/standard-pass.md` (a hand-over, during a pass, the session after), `rules/self-iteration.md` (when started, the session after), `rules/wrap-up.md` (project or milestone done), `hardware/rtx-5090.md` or `hardware/l20.md` (onboarding, the production GPU).
-
-On demand:
-- `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
-- `rules/benchmarking.md`: before an A/B or judging a difference level; changing a measuring tool: `templates/tools/DESIGN.md`.
-- `rules/quality.md`: the references, grading outputs, an engine's precision.
+- `rules/INDEX.md`: every rules and hardware doc, with when to read it. The hook names the phase's first doc.
 - `rules/reporting.md`: before reporting results or explaining work.
-- `rules/delivery.md`: wrap-up steps 1 and 2.
-- `rules/naming.md`: the lx-work layout, its skeleton sync, and naming anything.
-- `rules/writing.md`: writing any doc in either lx repo, or changing lx-e2espeed.
-- `playbook/INDEX.md`: looking for ideas after profiling; open only matching cards.
+- `playbook/INDEX.md`: what to try after profiling, ranked by past projects; open only matching cards.
 - Skills (`vendor/skills/`): `rules/experiment.md` says which; these rules win; output to `lx-work/local/`.
 - `templates/`: lx-work docs, cards, generic tools.
 - `lx-work/knowledge/INDEX.md`: before reading project code to learn its purpose, callers, contract, or deployment.

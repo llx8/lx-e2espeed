@@ -11,7 +11,8 @@ It is one of the two autonomous modes (the other, the standard pass in `rules/st
 - Phase optimizing, no running experiment, `exp.sh check` passes, verify and bench pass, and the noise floor is current. This tree, best (the baseline commit plus the kept patches), is the base of every trial in the run.
 - Agree on the end time (default: when the user is back) and the scope. Default scope: any method inside the hard rules in CLAUDE.md. Numeric precision and `torch.compile`, which need approval otherwise, may be tried because nothing lands; flag them for the user. Nothing is installed or downloaded, and nothing outside the project tree and lx-work changes: a method that needs a dependency is queued as blocked.
 - A permission prompt stops a run the user is away from: confirm with the user that the session runs without them.
-- Write the queue in trials/INDEX.md: every method with evidence that it applies here, from a fresh profile, MAP.md, BACKLOG.md, the playbook, and the skill routing table in rules/experiment.md, ordered by expected gain (bounded by its step's share). Leave out directions DECISIONS.md rules out for this project. Put the run under "In progress" in STATUS.md as `- Run: self-iteration run, session <id>` (the id the SessionStart hook printed), and commit lx-work.
+- Write the queue in trials/INDEX.md: every method with evidence that it applies here, from a fresh profile, MAP.md, BACKLOG.md, the playbook, and the skill routing table in rules/experiment.md, ordered by expected gain (bounded by its step's share), the cards ranked as `rules/standard-pass.md`, Step 2, ranks them. Leave out directions DECISIONS.md rules out for this project.
+  Put the run under "In progress" in STATUS.md as `- Run: self-iteration run, session <id>` (the id the SessionStart hook printed), and commit lx-work.
 
 ## Each trial
 1. `exp.sh try <1 to 4 words>` checks the tree and creates trials/NNN-name/ with NOTE.md and a running row.

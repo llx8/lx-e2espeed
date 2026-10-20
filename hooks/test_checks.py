@@ -251,7 +251,11 @@ PROBES = [
      "bytes, limit 12000"),
     ("line over 500 bytes", "rules", lambda r: append(r / "rules" / "naming.md", "word " * 120 + "\n"), "bytes on one line, limit 500"),
     ("rules doc not in the doc map", "rules", lambda r: write(r / "rules" / "extra.md", read(r / "rules" / "naming.md")),
-     "not listed in the CLAUDE.md doc map"),
+     "not listed in rules/INDEX.md"),
+    ("rules map names a missing doc", "rules", lambda r: append(r / "rules" / "INDEX.md", "- `rules/missing.md`: never.\n"),
+     "rules/INDEX.md: `rules/missing.md` does not exist"),
+    ("CLAUDE.md drops the rules map", "rules", lambda r: edit(r / "CLAUDE.md", "`rules/INDEX.md`", "the rules index"),
+     "doc map must list `rules/INDEX.md`"),
     ("doc map names a missing doc", "rules", lambda r: append(r / "CLAUDE.md", "- `rules/missing.md`: never.\n"), "`rules/missing.md` does not exist"),
     ("skill without SKILL.md", "rules", lambda r: (r / "vendor" / "skills" / "empty-skill").mkdir(), "missing SKILL.md"),
     ("skill no rules doc routes to", "rules", lambda r: shutil.copytree(r / "vendor" / "skills" / "perf-workload-profiling", r / "vendor" / "skills" / "perf-extra"),
@@ -460,8 +464,8 @@ def workspace_check_failures(tmp):
         _, out, _ = run("session_start", {"cwd": str(space)})
         want = ["- p1/alpha: phase optimizing (rules/experiment.md); next: next for alpha; 2 item(s) waiting",
                 "- p2/beta: phase wrap-up (rules/wrap-up.md)", "# Working from the workspace",
-                "- p3/delta: phase onboarding, discussed (rules/onboarding.md).",
-                "- p4/eps: phase onboarding, discussed (rules/onboarding.md).",
+                "- p3/delta: phase onboarding, discussed (rules/onboarding.md and rules/onboarding-discussion.md).",
+                "- p4/eps: phase onboarding, discussed (rules/onboarding.md and rules/onboarding-discussion.md).",
                 "- p5/zeta: phase onboarding (rules/onboarding.md, or rules/standard-pass.md on a hand-over)."]
         failures += [f"workspace: session start lacks {w!r}" for w in want if w not in out]
         failures += [f"workspace: session start shows {w!r}" for w in ("ws-outside", "secret-of-alpha", "# lx-e2espeed")
