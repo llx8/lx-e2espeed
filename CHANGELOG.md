@@ -6,7 +6,7 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 ## 2026-10-20: GPU jobs through the gpulane queue
-- CLAUDE.md hard rule: every GPU job, here or on L20, runs through `gpulane run` (`--exclusive` for measurements, `--shared` otherwise, `--mem` as the cap), long ones through `gpulane submit` and `wait`, an A/B in a `lease`; never sleep to wait for the GPU.
+- CLAUDE.md hard rule: every GPU job, here or on L20, runs through `gpulane run` (`--exclusive` for measurements, `--shared` otherwise, `--mem` as the cap), long ones through `gpulane submit` and `wait`, an A/B in a `lease`; never sleep to wait for the GPU. A script that starts its own containers labels them with `$GPULANE_JOB`.
   Why: the user, 2026-10-20: three sessions were measuring on top of each other; the queue went live that day.
 ## 2026-10-20: the project brief in the user's order
 - MAP.md template: new sections Service contract, Model (inputs, outputs, structure, runtime, notable operations), and Top kernels (Nsight Systems, top five by GPU time); the breakdown table lists the five layers with their operations. Onboarding fills them (one nsys profile with the baseline bench); experiment.md keeps Top kernels current.
