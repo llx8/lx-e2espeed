@@ -34,6 +34,7 @@ No hook output before this file means the hooks are not installed: propose `lx-e
 - Delivered code imports nothing from lx-work, lx-e2espeed, or sibling repos; leave sibling repos unchanged unless the user says so.
 - In the project repo, do not commit, stash, reset, clean, or switch branches unless the user asks; commits use the user's own git identity with no co-author lines. Change its code only inside an experiment or trial, ended by `exp.sh keep`, `park`, or `drop` (`rules/experiment.md`).
 - Run every job that loads a model or data under a hard memory cap (`systemd-run --scope --quiet -p MemoryMax=<cap> -p MemoryLimit=<cap>`, omitted in these rules), at most half the RAM, sized from its estimated or measured peak; light commands take 2G. An uncapped job once froze a server for days.
+- Every job that touches a GPU, here or on L20, goes through the queue, so sessions never measure on top of each other: `gpulane run --exclusive --mem <cap> -- CMD` for a bench, A/B, or noise floor; `--shared` for verify, export, or a build; `--host L20` there. `--mem` is the memory cap. A job longer than a few minutes: `gpulane submit ...`, then `gpulane wait <id>`; an A/B of several runs holds `gpulane lease <minutes>`. `gpulane ls` shows the queue; never sleep to wait for the GPU.
 
 ## Defaults
 - Both lx repos: English, written for an AI (`rules/writing.md`); anything for people goes in your reply.
