@@ -51,7 +51,7 @@ Start from lx-work/FEEDBACK.md. Then ask: where did the work drift from these ru
 Propose changes to the user. Apply the approved ones, log them in CHANGELOG.md, and delete the FEEDBACK.md entries they resolve.
 
 ## 5. Push to the cloud
-lx-e2espeed is one repo on this machine, and its `origin` is the cloud repo. Rule changes were committed as they were made (`rules/writing.md`), so every project already has them. The cloud gets them at the end of the project, in this step, or when the user asks; a milestone wrap-up skips the push.
+lx-e2espeed is one repo on this machine, and its `origin` is the cloud repo. Rule changes were committed as they were made (`rules/writing.md`), so every project already has them. Pushing needs no go-ahead (the user, 2026-10-20): push after any finished change to lx-e2espeed, and at the latest in this step.
 - Run the checker in lx-e2espeed. If it fails on files you did not change, another session is midway through a change: ask the user.
 - Push: `git -C lx-e2espeed push origin main`. If the cloud has commits lx-e2espeed lacks, pull them first (`git -C lx-e2espeed pull --ff-only origin main`), run the checker again, and ask the user if it cannot fast-forward.
 - Set the phase in STATUS.md to `done` at the end of the project, or back to `optimizing` after a milestone, and commit lx-work. It never goes to the lx-e2espeed cloud repo, and stays local unless the user sets up a remote of its own.
