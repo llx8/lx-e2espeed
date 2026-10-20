@@ -29,8 +29,9 @@ Every doc starts with frontmatter (checked):
 | any other doc | 150 |
 | exp/ and trials/ ARCHIVE.md | none: grep it, never read it whole |
 
-Bytes, too (checked): CLAUDE.md at most 6,000 and STATUS.md at most 3,000, because the SessionStart hook injects both, and Claude Code cuts hook output above about 10 KB to a 2 KB preview (seen 2026-10-01 at 10.8 KB); every other lx-e2espeed doc at most 12,000, except CHANGELOG.md; and one line of prose outside code fences at most 500 bytes.
-The line limit alone let bullets grow past 1 KB (45 lines over 400 bytes on 2026-10-13): a bullet at the line limit becomes sub-bullets, or its detail moves to a card or a tool's doc.
+Bytes, too (checked): CLAUDE.md at most 6,000 and STATUS.md at most 3,000, because the SessionStart hook injects both, and Claude Code cuts hook output above about 10 KB to a 2 KB preview; every other lx-e2espeed doc at most 12,000, except CHANGELOG.md; and one line of prose outside code fences at most 500 bytes.
+A bullet at the line limit becomes sub-bullets, or its detail moves to a card or a tool's doc.
+What goes where: a rule (what to do, when, what needs the user) in rules/; a technique (how to make something faster, with its evidence) in a card; how a tool is built in `templates/tools/DESIGN.md` or the tool itself; why a rule exists, with dates and the user's words, in CHANGELOG.md, leaving at most a short clause in the rule. A rule the checker enforces is stated once, where it is acted on, and not repeated elsewhere.
 
 At the limit, split or cut. Raise a limit only with the user, here and in the checker together.
 Scripts have no line limit: a script is split by purpose, never by length.
@@ -57,7 +58,7 @@ Scripts have no line limit: a script is split by purpose, never by length.
 - Log every change to rules, templates, or hooks in `CHANGELOG.md` with its reason.
 - During project work, change rules or cards at wrap-up, or earlier when the user asks; either way only on the user's go-ahead.
 - lx-e2espeed is one working tree that the sessions of every project edit, and a saved change reaches every project at once. Before editing, `git -C lx-e2espeed status --porcelain` must print nothing; anything else is another session's unfinished change, so stop and ask the user. Try a change to a script or hook on a copy first.
-- The user does not review the diff (the user, 2026-10-10: the AI maintains lx-e2espeed). Check it yourself before committing: nothing project-specific, the checker and `hooks/test_checks.py` pass, CHANGELOG.md logs it. Then commit at once, staging your files by name: `git add -A` or `commit -a` would take in another session's unfinished edit.
+- The user does not review the diff: the AI maintains lx-e2espeed. Check it yourself before committing: nothing project-specific, the checker and `hooks/test_checks.py` pass, CHANGELOG.md logs it. Then commit at once, staging your files by name: `git add -A` or `commit -a` would take in another session's unfinished edit.
 - Never rewrite its history (no amend, rebase, or reset): lx-work names rules commits in `- Rules synced:`, and a rewritten commit is gone. Pushing to the cloud follows `rules/wrap-up.md` step 5.
 
 ## Glossary

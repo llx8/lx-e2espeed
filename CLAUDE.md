@@ -48,16 +48,11 @@ onboarding or a standard pass → repeat (profile → propose → user picks →
 ## Doc map
 Read only what the step needs. Always: this file and `lx-work/STATUS.md`.
 
-Once, when entering the named phase:
-- `rules/onboarding.md`: first sessions in a new project.
-- `hardware/rtx-5090.md` or `hardware/l20.md`: onboarding, the production GPU.
-- `rules/wrap-up.md`: when the user says the project or a milestone is done.
-- `rules/self-iteration.md`: when the user starts one, and the session after.
-- `rules/standard-pass.md`: at a hand-over or start, during a pass, and the session after.
+Once, when entering the phase: `rules/onboarding.md` (a new project), `rules/standard-pass.md` (a hand-over, during a pass, the session after), `rules/self-iteration.md` (when started, the session after), `rules/wrap-up.md` (project or milestone done), `hardware/rtx-5090.md` or `hardware/l20.md` (onboarding, the production GPU).
 
 On demand:
 - `rules/experiment.md`: phase optimizing; proposing, running, or reviewing an experiment.
-- `rules/benchmarking.md`: before an A/B, a difference level, or changing a bench or verify tool.
+- `rules/benchmarking.md`: before an A/B or judging a difference level; changing a measuring tool: `templates/tools/DESIGN.md`.
 - `rules/quality.md`: the references, grading outputs, an engine's precision.
 - `rules/reporting.md`: before reporting results or explaining work.
 - `rules/delivery.md`: wrap-up steps 1 and 2.

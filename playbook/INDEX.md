@@ -55,6 +55,7 @@ Operator fusion, torch.compile, kernel selection, custom kernels.
 ## memory
 Allocator behavior, fragmentation, buffer reuse.
 - [vae-tiling-trt](memory/vae-tiling-trt.md): TensorRT VAE drifts or OOMs → 5.02 to 0.138/255 | ✓1 ✗0
+- [memory-attribution](memory/memory-attribution.md): peak too high, per-stage deltas read zero → the stage that sets it | ✓1 ✗0
 
 ## serving
 Batching, concurrency, scheduling, pipelining.

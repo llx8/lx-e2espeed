@@ -4,7 +4,7 @@ read_when: the user starts a self-iteration run, and the first session after one
 ---
 # Self-iteration run
 
-The user starts a self-iteration run and then leaves or watches; it runs by day or by night (the user renamed it from "night run" on 2026-10-11, same procedure). You try methods alone, one trial per method in lx-work/trials/NNN-name/, until no idea is left; then you report them, and the user picks what lands.
+The user starts a self-iteration run and then leaves or watches; it runs by day or by night. You try methods alone, one trial per method in lx-work/trials/NNN-name/, until no idea is left; then you report them, and the user picks what lands.
 It is one of the two autonomous modes (the other, the standard pass in `rules/standard-pass.md`, lands identical-output gains), and it is safe because nothing lands: every trial ends with its change saved as a patch and reversed.
 
 ## Before it starts
@@ -38,13 +38,13 @@ Timebox each trial (default 90 minutes). Past it, drop the trial with what was l
 ## The report
 - In your reply when the run ends, or in the first session after it, not in a file. One table of parked trials, best first: the method, the A/B per scenario against the base, the difference level, verify, what it touches and its risk, and what the user must decide. Then one line each for dropped trials and for methods still queued, with the reason, the run's entries under "Waiting for the user", and the FEEDBACK.md lines the run added.
 - Say whether the base moved since the run; if it did, the numbers are against an older tree. Trials do not add up: the user picks one at a time, and each later pick is measured on top of the earlier ones.
-- The user telling you to use a parked method or library, in any words, is its adoption: adopt it, never report it as still waiting (the user, 2026-10-17).
+- The user telling you to use a parked method or library, in any words, is its adoption: adopt it, never report it as still waiting.
 - `exp.sh adopt NNN` turns a parked trial into the next experiment, carrying NOTE.md and candidate/. On an unchanged base it applies the patch and copies run.sh and result.json: run verify once, then `exp.sh keep`. On a moved base it applies nothing: A/B the candidate against the current tree first (rebuild a candidate that copies code a kept experiment changed since), then land as in rules/experiment.md step 5.
 - Trials the user passes on stay parked; they are still under "Next" at wrap-up. `exp.sh export trials/NNN` rebuilds any trial's code from its own base.
 - A run that ends with the queue empty, in a project that allows the research stage, says that the research stage is next.
 
 ## Research stage
-Only where PROJECT.md has a `- Research stage:` line that allows it, in the user's words, and only once the user starts it; it is a self-iteration run of research trials, so everything above applies. Why: once engineering finds nothing more, a research project still needs a contribution of its own, so the user wants the method itself tried (the user, 2026-10-10 and 2026-10-12).
+Only where PROJECT.md has a `- Research stage:` line that allows it, in the user's words, and only once the user starts it; it is a self-iteration run of research trials, so everything above applies. Why: once engineering finds nothing more, a research project still needs a contribution of its own, so the user wants the method itself tried.
 - A research trial changes the method, not its implementation: a formula from a paper, modified, or one of your own, for more speed, better quality, or both. In these trials, and only there, the hard rules on weights, architecture, and the accuracy standard give way as far as the PROJECT.md line says, and so does the approval for precision, since nothing lands.
   Every other rule holds: the memory cap, nothing installed or downloaded (queue it as blocked), one idea per trial from the same base, parked or dropped.
 - Queue each with `research:` before the method in trials/INDEX.md. Its Evidence names the source (paper, year, section, equation) or the reasoning behind your own formula.
