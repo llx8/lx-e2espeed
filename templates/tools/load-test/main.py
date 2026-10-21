@@ -221,7 +221,8 @@ def config_with_workers(image, workers):
 def start(image, name, config=None):
     sh("docker", "rm", "-f", name)
     mount = ["-v", f"{config}:{WORKER_CONFIG[0]}:ro"] if config else []
-    r = sh("docker", "run", "-d", "--name", name, "--gpus", "all", f"--memory={os.environ.get('LX_MEM', '48g')}",
+    r = sh("docker", "run", "-d", "--name", name, "--label", f"gpulane.grant={os.environ.get('GPULANE_JOB', 'none')}",
+           "--gpus", "all", f"--memory={os.environ.get('LX_MEM', '48g')}",
            f"--memory-swap={os.environ.get('LX_MEM', '48g')}", "-p", f"{HOST_PORT}:{PORT}", *mount, image, timeout=300)
     if r.returncode:
         sys.exit(f"load-test: cannot start {image}: {r.stderr.strip()[-300:]}")

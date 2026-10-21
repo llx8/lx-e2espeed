@@ -6,6 +6,7 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
 ## 2026-10-21: load test: the client cannot set the pace; a hardware decoder is a saturating side
+- templates/tools/load-test/main.py: the service containers carry `gpulane.grant=$GPULANE_JOB`, as the CLAUDE.md gpulane rule asks of a script's own docker run (found filling the tool for its first project).
 - templates/tools/load-test/main.py: the closed-loop clients run in several spawned processes (CLIENTS_PER_PROCESS), each reporting its own CPU; a level where one nears a full core is invalid; the host-core check leaves out the client's cores; DECODER_CEILING_RPS, a hardware decoder's standalone ceiling, makes the decoder a saturating side. rules/wrap-up.md says both.
   Why: the user (2026-10-21): a single Python client process (GIL) can cap the measured throughput below the service's and read as an unsaturated server; and NVJPG saturation does not show in nvidia-smi's GPU utilization, so a decoder-bound service would fail as "nothing saturated".
 ## 2026-10-21: the load test in one run: soak, worker restarts, log scan, memory per process
