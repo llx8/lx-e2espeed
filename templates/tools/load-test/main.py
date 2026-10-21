@@ -14,6 +14,9 @@ merge), and GPU memory against the one-worker peak times the worker count and ac
 Run, from the project directory, under a small cap (it covers this client; the container has its own, LX_MEM):
   <py> lx-work/tools/load-test/main.py --image IMAGE [--baseline-image IMAGE] [--levels 1,6,12] [--seconds 60]
        [--workers 1,6,9,12] [--status-only] [--out FILE]
+Then the delivered image at the production count holds the top level for --soak seconds (memory at the start against the end),
+and each container's log is scanned for errors, warnings, and a missing MPS daemon; worker restarts (new PIDs) are counted
+per level and per-process GPU memory sampled. The baseline image runs at the production count only. About 35 minutes.
 Prints one line per image, worker count, and level, one comparison line per level, and the verdicts; the full result
 goes to --out as JSON.
 """
@@ -103,9 +106,13 @@ class Sampler(threading.Thread):
         super().__init__(daemon=True)
         self.name, self.files, self.stop = name, cgroup_files(pid), threading.Event()
         self.gpu, self.cores, self.ram, self.proc_max, self.host_max = [], [], [], [], []
+        self.new_pids, self.apps, self.seen = [], [], None  # worker restarts (PIDs new since the start), GPU memory per process
         self.smi = subprocess.Popen(["nvidia-smi", "--query-gpu=utilization.gpu,memory.used,power.draw,clocks.sm",
                                      "--format=csv,noheader,nounits", "-lms", "500"], stdout=subprocess.PIPE, text=True)
         threading.Thread(target=self.read_smi, daemon=True).start()
+        self.smi_apps = subprocess.Popen(["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits",
+                                          "-lms", "1000"], stdout=subprocess.PIPE, text=True)
+        threading.Thread(target=self.read_apps, daemon=True).start()
 
     def read_smi(self):
         for line in self.smi.stdout:
@@ -113,6 +120,22 @@ class Sampler(threading.Thread):
                 self.gpu.append([float(v) for v in line.split(",")])
             except ValueError:
                 pass
+
+    def read_apps(self):
+        """Per-process GPU memory; nvidia-smi prints one line per process per sample and nothing between samples, so a
+        sample is cut where the pid repeats or the timestamp of the lines changes (one second apart)."""
+        current, pids = {}, set()
+        for line in self.smi_apps.stdout:
+            try:
+                pid, mib = line.split(",")
+                pid, mib = int(pid), float(mib)
+            except ValueError:
+                continue
+            if pid in pids:
+                self.apps.append(current)
+                current, pids = {}, set()
+            current[pid] = mib
+            pids.add(pid)
 
     def run(self):
         cpu, unit, mem, procs = self.files
@@ -128,6 +151,10 @@ class Sampler(threading.Thread):
             busy = [1 - (b[3] + b[4] - a[3] - a[4]) / max(1, sum(b) - sum(a)) for a, b in zip(last_host, host)]
             self.host_max.append(max(busy) * 100)
             ticks = {int(p): proc_ticks(int(p)) for p in procs.read_text().split()}
+            if self.seen is None:
+                self.seen = set(ticks)
+            self.new_pids.append(len(set(ticks) - self.seen))
+            self.seen |= set(ticks)
             per = [(t - last_ticks[p]) / hz / dt for p, t in ticks.items() if t is not None and last_ticks.get(p) is not None]
             self.proc_max.append(max(per, default=0.0))
             last_ns, last_t, last_host, last_ticks = ns, now, host, ticks
@@ -140,18 +167,25 @@ class Sampler(threading.Thread):
         """Summary of the samples taken since index marks t0 = (gpu, cpu) list lengths."""
         g, c = self.gpu[t0[0]:], t0[1]
         mean = lambda xs: sum(xs) / len(xs) if xs else 0.0
+        apps = self.apps[t0[2]:]
+        edge = lambda xs, k: mean(xs[:k]) if len(xs) >= 2 * k else mean(xs)
         return {"gpu_util_mean": mean([x[0] for x in g]), "gpu_util_max": max([x[0] for x in g], default=0),
                 "gpu_mem_mib_max": max([x[1] for x in g], default=0), "power_w_mean": mean([x[2] for x in g]),
                 "sm_mhz_min": min([x[3] for x in g], default=0), "cpu_cores_mean": mean(self.cores[c:]),
                 "busiest_process_cores": max(self.proc_max[c:], default=0), "busiest_host_core_pct": max(self.host_max[c:], default=0),
-                "ram_gib_max": max(self.ram[c:], default=0)}
+                "ram_gib_max": max(self.ram[c:], default=0), "worker_restarts": sum(self.new_pids[c:]),
+                "process_mem_mib_max": max([max(a.values(), default=0) for a in apps], default=0),
+                "gpu_processes_max": max([len(a) for a in apps], default=0),
+                "gpu_mem_mib_start": edge([x[1] for x in g], 10), "gpu_mem_mib_end": edge([x[1] for x in g][::-1], 10),
+                "ram_gib_start": edge(self.ram[c:], 5), "ram_gib_end": edge(self.ram[c:][::-1], 5)}
 
     def marks(self):
-        return len(self.gpu), len(self.cores)
+        return len(self.gpu), len(self.cores), len(self.apps)
 
     def close(self):
         self.stop.set()
         self.smi.terminate()
+        self.smi_apps.terminate()
 
 
 def config_with_workers(image, workers):
@@ -218,7 +252,7 @@ def hold(url, reqs, clients, seconds, expected, status_only):
     elapsed = time.time() - t0
     ms = sorted(m for _, code, m, _ in out if code == 200)
     pick = lambda q: ms[min(len(ms) - 1, int(q * len(ms)))] if ms else 0.0
-    return {"clients": clients, "requests": len(out), "rps": len(ms) / elapsed, "p50_ms": pick(0.5), "p99_ms": pick(0.99),
+    return {"clients": clients, "requests": len(out), "rps": len(ms) / elapsed, "p50_ms": pick(0.5), "p90_ms": pick(0.9), "p99_ms": pick(0.99),
             "errors": sum(1 for _, code, _, _ in out if code != 200), "mismatches": sum(1 for *_, bad in out if bad)}
 
 
@@ -231,8 +265,12 @@ def mps_clients(name):
                for s in servers)
 
 
-def run_image(image, label, reqs, levels, seconds, status_only, workers=None):
-    """One image at one worker count (None: as the image is configured) through every level."""
+LOG_FLAGS = re.compile(r"error|warn|traceback|exception|fallback|MPS daemon not started", re.I)
+
+
+def run_image(image, label, reqs, levels, seconds, status_only, workers=None, soak=0):
+    """One image at one worker count (None: as the image is configured) through every level, then a soak of the top
+    level for `soak` seconds, then the container log scanned for LOG_FLAGS."""
     name = f"lx-load-{label}-{os.getpid()}"
     url = f"http://127.0.0.1:{HOST_PORT}{PATH_URL}"
     label = f"{label} {workers}w" if workers else label
@@ -257,19 +295,33 @@ def run_image(image, label, reqs, levels, seconds, status_only, workers=None):
             level = hold(url, reqs, clients, seconds, expected, status_only)
             level.update(sampler.window(marks))
             result["levels"].append(level)
-            print(f"{label} {clients:>3} clients: {level['rps']:.1f} req/s, P50 {level['p50_ms']:.1f} ms, P99 "
-                  f"{level['p99_ms']:.1f} ms, errors {level['errors']}, mismatches {level['mismatches']}; GPU "
-                  f"{level['gpu_util_mean']:.0f}% (max {level['gpu_util_max']:.0f}), {level['power_w_mean']:.0f} W, "
-                  f"{level['gpu_mem_mib_max']:.0f} MiB, SM >= {level['sm_mhz_min']:.0f} MHz; CPU "
-                  f"{level['cpu_cores_mean']:.1f} cores, busiest process {level['busiest_process_cores']:.2f}, "
-                  f"busiest host core {level['busiest_host_core_pct']:.0f}%; RAM {level['ram_gib_max']:.1f} GiB")
+            print(line_of(label, level))
+        if soak:
+            clients = result["levels"][-1]["clients"]
+            marks = sampler.marks()
+            result["soak"] = hold(url, reqs, clients, soak, expected, status_only)
+            result["soak"].update(sampler.window(marks))
+            print(line_of(f"{label} soak {soak} s", result["soak"]))
         result["mps_clients"] = mps_clients(name)
+        logs = sh("docker", "logs", "--tail", "5000", name)
+        result["log_flags"] = [l for l in (logs.stdout + logs.stderr).splitlines() if LOG_FLAGS.search(l)][:20]
+        if result["log_flags"]:
+            print(f"{label} log: {len(result['log_flags'])} flagged line(s), first: {result['log_flags'][0][:160]}")
         print(f"{label} MPS: {result['mps_clients'] if result['mps_clients'] is not None else 'no server found'} "
               f"clients for {workers} workers")
         return result
     finally:
         sampler.close()
         sh("docker", "rm", "-f", name)
+
+
+def line_of(label, level):
+    return (f"{label} {level['clients']:>3} clients: {level['rps']:.1f} req/s, P50 {level['p50_ms']:.1f} P90 {level['p90_ms']:.1f} P99 "
+            f"{level['p99_ms']:.1f} ms, errors {level['errors']}, mismatches {level['mismatches']}, restarts {level['worker_restarts']}; GPU "
+            f"{level['gpu_util_mean']:.0f}% (max {level['gpu_util_max']:.0f}), {level['power_w_mean']:.0f} W, "
+            f"{level['gpu_mem_mib_max']:.0f} MiB ({level['gpu_processes_max']} processes, largest {level['process_mem_mib_max']:.0f}), "
+            f"SM >= {level['sm_mhz_min']:.0f} MHz; CPU {level['cpu_cores_mean']:.1f} cores, busiest process {level['busiest_process_cores']:.2f}, "
+            f"busiest host core {level['busiest_host_core_pct']:.0f}%; RAM {level['ram_gib_max']:.1f} GiB")
 
 
 def verdicts(runs, power_cap_w, memory_total_mib):
@@ -312,6 +364,27 @@ def verdicts(runs, power_cap_w, memory_total_mib):
               "grows (pools, per-request allocations, graphs) before the merge")
     if ok:
         print(f"GPU memory {mem_top:.0f} MiB at the peak, steady across levels")
+    restarts = sum(l["worker_restarts"] for r in runs.values() for l in r["levels"] + [r.get("soak")] if l)
+    if restarts:
+        ok = False
+        print(f"FAIL {restarts} worker restart(s) (new PIDs in the container) during the delivered runs; read the container log")
+    for r in runs.values():
+        if r.get("soak"):
+            s = r["soak"]
+            grew = [f"{k} {s[k + '_start']:.1f} -> {s[k + '_end']:.1f}" for k, unit in (("gpu_mem_mib", "MiB"), ("ram_gib", "GiB"))
+                    if s[k + "_end"] > MEMORY_SLACK * max(s[k + "_start"], 1e-9)]
+            if grew:
+                ok = False
+                print(f"FAIL memory grows over the soak at {r['workers']} workers: {'; '.join(grew)}; find the allocation that grows")
+            else:
+                print(f"soak at {r['workers']} workers: GPU memory {s['gpu_mem_mib_start']:.0f} -> {s['gpu_mem_mib_end']:.0f} MiB, "
+                      f"RAM {s['ram_gib_start']:.1f} -> {s['ram_gib_end']:.1f} GiB, errors {s['errors']}, mismatches {s['mismatches']}")
+        if r.get("log_flags"):
+            fatal = [l for l in r["log_flags"] if re.search(r"traceback|MPS daemon not started", l, re.I)]
+            if fatal:
+                ok = False
+            print(f"{'FAIL' if fatal else 'WARN'} container log at {r['workers']} workers: {len(r['log_flags'])} flagged line(s): "
+                  + " | ".join(l[:100] for l in r["log_flags"][:3]))
     return ok
 
 
@@ -322,6 +395,7 @@ def main():
     p.add_argument("--levels", help="client counts, default 1, workers, 2x workers")
     p.add_argument("--workers", help="worker counts to sweep (WORKER_CONFIG), e.g. 1,<production>,<1.5x>,<2x>; default the production count")
     p.add_argument("--seconds", type=int, default=60, help="per level, after a warm-up of up to 10 s")
+    p.add_argument("--soak", type=int, default=600, help="seconds the delivered image holds the top level at the production count; 0 skips")
     p.add_argument("--status-only", action="store_true", help="outputs are not deterministic: check status codes only")
     p.add_argument("--project")
     p.add_argument("--out")
@@ -331,16 +405,17 @@ def main():
     if gpu_busy():
         sys.exit("load-test: the GPU is in use, measure only on a free GPU:\n" + "\n".join(gpu_busy()))
     levels = [int(x) for x in args.levels.split(",")] if args.levels else None
-    counts = [int(x) for x in args.workers.split(",")] if args.workers else [WORKERS]
+    counts = sorted({int(x) for x in args.workers.split(",")} | {WORKERS}) if args.workers else [WORKERS]
     power_cap, mem_total = (float(x) for x in sh("nvidia-smi", "--query-gpu=power.limit,memory.total",
                                                    "--format=csv,noheader,nounits").stdout.strip().split(","))
     reqs = requests_for(ad.project_root(args.project))
     results = {}
     for workers in counts:
         for label, image in (("baseline", args.baseline_image), ("delivered", args.image)):
-            if image:
-                results.setdefault(label, {})[workers] = run_image(image, label, reqs, levels, args.seconds, args.status_only, workers)
-        if "baseline" in results:
+            if image and (label == "delivered" or workers == WORKERS):  # the baseline only at the production count
+                soak = args.soak if label == "delivered" and workers == WORKERS else 0
+                results.setdefault(label, {})[workers] = run_image(image, label, reqs, levels, args.seconds, args.status_only, workers, soak)
+        if workers in results.get("baseline", {}):
             for a, b in zip(results["baseline"][workers]["levels"], results["delivered"][workers]["levels"]):
                 print(f"{workers}w {a['clients']:>3} clients: delivered {b['rps']:.1f} req/s vs baseline {a['rps']:.1f} "
                       f"({b['rps'] / max(a['rps'], 1e-9):.2f}x), P99 {b['p99_ms']:.1f} vs {a['p99_ms']:.1f} ms")

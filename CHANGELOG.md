@@ -5,6 +5,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-21: the load test in one run: soak, worker restarts, log scan, memory per process
+- rules/wrap-up.md and templates/tools/load-test/main.py: the baseline image runs at the production worker count only, the delivered image sweeps; then `--soak` (600 s at the top level, memory start against end), worker restarts counted from new PIDs, the container log scanned (tracebacks or a missing MPS daemon fail), GPU memory per process sampled, P90 added; about 35 minutes for a project, a rerun repeats the failed part only.
+  Why: the user (2026-10-21): a load test takes long, so one run must leave nothing to rerun; and it must not take hours.
 ## 2026-10-20: load test sweeps the worker count and judges saturation and memory
 - rules/wrap-up.md, Deliver: the load test also sweeps the worker count and reports where throughput peaks; at the delivered image's peak one side must saturate (GPU utilization or power, a worker near 1.0 core, all host cores) or the test fails until the wait is found; GPU memory at the peak must be within 20% of the one-worker peak times the worker count and steady across levels, else the growing allocation is found first. templates/tools/load-test/main.py: `--workers` (WORKER_CONFIG mounts the image's config with each count) and the printed verdicts.
   Why: the user (2026-10-20) asked whether the rules say at how many workers the GPU peaks, that an unsaturated GPU at the peak needs its cause found, and that an abnormal GPU memory peak does too; they did not, and ops' load tests judge exactly these.
