@@ -22,7 +22,9 @@ goes to --out as JSON.
 """
 import argparse
 import json
+import multiprocessing
 import os
+import queue as queue_errors
 import re
 import subprocess
 import sys
@@ -35,7 +37,13 @@ import requests
 
 LX_WORK = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(LX_WORK))
-from adapter import pipeline as ad  # noqa: E402
+
+
+def adapter():
+    """lx-work/adapter/pipeline.py, imported only where needed: the client processes re-import this file (spawn) and
+    must not load the model's libraries."""
+    from adapter import pipeline
+    return pipeline
 
 # TODO at wrap-up: from the service's config (PROJECT.md, Deployment).
 PORT = 0         # TODO: the port the framework listens on inside the image (config.toml listen_addr)
@@ -47,11 +55,17 @@ GROWTH = 1.05                  # a count whose throughput is under this times th
 GPU_SATURATED = (85, 0.9)  # utilization %, or share of the power cap, above which the GPU counts as the saturated side
 CORE_SATURATED = 0.9       # a worker process above this many cores is CPU-bound
 MEMORY_SLACK = 1.2         # GPU memory above this times the expected peak, or growing by this across levels, needs a cause
+CLIENTS_PER_PROCESS = 4    # client threads per client process: the client runs in several processes so it does not set the pace
+CLIENT_SATURATED = 0.8     # a client process above this many cores makes its level invalid: the client, not the service, set the pace
+DECODER_CEILING_RPS = 0    # TODO when the service decodes on a hardware engine (NVJPG, NVDEC): the decodes/s that engine reaches at
+                           # the service's inputs on this GPU, measured standalone with several processes (nvidia-smi does not show
+                           # its load reliably); a peak at 90% of it counts as the decoder saturating. 0: no hardware decoder.
 
 
 def requests_for(project):
     """[(label, kwargs for requests.post)] in the framework's request format: real production inputs."""
     # TODO: for example, every request of every scenario posted as the framework's demo client does:
+    # ad = adapter()
     # return [(f"{name}#{i}", {"files": {"file": data}}) for name in ad.SCENARIOS
     #         for i, data in enumerate(ad.load_scenario(project, name).items)]
     raise NotImplementedError("TODO")
@@ -226,20 +240,22 @@ def wait_ready(url, reqs, limit=600):
     return None
 
 
-def hold(url, reqs, clients, seconds, expected, status_only):
-    """Closed loop: each client sends the next request as soon as the last one is answered."""
-    local, lock, out = threading.local(), threading.Lock(), []
-    deadline, counter = time.time() + seconds, iter(range(10 ** 9))
+def client_process(url, reqs, expected, threads, start_at, seconds, offset, status_only, results):
+    """One client process: `threads` closed-loop clients from start_at for `seconds`; puts its answers, its own CPU in
+    cores, how late it started, and when it ended."""
+    lock, out = threading.Lock(), []
+    counter = iter(range(offset, 10 ** 9))
+    deadline = start_at + seconds
 
     def client(_):
-        local.s = requests.Session()
-        local.s.trust_env = False
+        session = requests.Session()
+        session.trust_env = False
         while time.time() < deadline:
             with lock:
                 i = next(counter) % len(reqs)
             t = time.perf_counter()
             try:
-                r = local.s.post(url, timeout=60, **reqs[i][1])
+                r = session.post(url, timeout=60, **reqs[i][1])
                 code, body = r.status_code, r.content
             except requests.RequestException as e:
                 code, body = type(e).__name__, b""
@@ -247,14 +263,50 @@ def hold(url, reqs, clients, seconds, expected, status_only):
             with lock:
                 out.append((i, code, ms, code == 200 and not status_only and expected is not None and body != expected[i]))
 
-    t0 = time.time()
-    with ThreadPoolExecutor(clients) as ex:
-        list(ex.map(client, range(clients)))
-    elapsed = time.time() - t0
+    late = max(0.0, time.time() - start_at)
+    while time.time() < start_at:
+        time.sleep(0.01)
+    cpu0 = time.process_time()
+    with ThreadPoolExecutor(threads) as ex:
+        list(ex.map(client, range(threads)))
+    results.put((out, (time.process_time() - cpu0) / seconds, late, time.time()))
+
+
+def hold(url, reqs, clients, seconds, expected, status_only, sampler=None):
+    """Closed loop: each client sends the next request as soon as the last one is answered. The clients run in
+    ceil(clients / CLIENTS_PER_PROCESS) processes that start together; the sampler window covers the same time."""
+    ctx = multiprocessing.get_context("spawn")
+    results = ctx.Queue()
+    n = -(-clients // CLIENTS_PER_PROCESS)
+    start_at = time.time() + 5 + 0.3 * n  # time for the processes to start
+    procs = []
+    for k in range(n):
+        threads = min(CLIENTS_PER_PROCESS, clients - k * CLIENTS_PER_PROCESS)
+        proc = ctx.Process(target=client_process, daemon=True, args=(url, reqs, expected, threads, start_at, seconds,
+                                                                     k * len(reqs) // n, status_only, results))
+        proc.start()
+        procs.append(proc)
+    while time.time() < start_at:
+        time.sleep(0.01)
+    marks = sampler.marks() if sampler else None
+    try:
+        parts = [results.get(timeout=seconds + 180) for _ in procs]
+    except queue_errors.Empty:
+        sys.exit("load-test: a client process gave no result; it died or hung")
+    for proc in procs:
+        proc.join()
+    out = [r for part in parts for r in part[0]]
+    elapsed = max(part[3] for part in parts) - start_at
     ms = sorted(m for _, code, m, _ in out if code == 200)
     pick = lambda q: ms[min(len(ms) - 1, int(q * len(ms)))] if ms else 0.0
-    return {"clients": clients, "requests": len(out), "rps": len(ms) / elapsed, "p50_ms": pick(0.5), "p90_ms": pick(0.9), "p99_ms": pick(0.99),
-            "errors": sum(1 for _, code, _, _ in out if code != 200), "mismatches": sum(1 for *_, bad in out if bad)}
+    level = {"clients": clients, "requests": len(out), "rps": len(ms) / elapsed, "p50_ms": pick(0.5), "p90_ms": pick(0.9),
+             "p99_ms": pick(0.99), "errors": sum(1 for _, code, _, _ in out if code != 200),
+             "mismatches": sum(1 for *_, bad in out if bad), "client_processes": n,
+             "client_cores_max": max(part[1] for part in parts), "client_cores_sum": sum(part[1] for part in parts),
+             "client_late_s_max": max(part[2] for part in parts)}
+    if sampler:
+        level.update(sampler.window(marks))
+    return level
 
 
 def mps_clients(name):
@@ -292,16 +344,12 @@ def run_image(image, label, reqs, seconds, status_only, workers, soak=0):
         result = {"image": image, "workers": workers, "ready_s": ready, "levels": []}
         for clients in levels:
             hold(url, reqs, clients, min(10, seconds), None, True)  # warm-up at this level, not counted
-            marks = sampler.marks()
-            level = hold(url, reqs, clients, seconds, expected, status_only)
-            level.update(sampler.window(marks))
+            level = hold(url, reqs, clients, seconds, expected, status_only, sampler)
             result["levels"].append(level)
             print(line_of(label, level))
         if soak:
             clients = result["levels"][-1]["clients"]
-            marks = sampler.marks()
-            result["soak"] = hold(url, reqs, clients, soak, expected, status_only)
-            result["soak"].update(sampler.window(marks))
+            result["soak"] = hold(url, reqs, clients, soak, expected, status_only, sampler)
             print(line_of(f"{label} soak {soak} s", result["soak"]))
         result["mps_clients"] = mps_clients(name)
         logs = sh("docker", "logs", "--tail", "5000", name)
@@ -322,7 +370,8 @@ def line_of(label, level):
             f"{level['gpu_util_mean']:.0f}% (max {level['gpu_util_max']:.0f}), {level['power_w_mean']:.0f} W, "
             f"{level['gpu_mem_mib_max']:.0f} MiB ({level['gpu_processes_max']} processes, largest {level['process_mem_mib_max']:.0f}), "
             f"SM >= {level['sm_mhz_min']:.0f} MHz; CPU {level['cpu_cores_mean']:.1f} cores, busiest process {level['busiest_process_cores']:.2f}, "
-            f"busiest host core {level['busiest_host_core_pct']:.0f}%; RAM {level['ram_gib_max']:.1f} GiB")
+            f"busiest host core {level['busiest_host_core_pct']:.0f}%; RAM {level['ram_gib_max']:.1f} GiB; "
+            f"client {level['client_processes']} processes, busiest {level['client_cores_max']:.2f} cores")
 
 
 def peak_of(runs):
@@ -348,8 +397,11 @@ def verdicts(runs, power_cap_w, memory_total_mib):
         sides.append(f"the GPU ({t['gpu_util_mean']:.0f}%, {t['power_w_mean']:.0f} of {power_cap_w:.0f} W)")
     if t["busiest_process_cores"] >= CORE_SATURATED:
         sides.append(f"a worker process at {t['busiest_process_cores']:.2f} cores (CPU-bound)")
-    if t["cpu_cores_mean"] >= CORE_SATURATED * os.cpu_count():
-        sides.append(f"all {os.cpu_count()} host cores ({t['cpu_cores_mean']:.1f} busy)")
+    free = os.cpu_count() - t["client_cores_sum"]  # the client's own cores are not the service's
+    if t["cpu_cores_mean"] >= CORE_SATURATED * free:
+        sides.append(f"all {free:.0f} host cores the client leaves ({t['cpu_cores_mean']:.1f} busy)")
+    if DECODER_CEILING_RPS and t["rps"] >= 0.9 * DECODER_CEILING_RPS:
+        sides.append(f"the hardware decoder ({t['rps']:.0f} req/s against its {DECODER_CEILING_RPS:.0f} decodes/s alone)")
     ok = True
     if sides:
         print(f"at the peak the saturated side is {'; '.join(sides)}")
@@ -433,7 +485,7 @@ def main():
     counts = [int(x) for x in args.workers.split(",")] if args.workers else SWEEP
     power_cap, mem_total = (float(x) for x in sh("nvidia-smi", "--query-gpu=power.limit,memory.total",
                                                    "--format=csv,noheader,nounits").stdout.strip().split(","))
-    reqs = requests_for(ad.project_root(args.project))
+    reqs = requests_for(adapter().project_root(args.project))
     results = {}
     for label, image in (("baseline", args.baseline_image), ("delivered", args.image)):
         if image:
@@ -450,6 +502,14 @@ def main():
                 print(f"{w}w {a['clients']:>3} clients: delivered {b['rps']:.1f} req/s vs baseline {a['rps']:.1f} "
                       f"({b['rps'] / max(a['rps'], 1e-9):.2f}x), P99 {b['p99_ms']:.1f} vs {a['p99_ms']:.1f} ms")
     ok = verdicts(results["delivered"], power_cap, mem_total)
+    for label, runs in results.items():  # a level whose client process ran near a full core measured the client
+        for w, r in runs.items():
+            for level in r["levels"] + ([r["soak"]] if r.get("soak") else []):
+                if level["client_cores_max"] >= CLIENT_SATURATED or level["client_late_s_max"] > 1:
+                    ok = False
+                    print(f"FAIL {label} {w}w {level['clients']} clients: invalid, a client process at "
+                          f"{level['client_cores_max']:.2f} cores (late {level['client_late_s_max']:.1f} s); lower "
+                          "CLIENTS_PER_PROCESS and rerun this part")
     if args.out:
         Path(args.out).write_text(json.dumps({"power_cap_w": power_cap, "memory_total_mib": mem_total, "verdict_ok": ok,
                                               "runs": {k: {str(w): r for w, r in v.items()} for k, v in results.items()}}, indent=1))

@@ -5,6 +5,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-21: load test: the client cannot set the pace; a hardware decoder is a saturating side
+- templates/tools/load-test/main.py: the closed-loop clients run in several spawned processes (CLIENTS_PER_PROCESS), each reporting its own CPU; a level where one nears a full core is invalid; the host-core check leaves out the client's cores; DECODER_CEILING_RPS, a hardware decoder's standalone ceiling, makes the decoder a saturating side. rules/wrap-up.md says both.
+  Why: the user (2026-10-21): a single Python client process (GIL) can cap the measured throughput below the service's and read as an unsaturated server; and NVJPG saturation does not show in nvidia-smi's GPU utilization, so a decoder-bound service would fail as "nothing saturated".
 ## 2026-10-21: the load test in one run: soak, worker restarts, log scan, memory per process
 - rules/wrap-up.md and templates/tools/load-test/main.py: no production worker count anywhere; each image climbs the worker count (1, 2, 4, 8, 12, 16) until throughput stops growing, clients = workers and 2x at each count; then `--soak` (600 s at the delivered peak count, memory start against end), worker restarts counted from new PIDs, the container log scanned (tracebacks or a missing MPS daemon fail), GPU memory per process sampled, P90 added; about 35 to 40 minutes, a rerun repeats the failed part only.
   Why: the user (2026-10-21): the load test asks how well the algorithm uses the server (at how many workers the GPU peaks), production's worker count is operations' business; one run must leave nothing to rerun, and it must not take hours. An earlier version anchored the sweep and the soak on a production count.
