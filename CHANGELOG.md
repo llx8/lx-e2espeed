@@ -5,6 +5,9 @@ read_when: reviewing the rules, or asking why a rule is the way it is
 # Changelog
 
 Newest first. One entry per change to rules, templates, hooks, or the playbook structure, with the reason.
+## 2026-10-21: the service merge comes after the load test
+- wrap-up.md, Deliver: the order is commit, algorithm merge (and the service's pin), load test, service merge. "Commit and merge" means the first two; "up to the step before the load test" stops after the algorithm merge, as does every request that does not name the service merge, which waits for a passed load test and the user's word, both recorded in STATUS.md. "Load-test before any merge" became "before the service merge".
+  Why: the user, 2026-10-21: told "commit and merge, up to the step before the load test", three sessions in one night also merged the service layer (a push to a production branch, a merge into another), and one had to be undone; the old line "before any merge" contradicted the algorithm merge that comes before the load test.
 ## 2026-10-20: gpulane preempts lower-priority jobs
 - CLAUDE.md gpulane rule: start gpulane inside the job's project (its priority comes from the working directory); a higher-priority job may stop a running one, which is requeued and rerun from the start, so jobs must be safe to rerun or use `--no-preempt`.
   Why: the user, 2026-10-20, asked that a higher-priority job interrupt a running lower one and send it back to the queue; and one project's jobs, started from another project's directory, were counted under that one.
