@@ -186,7 +186,7 @@ class Sampler(threading.Thread):
         edge = lambda xs, k: mean(xs[:k]) if len(xs) >= 2 * k else mean(xs)
         return {"gpu_util_mean": mean([x[0] for x in g]), "gpu_util_max": max([x[0] for x in g], default=0),
                 "gpu_mem_mib_max": max([x[1] for x in g], default=0), "power_w_mean": mean([x[2] for x in g]),
-                "sm_mhz_min": min([x[3] for x in g], default=0), "cpu_cores_mean": mean(self.cores[c:]),
+                "sm_mhz_min": min([x[3] for x in g], default=0), "cpu_cores_mean": mean(self.cores[c:]), "cpu_cores_max": max(self.cores[c:], default=0),
                 "busiest_process_cores": max(self.proc_max[c:], default=0), "busiest_host_core_pct": max(self.host_max[c:], default=0),
                 "ram_gib_max": max(self.ram[c:], default=0), "worker_restarts": sum(self.new_pids[c:]),
                 "process_mem_mib_max": max([max(a.values(), default=0) for a in apps], default=0),
@@ -271,7 +271,8 @@ def client_process(url, reqs, expected, threads, start_at, seconds, offset, stat
                 code, body = type(e).__name__, b""
             ms = (time.perf_counter() - t) * 1000
             with lock:
-                out.append((i, code, ms, code == 200 and not status_only and expected is not None and body != expected[i]))
+                out.append((i, code, ms, code == 200 and not status_only and expected is not None and body != expected[i],
+                            len(body)))
 
     late = max(0.0, time.time() - start_at)
     while time.time() < start_at:
@@ -280,6 +281,16 @@ def client_process(url, reqs, expected, threads, start_at, seconds, offset, stat
     with ThreadPoolExecutor(threads) as ex:
         list(ex.map(client, range(threads)))
     results.put((out, (time.process_time() - cpu0) / seconds, late, time.time()))
+
+
+_SIZES = {}
+
+
+def request_sizes(url, reqs):
+    """HTTP body bytes of each request as sent (the multipart encoding included), as the operations platform counts them."""
+    if url not in _SIZES:
+        _SIZES[url] = [len(requests.Request("POST", url, **kw).prepare().body) for _, kw in reqs]
+    return _SIZES[url]
 
 
 def hold(url, reqs, clients, seconds, expected, status_only, sampler=None):
@@ -307,11 +318,16 @@ def hold(url, reqs, clients, seconds, expected, status_only, sampler=None):
         proc.join()
     out = [r for part in parts for r in part[0]]
     elapsed = max(part[3] for part in parts) - start_at
-    ms = sorted(m for _, code, m, _ in out if code == 200)
+    ms = sorted(m for _, code, m, _, _ in out if code == 200)
+    sizes = request_sizes(url, reqs)
+    ok = [r for r in out if r[1] == 200]
     pick = lambda q: ms[min(len(ms) - 1, int(q * len(ms)))] if ms else 0.0
     level = {"clients": clients, "requests": len(out), "rps": len(ms) / elapsed, "p50_ms": pick(0.5), "p90_ms": pick(0.9),
-             "p99_ms": pick(0.99), "errors": sum(1 for _, code, _, _ in out if code != 200),
-             "mismatches": sum(1 for *_, bad in out if bad), "client_processes": n,
+             "p99_ms": pick(0.99), "mean_ms": sum(ms) / len(ms) if ms else 0.0, "max_ms": ms[-1] if ms else 0.0,
+             "request_bytes_mean": sum(sizes[r[0]] for r in ok) / len(ok) if ok else 0.0,
+             "response_bytes_mean": sum(r[4] for r in ok) / len(ok) if ok else 0.0,
+             "errors": sum(1 for _, code, *_ in out if code != 200),
+             "mismatches": sum(1 for _, _, _, bad, _ in out if bad), "client_processes": n,
              "client_cores_max": max(part[1] for part in parts), "client_cores_sum": sum(part[1] for part in parts),
              "client_late_s_max": max(part[2] for part in parts)}
     if sampler:
@@ -375,11 +391,13 @@ def run_image(image, label, reqs, seconds, status_only, workers, soak=0):
 
 
 def line_of(label, level):
-    return (f"{label} {level['clients']:>3} clients: {level['rps']:.1f} req/s, P50 {level['p50_ms']:.1f} P90 {level['p90_ms']:.1f} P99 "
-            f"{level['p99_ms']:.1f} ms, errors {level['errors']}, mismatches {level['mismatches']}, restarts {level['worker_restarts']}; GPU "
+    return (f"{label} {level['clients']:>3} clients: {level['rps']:.1f} req/s, mean {level['mean_ms']:.1f} max "
+            f"{level['max_ms']:.1f} P50 {level['p50_ms']:.1f} P90 {level['p90_ms']:.1f} P99 "
+            f"{level['p99_ms']:.1f} ms, {level['requests']} requests, request {level['request_bytes_mean'] / 1024:.1f} KB, "
+            f"response {level['response_bytes_mean']:.0f} B, errors {level['errors']}, mismatches {level['mismatches']}, restarts {level['worker_restarts']}; GPU "
             f"{level['gpu_util_mean']:.0f}% (max {level['gpu_util_max']:.0f}), {level['power_w_mean']:.0f} W, "
             f"{level['gpu_mem_mib_max']:.0f} MiB ({level['gpu_processes_max']} processes, largest {level['process_mem_mib_max']:.0f}), "
-            f"SM >= {level['sm_mhz_min']:.0f} MHz; CPU {level['cpu_cores_mean']:.1f} cores, busiest process {level['busiest_process_cores']:.2f}, "
+            f"SM >= {level['sm_mhz_min']:.0f} MHz; CPU {level['cpu_cores_mean']:.2f} cores (max {level['cpu_cores_max']:.2f}), busiest process {level['busiest_process_cores']:.2f}, "
             f"busiest host core {level['busiest_host_core_pct']:.0f}%; RAM {level['ram_gib_max']:.1f} GiB; "
             f"client {level['client_processes']} processes, busiest {level['client_cores_max']:.2f} cores")
 
@@ -477,6 +495,23 @@ def climb(image, label, reqs, counts, seconds, status_only, memory_total_mib):
     return runs
 
 
+def platform_table(results, images):
+    """The report table in the operations platform's columns (rules/wrap-up.md, Load test): one row per image and worker
+    count at the platform's concurrency, clients = workers; CPU in percent of one core, as the platform shows it."""
+    card = sh("nvidia-smi", "--query-gpu=name", "--format=csv,noheader").stdout.strip().splitlines()[0].replace("NVIDIA ", "")
+    rows = ["| Version | Card | Workers | Mean | Max | QPS | P99 | GPU mean/peak | CPU mean/peak | GPU memory peak | "
+            "RAM peak | Request | Response | Requests |", "|" + "---|" * 14]
+    for label, runs in results.items():
+        for w in sorted(runs):
+            lv = next((x for x in runs[w]["levels"] if x["clients"] == w), runs[w]["levels"][0])
+            rows.append(f"| {label} {images[label]} | {card} | {w} | {lv['mean_ms']:.1f} ms | {lv['max_ms']:.0f} ms | "
+                        f"{lv['rps']:.1f} | {lv['p99_ms']:.1f} ms | {lv['gpu_util_mean']:.1f}% / {lv['gpu_util_max']:.0f}% | "
+                        f"{100 * lv['cpu_cores_mean']:.0f}% / {100 * lv['cpu_cores_max']:.0f}% | {lv['gpu_mem_mib_max'] / 1024:.1f} GB | "
+                        f"{lv['ram_gib_max']:.1f} GB | {lv['request_bytes_mean'] / 1024:.1f} KB | {lv['response_bytes_mean']:.0f} B | "
+                        f"{lv['requests']} |")
+    return "\n".join(rows)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--image", required=True, help="the image built from the delivered tree, as CI builds it")
@@ -513,6 +548,7 @@ def main():
             for a, b in zip(results["baseline"][w]["levels"], results["delivered"][w]["levels"]):
                 print(f"{w}w {a['clients']:>3} clients: delivered {b['rps']:.1f} req/s vs baseline {a['rps']:.1f} "
                       f"({b['rps'] / max(a['rps'], 1e-9):.2f}x), P99 {b['p99_ms']:.1f} vs {a['p99_ms']:.1f} ms")
+    print(platform_table(results, images={"baseline": args.baseline_image, "delivered": args.image}))
     ok = verdicts(results["delivered"], power_cap, mem_total)
     for label, runs in results.items():  # a level whose client process ran near a full core measured the client
         for w, r in runs.items():
