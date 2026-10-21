@@ -230,10 +230,12 @@ def start(image, name, config=None):
 
 
 def wait_ready(url, reqs, limit=600):
+    session = requests.Session()
+    session.trust_env = False  # the shells here set http_proxy with an empty no_proxy: 127.0.0.1 must not go through it
     t0 = time.time()
     while time.time() - t0 < limit:
         try:
-            if requests.post(url, timeout=60, **reqs[0][1]).status_code == 200:
+            if session.post(url, timeout=60, **reqs[0][1]).status_code == 200:
                 return time.time() - t0
         except requests.RequestException:
             pass
@@ -476,12 +478,14 @@ def main():
     p.add_argument("--seconds", type=int, default=60, help="per level, after a warm-up of up to 10 s")
     p.add_argument("--soak", type=int, default=600, help="seconds the delivered image holds the top level at its peak count; 0 skips")
     p.add_argument("--status-only", action="store_true", help="outputs are not deterministic: check status codes only")
+    p.add_argument("--smoke", action="store_true", help="a functional check on a shared GPU (start, readiness, sampling, "
+                   "verdicts) before the long exclusive run: allows other GPU processes; its numbers mean nothing")
     p.add_argument("--project")
     p.add_argument("--out")
     args = p.parse_args()
     if not (PORT and WORKER_CONFIG[0]):
         sys.exit("load-test: fill PORT and WORKER_CONFIG at the top of this file first")
-    if gpu_busy():
+    if gpu_busy() and not args.smoke:
         sys.exit("load-test: the GPU is in use, measure only on a free GPU:\n" + "\n".join(gpu_busy()))
     counts = [int(x) for x in args.workers.split(",")] if args.workers else SWEEP
     power_cap, mem_total = (float(x) for x in sh("nvidia-smi", "--query-gpu=power.limit,memory.total",
