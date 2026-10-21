@@ -6,15 +6,21 @@ latency, errors, responses that differ from the same request's answer at concurr
 power, SM clock), the container's CPU cores and RAM, its busiest process (a worker pinned near 1.0 core is
 CPU-bound), and the busiest host core. Then it checks that the image's MPS server lists as many clients as workers.
 Refuses to start while another process uses the GPU; kills the container when MemAvailable falls under 20% of RAM.
+--workers sweeps the worker count (the image's config file mounted with that count, WORKER_CONFIG): one run of both
+images per count, then the verdicts of rules/wrap-up.md: the count where the delivered throughput peaks, which side
+saturates there (GPU utilization or power, a worker near 1.0 core, all host cores) or none (a cause to find before the
+merge), and GPU memory against the one-worker peak times the worker count and across levels.
 
 Run, from the project directory, under a small cap (it covers this client; the container has its own, LX_MEM):
   <py> lx-work/tools/load-test/main.py --image IMAGE [--baseline-image IMAGE] [--levels 1,6,12] [--seconds 60]
-       [--status-only] [--out FILE]
-Prints one line per image and level and one comparison line per level; the full result goes to --out as JSON.
+       [--workers 1,6,9,12] [--status-only] [--out FILE]
+Prints one line per image, worker count, and level, one comparison line per level, and the verdicts; the full result
+goes to --out as JSON.
 """
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -32,7 +38,11 @@ from adapter import pipeline as ad  # noqa: E402
 PORT = 0         # TODO: the port the framework listens on inside the image (config.toml listen_addr)
 WORKERS = 0      # TODO: production's worker count (config.toml worker_num), for the MPS client check
 PATH_URL = "/"   # TODO if the service answers on another path
+WORKER_CONFIG = ("", "worker_num")  # TODO for --workers: (the config file's path inside the image, its worker-count key)
 HOST_PORT = 18100
+GPU_SATURATED = (85, 0.9)  # utilization %, or share of the power cap, above which the GPU counts as the saturated side
+CORE_SATURATED = 0.9       # a worker process above this many cores is CPU-bound
+MEMORY_SLACK = 1.2         # GPU memory above this times the expected peak, or growing by this across levels, needs a cause
 
 
 def requests_for(project):
@@ -144,10 +154,26 @@ class Sampler(threading.Thread):
         self.smi.terminate()
 
 
-def start(image, name):
+def config_with_workers(image, workers):
+    """A copy of the image's config file with its worker-count key set to `workers`, mounted over the original."""
+    path, key = WORKER_CONFIG
+    if not path:
+        sys.exit("load-test: fill WORKER_CONFIG at the top of this file for a worker sweep")
+    text = sh("docker", "run", "--rm", "--entrypoint", "cat", image, path).stdout
+    new, n = re.subn(rf"^(\s*{key}\s*=\s*)\d+", rf"\g<1>{workers}", text, count=1, flags=re.M)
+    if n != 1:
+        sys.exit(f"load-test: {key} not found once in {path} of {image}")
+    out = LX_WORK / "local" / "load-test" / f"{image.replace('/', '_').replace(':', '_')}-{workers}{Path(path).suffix}"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(new)
+    return out
+
+
+def start(image, name, config=None):
     sh("docker", "rm", "-f", name)
+    mount = ["-v", f"{config}:{WORKER_CONFIG[0]}:ro"] if config else []
     r = sh("docker", "run", "-d", "--name", name, "--gpus", "all", f"--memory={os.environ.get('LX_MEM', '48g')}",
-           f"--memory-swap={os.environ.get('LX_MEM', '48g')}", "-p", f"{HOST_PORT}:{PORT}", image, timeout=300)
+           f"--memory-swap={os.environ.get('LX_MEM', '48g')}", "-p", f"{HOST_PORT}:{PORT}", *mount, image, timeout=300)
     if r.returncode:
         sys.exit(f"load-test: cannot start {image}: {r.stderr.strip()[-300:]}")
     return int(sh("docker", "inspect", "-f", "{{.State.Pid}}", name).stdout.strip())
@@ -205,10 +231,13 @@ def mps_clients(name):
                for s in servers)
 
 
-def run_image(image, label, reqs, levels, seconds, status_only):
+def run_image(image, label, reqs, levels, seconds, status_only, workers=None):
+    """One image at one worker count (None: as the image is configured) through every level."""
     name = f"lx-load-{label}-{os.getpid()}"
     url = f"http://127.0.0.1:{HOST_PORT}{PATH_URL}"
-    pid = start(image, name)
+    label = f"{label} {workers}w" if workers else label
+    workers = workers or WORKERS
+    pid = start(image, name, config_with_workers(image, workers) if workers != WORKERS or WORKER_CONFIG[0] else None)
     sampler = Sampler(name, pid)
     sampler.start()
     try:
@@ -221,8 +250,8 @@ def run_image(image, label, reqs, levels, seconds, status_only):
             s = requests.Session()
             s.trust_env = False
             expected = [s.post(url, timeout=60, **kw).content for _, kw in reqs]
-        result = {"image": image, "ready_s": ready, "levels": []}
-        for clients in levels:
+        result = {"image": image, "workers": workers, "ready_s": ready, "levels": []}
+        for clients in levels or sorted({1, workers, 2 * workers}):
             hold(url, reqs, clients, min(10, seconds), None, True)  # warm-up at this level, not counted
             marks = sampler.marks()
             level = hold(url, reqs, clients, seconds, expected, status_only)
@@ -236,11 +265,54 @@ def run_image(image, label, reqs, levels, seconds, status_only):
                   f"busiest host core {level['busiest_host_core_pct']:.0f}%; RAM {level['ram_gib_max']:.1f} GiB")
         result["mps_clients"] = mps_clients(name)
         print(f"{label} MPS: {result['mps_clients'] if result['mps_clients'] is not None else 'no server found'} "
-              f"clients for {WORKERS} workers")
+              f"clients for {workers} workers")
         return result
     finally:
         sampler.close()
         sh("docker", "rm", "-f", name)
+
+
+def verdicts(runs, power_cap_w, memory_total_mib):
+    """The wrap-up rule's checks over the delivered image's runs {workers: result}: where throughput peaks, what
+    saturates there, and GPU memory against the one-worker peak times the worker count and across levels."""
+    top = {w: r["levels"][-1] for w, r in runs.items()}
+    peak_w = max(top, key=lambda w: top[w]["rps"])
+    curve = ", ".join(f"{w}w {top[w]['rps']:.1f} req/s at {top[w]['gpu_util_mean']:.0f}% GPU" for w in sorted(top))
+    print(f"delivered throughput peaks at {peak_w} workers ({curve})")
+    t = top[peak_w]
+    sides = []
+    if t["gpu_util_mean"] >= GPU_SATURATED[0] or t["power_w_mean"] >= GPU_SATURATED[1] * power_cap_w:
+        sides.append(f"the GPU ({t['gpu_util_mean']:.0f}%, {t['power_w_mean']:.0f} of {power_cap_w:.0f} W)")
+    if t["busiest_process_cores"] >= CORE_SATURATED:
+        sides.append(f"a worker process at {t['busiest_process_cores']:.2f} cores (CPU-bound)")
+    if t["cpu_cores_mean"] >= CORE_SATURATED * os.cpu_count():
+        sides.append(f"all {os.cpu_count()} host cores ({t['cpu_cores_mean']:.1f} busy)")
+    ok = True
+    if sides:
+        print(f"at the peak the saturated side is {'; '.join(sides)}")
+    else:
+        ok = False
+        print(f"FAIL at the peak no side saturates: GPU {t['gpu_util_mean']:.0f}%, {t['power_w_mean']:.0f} of {power_cap_w:.0f} W, "
+              f"busiest process {t['busiest_process_cores']:.2f} cores, {t['cpu_cores_mean']:.1f} of {os.cpu_count()} cores; "
+              "find the wait (nsys on a worker: locks, synchronizes, the decode queue, CPU preprocessing) before the merge")
+    mem_top = t["gpu_mem_mib_max"]
+    first = runs[peak_w]["levels"][0]["gpu_mem_mib_max"]
+    if mem_top > memory_total_mib:
+        ok = False
+        print(f"FAIL GPU memory {mem_top:.0f} MiB exceeds the card ({memory_total_mib:.0f} MiB)")
+    if 1 in runs:
+        expected = runs[1]["levels"][0]["gpu_mem_mib_max"] * peak_w
+        if mem_top > MEMORY_SLACK * expected:
+            ok = False
+            print(f"FAIL GPU memory {mem_top:.0f} MiB at {peak_w} workers, expected about {expected:.0f} (one worker "
+                  f"{runs[1]['levels'][0]['gpu_mem_mib_max']:.0f} MiB x {peak_w}); find what allocates per worker beyond one process's peak")
+    if mem_top > MEMORY_SLACK * first:
+        ok = False
+        print(f"FAIL GPU memory grows with the level at {peak_w} workers: {first:.0f} -> {mem_top:.0f} MiB; find the allocation that "
+              "grows (pools, per-request allocations, graphs) before the merge")
+    if ok:
+        print(f"GPU memory {mem_top:.0f} MiB at the peak, steady across levels")
+    return ok
 
 
 def main():
@@ -248,6 +320,7 @@ def main():
     p.add_argument("--image", required=True, help="the image built from the delivered tree, as CI builds it")
     p.add_argument("--baseline-image", help="the baseline commit's image, built the same way")
     p.add_argument("--levels", help="client counts, default 1, workers, 2x workers")
+    p.add_argument("--workers", help="worker counts to sweep (WORKER_CONFIG), e.g. 1,<production>,<1.5x>,<2x>; default the production count")
     p.add_argument("--seconds", type=int, default=60, help="per level, after a warm-up of up to 10 s")
     p.add_argument("--status-only", action="store_true", help="outputs are not deterministic: check status codes only")
     p.add_argument("--project")
@@ -257,18 +330,24 @@ def main():
         sys.exit("load-test: fill PORT and WORKERS at the top of this file first")
     if gpu_busy():
         sys.exit("load-test: the GPU is in use, measure only on a free GPU:\n" + "\n".join(gpu_busy()))
-    levels = [int(x) for x in args.levels.split(",")] if args.levels else sorted({1, WORKERS, 2 * WORKERS})
+    levels = [int(x) for x in args.levels.split(",")] if args.levels else None
+    counts = [int(x) for x in args.workers.split(",")] if args.workers else [WORKERS]
+    power_cap, mem_total = (float(x) for x in sh("nvidia-smi", "--query-gpu=power.limit,memory.total",
+                                                   "--format=csv,noheader,nounits").stdout.strip().split(","))
     reqs = requests_for(ad.project_root(args.project))
     results = {}
-    for label, image in (("baseline", args.baseline_image), ("delivered", args.image)):
-        if image:
-            results[label] = run_image(image, label, reqs, levels, args.seconds, args.status_only)
-    if "baseline" in results:
-        for a, b in zip(results["baseline"]["levels"], results["delivered"]["levels"]):
-            print(f"{a['clients']:>3} clients: delivered {b['rps']:.1f} req/s vs baseline {a['rps']:.1f} "
-                  f"({b['rps'] / max(a['rps'], 1e-9):.2f}x), P99 {b['p99_ms']:.1f} vs {a['p99_ms']:.1f} ms")
+    for workers in counts:
+        for label, image in (("baseline", args.baseline_image), ("delivered", args.image)):
+            if image:
+                results.setdefault(label, {})[workers] = run_image(image, label, reqs, levels, args.seconds, args.status_only, workers)
+        if "baseline" in results:
+            for a, b in zip(results["baseline"][workers]["levels"], results["delivered"][workers]["levels"]):
+                print(f"{workers}w {a['clients']:>3} clients: delivered {b['rps']:.1f} req/s vs baseline {a['rps']:.1f} "
+                      f"({b['rps'] / max(a['rps'], 1e-9):.2f}x), P99 {b['p99_ms']:.1f} vs {a['p99_ms']:.1f} ms")
+    ok = verdicts(results["delivered"], power_cap, mem_total)
     if args.out:
-        Path(args.out).write_text(json.dumps(results, indent=1))
+        Path(args.out).write_text(json.dumps({"power_cap_w": power_cap, "memory_total_mib": mem_total, "verdict_ok": ok,
+                                              "runs": {k: {str(w): r for w, r in v.items()} for k, v in results.items()}}, indent=1))
 
 
 if __name__ == "__main__":
