@@ -225,8 +225,15 @@ def start(image, name, config=None):
            "--gpus", "all", f"--memory={os.environ.get('LX_MEM', '48g')}",
            f"--memory-swap={os.environ.get('LX_MEM', '48g')}", "-p", f"{HOST_PORT}:{PORT}", *mount, image, timeout=300)
     if r.returncode:
+        sh("docker", "rm", "-f", name)
         sys.exit(f"load-test: cannot start {image}: {r.stderr.strip()[-300:]}")
-    return int(sh("docker", "inspect", "-f", "{{.State.Pid}}", name).stdout.strip())
+    time.sleep(1)
+    state = sh("docker", "inspect", "-f", "{{.State.Running}} {{.State.Pid}}", name).stdout.split()
+    if state[:1] != ["true"]:  # it exited at once (an LFS pointer for a binary, a bad config): say why, leave nothing
+        logs = sh("docker", "logs", "--tail", "20", name)
+        sh("docker", "rm", "-f", name)
+        sys.exit(f"load-test: {image} exited at start:\n{logs.stdout}{logs.stderr}")
+    return int(state[1])
 
 
 def wait_ready(url, reqs, limit=600):
